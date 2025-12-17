@@ -2518,7 +2518,7 @@
       function populateTurboTunProducts(comparison) {
         const select = document.getElementById('turboTunProductSelect');
         select.innerHTML = '<option value="">Selecciona un producto...</option>';
-        
+
         comparison.top_3_offers.forEach((offer, index) => {
           const option = document.createElement('option');
           option.value = index;
@@ -2526,6 +2526,41 @@
           if (index === 0) option.selected = true; // Select first by default
           select.appendChild(option);
         });
+
+        // Add event listener to update prices when product changes
+        select.removeEventListener('change', handleTurboTunProductChange); // Remove any existing listener
+        select.addEventListener('change', handleTurboTunProductChange);
+      }
+
+      function handleTurboTunProductChange() {
+        const selectedIndex = document.getElementById('turboTunProductSelect').value;
+
+        if (selectedIndex === '' || !turboTunCurrentComparison) {
+          return;
+        }
+
+        const selectedOffer = turboTunCurrentComparison.top_3_offers[parseInt(selectedIndex)];
+        const numEnergyPeriods = turboTunCurrentComparison.num_energy_periods || 3;
+        const numPowerPeriods = turboTunCurrentComparison.num_power_periods || 2;
+
+        // Update energy prices
+        for (let i = 1; i <= numEnergyPeriods; i++) {
+          const energyPriceInput = document.getElementById(`turboEnergyPrice_p${i}`);
+          if (energyPriceInput && selectedOffer[`energia_p${i}`] !== undefined) {
+            energyPriceInput.value = selectedOffer[`energia_p${i}`].toFixed(6);
+          }
+        }
+
+        // Update power prices
+        for (let i = 1; i <= numPowerPeriods; i++) {
+          const powerPriceInput = document.getElementById(`turboPowerPrice_p${i}`);
+          if (powerPriceInput && selectedOffer[`pot_${i}`] !== undefined) {
+            powerPriceInput.value = selectedOffer[`pot_${i}`].toFixed(6);
+          }
+        }
+
+        // Hide results when product changes to force recalculation
+        document.getElementById('turboTunResult').classList.remove('active');
       }
       
       window.resetTurboTunFields = function() {
@@ -3367,10 +3402,24 @@
           activeHistoryId = null;
           adjustedPowerValues = null;
           isUsingAdjustedPower = false;
-          
-          displayResults(data);
+
+          // Ensure power analysis data is properly structured for display
+          const displayData = {
+            ...data,
+            comparison_data: {
+              ...data.comparison_data,
+              incluye_analisis_potencia: data.incluye_analisis_potencia || data.comparison_data.incluye_analisis_potencia,
+              potencia_analysis: data.potencia_analysis || data.comparison_data.potencia_analysis,
+              ahorro_comparador_anual: data.ahorro_comparador_anual || data.comparison_data.ahorro_comparador_anual,
+              ahorro_potencia_anual: data.ahorro_potencia_anual || data.comparison_data.ahorro_potencia_anual,
+              ahorro_total_anual: data.ahorro_total_anual || data.comparison_data.ahorro_total_anual,
+              ahorro_total_mensual: data.ahorro_total_mensual || data.comparison_data.ahorro_total_mensual
+            }
+          };
+
+          displayResults(displayData);
           uploadSection.style.display = 'none';
-          
+
           loadHistory();
           
         } catch (error) {
@@ -3669,7 +3718,7 @@
           html += `
             <div style="margin-top: 16px; padding: 16px; background: #f8fbff; border-radius: 8px; font-size: 14px;">
               <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                <span style="color: #718096;">💰 Ahorro en Tarifas:</span>
+                <span style="color: #718096;">⚡ Comparativa de Energía:</span>
                 <span style="font-weight: 700; color: ${ahorroComparadorAnual >= 0 ? '#27ae60' : '#e53e3e'};">${comparadorSign}${ahorroComparadorValue}€/año</span>
               </div>
               <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
