@@ -2809,20 +2809,20 @@
             const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
             // Build query with filters including vigency dates
-            let query = `SELECT DISTINCT PRODUCTO, TARIFA, TIPO_CLIENTE, INICIO_VIGENCIA, FIN_VIGENCIA FROM ${CONFIG.productosTable} WHERE COMPA____A = '${comercializadora}' AND TARIFA = '${tarifa}'`;
+            let query = `SELECT DISTINCT PRODUCTO, TARIFA, TIPO_DE_CLIENTE, INICIO_VIGENCIA, FIN_VIGENCIA FROM ${CONFIG.productosTable} WHERE COMPA____A = '${comercializadora}' AND TARIFA = '${tarifa}'`;
 
             // Add vigency date filter - only show products that are currently valid
             query += ` AND (INICIO_VIGENCIA IS NULL OR INICIO_VIGENCIA <= '${today}')`;
             query += ` AND (FIN_VIGENCIA IS NULL OR FIN_VIGENCIA >= '${today}')`;
 
             if (tipoCliente) {
-                // Handle multiple values in TIPO_CLIENTE field
+                // Handle multiple values in TIPO_DE_CLIENTE field
                 if (tipoClienteValue.includes(';')) {
                     const values = tipoClienteValue.split(';');
-                    const conditions = values.map(v => `TIPO_CLIENTE LIKE '%${v}%'`).join(' OR ');
+                    const conditions = values.map(v => `TIPO_DE_CLIENTE LIKE '%${v}%'`).join(' OR ');
                     query += ` AND (${conditions})`;
                 } else {
-                    query += ` AND (TIPO_CLIENTE = '${tipoClienteValue}' OR TIPO_CLIENTE = 'TODO')`;
+                    query += ` AND (TIPO_DE_CLIENTE = '${tipoClienteValue}' OR TIPO_DE_CLIENTE = 'TODO')`;
                 }
             }
 
