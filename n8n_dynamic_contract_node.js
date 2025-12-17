@@ -14,6 +14,9 @@ const cnae = inputData.cnae || '9820';
 const observaciones = inputData.observaciones || 'Contrato generado desde Tunerface';
 const tipoContratacion = inputData.tipo_contratacion || '';
 const comercial = inputData.comercial || '1731';
+const firmaDigital = inputData.firma_digital || '0';
+const factElectronica = inputData.fact_electronica || 'NO';
+const luzAutoconsumo = inputData.luz_autoconsumo || 'NO';
 
 // Helper function to safely parse numeric values (handles strings and numbers)
 function parseNumeric(value) {
@@ -62,7 +65,10 @@ const formattedData = {
   cnae: cnae,
   observaciones: observaciones,
   tipo_contratacion: tipoContratacion,
-  comercial: comercial
+  comercial: comercial,
+  firma_digital: firmaDigital,
+  fact_electronica: factElectronica,
+  luz_autoconsumo: luzAutoconsumo
 };
 
 // Return the formatted data

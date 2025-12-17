@@ -1487,7 +1487,8 @@
 }
 
 .tunergia-dashboard .consumo-table th {
-    background: #f7fafc;
+    background: #667eea;
+    color: white;
     font-weight: 600;
     font-size: 13px;
 }
@@ -2119,9 +2120,14 @@
                                 <label>Provincia</label>
                                 <input type="text" name="provincia_suministro" class="form-input">
                             </div>
-                            <div class="detail-field">
+                            <div class="detail-field full-width">
                                 <label>CUPS *</label>
-                                <input type="text" name="cups" class="form-input" required="" maxlength="22" placeholder="ES0000000000000000XX">
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" name="cups" id="cupsInput" class="form-input" required="" maxlength="22" placeholder="ES0000000000000000XX" style="flex: 1;">
+                                    <button type="button" class="action-btn" id="extractSipsBtn" style="white-space: nowrap;">
+                                        <span>📊</span> Extrair datos SIPS
+                                    </button>
+                                </div>
                             </div>
                             <div class="detail-field">
                                 <label>Comercializadora Saliente</label>
@@ -2799,8 +2805,15 @@
 
             const tipoClienteValue = tipoClienteMap[tipoCliente] || tipoCliente;
 
-            // Build query with filters
-            let query = `SELECT DISTINCT PRODUCTO, TARIFA, TIPO_CLIENTE FROM ${CONFIG.productosTable} WHERE COMPA____A = '${comercializadora}' AND TARIFA = '${tarifa}'`;
+            // Get current date for vigency check
+            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+            // Build query with filters including vigency dates
+            let query = `SELECT DISTINCT PRODUCTO, TARIFA, TIPO_CLIENTE, INICIO_VIGENCIA, FIN_VIGENCIA FROM ${CONFIG.productosTable} WHERE COMPA____A = '${comercializadora}' AND TARIFA = '${tarifa}'`;
+
+            // Add vigency date filter - only show products that are currently valid
+            query += ` AND (INICIO_VIGENCIA IS NULL OR INICIO_VIGENCIA <= '${today}')`;
+            query += ` AND (FIN_VIGENCIA IS NULL OR FIN_VIGENCIA >= '${today}')`;
 
             if (tipoCliente) {
                 // Handle multiple values in TIPO_CLIENTE field
@@ -2865,7 +2878,76 @@
         modal.classList.remove('active');
         document.body.style.overflow = '';
     }
-    
+
+    // Extract SIPS data function
+    async function extractSipsData() {
+        const cupsInput = document.getElementById('cupsInput');
+        const cups = cupsInput.value.trim();
+
+        if (!cups) {
+            alert('Por favor, introduce un CUPS válido');
+            return;
+        }
+
+        const extractBtn = document.getElementById('extractSipsBtn');
+        const originalText = extractBtn.innerHTML;
+        extractBtn.disabled = true;
+        extractBtn.innerHTML = '<span>⏳</span> Extrayendo...';
+
+        try {
+            const response = await fetch('https://tunuevaenergia.com/webhook/SIPS-contrato-nodo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cups: cups })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error del servidor: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const data = Array.isArray(result) ? result[0] : result;
+
+            // Fill in the form with SIPS data
+            if (data.kWhAnual) {
+                document.querySelector('input[name="consumo"]').value = data.kWhAnual;
+            }
+            if (data.cnae_code) {
+                document.querySelector('input[name="cnae_actividad"]').value = data.cnae_code;
+            }
+            if (data.Tarifa) {
+                const tarifaSelect = document.getElementById('createTarifaAcceso');
+                tarifaSelect.value = data.Tarifa;
+                // Trigger products reload
+                await loadProducts();
+            }
+
+            // Fill consumption data
+            if (data.kWhAnual_p1) document.querySelector('input[name="consumo_1"]').value = data.kWhAnual_p1;
+            if (data.kWhAnual_p2) document.querySelector('input[name="consumo_2"]').value = data.kWhAnual_p2;
+            if (data.kWhAnual_p3) document.querySelector('input[name="consumo_3"]').value = data.kWhAnual_p3;
+            if (data.kWhAnual_p4) document.querySelector('input[name="consumo_4"]').value = data.kWhAnual_p4;
+            if (data.kWhAnual_p5) document.querySelector('input[name="consumo_5"]').value = data.kWhAnual_p5;
+            if (data.kWhAnual_p6) document.querySelector('input[name="consumo_6"]').value = data.kWhAnual_p6;
+
+            // Fill power data
+            if (data.Pot_Cont_P1) document.querySelector('input[name="potencia_contratada_1"]').value = data.Pot_Cont_P1;
+            if (data.Pot_Cont_P2) document.querySelector('input[name="potencia_contratada_2"]').value = data.Pot_Cont_P2;
+            if (data.Pot_Cont_P3) document.querySelector('input[name="potencia_contratada_3"]').value = data.Pot_Cont_P3;
+            if (data.Pot_Cont_P4) document.querySelector('input[name="potencia_contratada_4"]').value = data.Pot_Cont_P4;
+            if (data.Pot_Cont_P5) document.querySelector('input[name="potencia_contratada_5"]').value = data.Pot_Cont_P5;
+            if (data.Pot_Cont_P6) document.querySelector('input[name="potencia_contratada_6"]').value = data.Pot_Cont_P6;
+
+            alert('✅ Datos SIPS extraídos correctamente');
+        } catch (error) {
+            console.error('Error extracting SIPS data:', error);
+            alert('❌ Error al extraer datos SIPS:\n\n' + error.message);
+        } finally {
+            extractBtn.disabled = false;
+            extractBtn.innerHTML = originalText;
+        }
+    }
+
     // Handle file upload in create form
     function handleFileUpload(files) {
         const filesList = document.getElementById('uploadedFilesList');
@@ -3592,7 +3674,10 @@
                         cnae: data.cnae_actividad || '9820',
                         observaciones: data.observaciones || 'Contrato generado desde Tunerface',
                         tipo_contratacion: data.tipo_contratacion || '',
-                        comercial: state.idComercial
+                        comercial: state.idComercial,
+                        firma_digital: data.firma_digital || '0',
+                        fact_electronica: data.fact_electronica || 'NO',
+                        luz_autoconsumo: data.luz_autoconsumo || 'NO'
                     };
 
                     // Send to crear-contrato-nodo webhook
@@ -3608,6 +3693,26 @@
                         closeCreateContract();
                         // Reload contracts to show the new one
                         await loadContracts();
+                    } else if (response.status === 422) {
+                        // Handle validation errors (product not valid, missing tarifa, etc.)
+                        const errorData = await response.json();
+                        let errorMessage = '❌ Error de validación:\n\n';
+
+                        if (errorData.errores && Array.isArray(errorData.errores)) {
+                            errorMessage += errorData.errores.join('\n\n');
+
+                            // Check for specific error types
+                            const errorString = errorData.errores.join(' ');
+                            if (errorString.includes('Tarifa no encontrada') || errorString.includes('no encontrada')) {
+                                errorMessage += '\n\n⚠️ El producto seleccionado ya no está disponible o le faltan detalles.\n\nPor favor, selecciona otro producto de la lista.';
+                            }
+                        } else if (errorData.resultado === 'error') {
+                            errorMessage += 'El producto o tarifa seleccionado no es válido.';
+                        } else {
+                            errorMessage += await response.text();
+                        }
+
+                        alert(errorMessage);
                     } else {
                         const errorText = await response.text();
                         throw new Error(`Error del servidor: ${response.status} - ${errorText}`);
@@ -3635,6 +3740,12 @@
         }
         if (tarifaSelect) {
             tarifaSelect.addEventListener('change', loadProducts);
+        }
+
+        // Add event listener for SIPS extraction button
+        const extractSipsBtn = document.getElementById('extractSipsBtn');
+        if (extractSipsBtn) {
+            extractSipsBtn.addEventListener('click', extractSipsData);
         }
         
         // Global document download function - GET request with direct link (avoids CORS)
