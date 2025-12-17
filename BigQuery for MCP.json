@@ -1,0 +1,220 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "tunergia-1722509306765",
+          "mode": "list",
+          "cachedResultName": "Tunergia",
+          "cachedResultUrl": "https://console.cloud.google.com/bigquery?project=tunergia-1722509306765"
+        },
+        "sqlQuery": "{{ $json.body.query }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleBigQuery",
+      "typeVersion": 2.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "0f24af93-d1e6-4570-8123-fd34cf151c34",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "googleBigQueryOAuth2Api": {
+          "id": "HuL2sSJL5cPYwr4j",
+          "name": "Personal Pedro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://gaiag.nodogestion.com/api/operaciones/consultar/{{ $json.body.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        224
+      ],
+      "id": "eb543d13-01b3-41dd-99bd-c69fbe7c5160",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "8Vg7TyHllfv2EefZ",
+          "name": "NODO - Prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "59200adf-d6df-4dd2-b319-5ab57d2e5052",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3b0e7b27-5f29-4571-bded-ad74195e153a",
+      "name": "Query for BigQuery",
+      "webhookId": "59200adf-d6df-4dd2-b319-5ab57d2e5052"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nodo",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        224
+      ],
+      "id": "fdda03d1-bfaf-4f2b-9753-187a122ac937",
+      "name": "Consult NODO with ID or CUPS",
+      "webhookId": "59200adf-d6df-4dd2-b319-5ab57d2e5052"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate all BigQuery results into a single array response\nconst allItems = $input.all().map(item => item.json);\n\nreturn [{\n  json: {\n    data: allItems,\n    count: allItems.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "50ba3291-c3a2-41ec-8035-8a1a6a331ddc",
+      "name": "Aggregate results"
+    },
+    {
+      "parameters": {
+        "path": "documento-nodo",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        448
+      ],
+      "id": "b0c039e2-d78c-4989-bb08-193f5461f7c3",
+      "name": "Download Document from NODO",
+      "webhookId": "59200adf-d6df-4dd2-b319-5ab57d2e5052"
+    },
+    {
+      "parameters": {
+        "url": "=https://gaiag.nodogestion.com{{ $json.query.query }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "Documento"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        448
+      ],
+      "id": "b0922748-0d18-41d0-8ace-af777de8a8c4",
+      "name": "Download Document",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "8Vg7TyHllfv2EefZ",
+          "name": "NODO - Prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "id": "96f3b87a-cad9-4411-b661-afc3458d8bd1",
+      "name": "Respond to Document from NODO",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        448,
+        448
+      ]
+    }
+  ],
+  "connections": {
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Aggregate results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query for BigQuery": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consult NODO with ID or CUPS": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Document from NODO": {
+      "main": [
+        [
+          {
+            "node": "Download Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Document": {
+      "main": [
+        [
+          {
+            "node": "Respond to Document from NODO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "d9ea544fdadf26c0cb1af2a2170c8ad35272e6ce482d9566666c10e545e2572e"
+  }
+}
