@@ -17,6 +17,9 @@ const comercial = inputData.comercial || '1731';
 const firmaDigital = inputData.firma_digital || '0';
 const factElectronica = inputData.fact_electronica || 'NO';
 const luzAutoconsumo = inputData.luz_autoconsumo || 'NO';
+const cambioTitular = inputData.cambio_titular || 'NO';
+const cambioPotencia = inputData.cambio_potencia || 'NO';
+const documents = inputData.documents || [];
 
 // Helper function to safely parse numeric values (handles strings and numbers)
 function parseNumeric(value) {
@@ -68,7 +71,10 @@ const formattedData = {
   comercial: comercial,
   firma_digital: firmaDigital,
   fact_electronica: factElectronica,
-  luz_autoconsumo: luzAutoconsumo
+  luz_autoconsumo: luzAutoconsumo,
+  cambio_titular: cambioTitular,
+  cambio_potencia: cambioPotencia,
+  documents: documents
 };
 
 // Return the formatted data
