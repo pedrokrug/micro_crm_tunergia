@@ -7,8 +7,11 @@ window.TunergiaAPI = {
 
     /**
      * Execute BigQuery query via webhook
+     * Handles multiple n8n response formats
      */
     async executeQuery(query) {
+        console.log('Executing query:', query);
+
         const response = await fetch(window.TunergiaConfig.webhookUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -20,7 +23,35 @@ window.TunergiaAPI = {
         }
 
         const result = await response.json();
-        return result.data || [];
+        console.log('Raw webhook response:', result);
+
+        let data = [];
+
+        // Case 1: Response has 'data' array (aggregated by Code node)
+        if (result && result.data && Array.isArray(result.data)) {
+            console.log('Found result.data array with', result.data.length, 'items');
+            data = result.data;
+        }
+        // Case 2: Direct array of results
+        else if (Array.isArray(result)) {
+            console.log('Direct array response with', result.length, 'items');
+            // Check if items have .json property (n8n format)
+            if (result.length > 0 && result[0] && result[0].json) {
+                data = result.map(item => item.json);
+            } else {
+                data = result;
+            }
+        }
+        // Case 3: Single object (fallback for old format)
+        else if (result && typeof result === 'object') {
+            console.log('Single object response (old format)');
+            if (result.id || result.estado || result.cups || result.cliente || result.total) {
+                data = [result];
+            }
+        }
+
+        console.log('Final parsed data:', data.length, 'items');
+        return data;
     },
 
     /**
