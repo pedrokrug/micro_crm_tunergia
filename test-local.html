@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tunergia - Local Test</title>
+
+    <!-- Load CSS from LOCAL src folder -->
+    <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+
+<div id="tunergiaApp" class="tunergia-dashboard">
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay active">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Cargando Tunergia...</div>
+    </div>
+
+    <!-- Error banner -->
+    <div id="errorBanner" class="error-banner">
+        <span class="error-icon">⚠️</span>
+        <span class="error-text" id="errorBannerText"></span>
+    </div>
+
+    <!-- User banner -->
+    <div class="user-banner">
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">TU</div>
+            <div class="user-details">
+                <h3><span id="welcomeName">Bienvenido</span>, <span id="userName">Usuario</span></h3>
+                <p id="userEmail">email@example.com</p>
+            </div>
+        </div>
+        <div class="user-id-badge" id="userIdBadge">ID: N/A</div>
+    </div>
+
+    <!-- Contracts section -->
+    <div class="contracts-section">
+        <div class="contracts-header">
+            <div class="contracts-title">
+                <h2>Contratos</h2>
+                <span class="contracts-count" id="totalContracts">0 Contratos</span>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="contracts-filters">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-filter="all">Todos</button>
+                <button class="tab-btn" data-filter="activado">Activados</button>
+                <button class="tab-btn" data-filter="tramitado">Tramitados</button>
+            </div>
+            <div class="search-filters">
+                <div class="search-input">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar por cliente, CUPS, ID...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="contracts-table-container">
+            <table class="contracts-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Estado</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                        <th>CUPS</th>
+                        <th>Consumo</th>
+                        <th>Tarifa</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="contractsTableBody">
+                    <tr>
+                        <td colspan="9" class="empty-state">Cargando contratos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Contract Detail Modal -->
+    <div id="contractDetailModal" class="contract-detail-modal">
+        <div class="contract-detail-overlay" onclick="window.TunergiaUI && window.TunergiaUI.closeContractDetail()"></div>
+        <div class="contract-detail-container">
+            <div class="contract-detail-header">
+                <button class="back-btn" id="closeContractDetailBtn" onclick="window.TunergiaUI && window.TunergiaUI.closeContractDetail()">
+                    ← Volver
+                </button>
+                <div class="contract-id-badge" id="modalContractId">ID: -</div>
+            </div>
+            <div id="contractDetailLoading" class="contract-detail-loading">
+                <div class="loading-spinner"></div>
+                <p>Cargando detalles...</p>
+            </div>
+            <div id="contractDetailError" class="contract-detail-error">
+                <span>⚠️</span>
+                <p id="contractDetailErrorText">Error al cargar</p>
+            </div>
+            <div id="contractDetailContent" class="contract-detail-content">
+                <p style="padding: 20px; text-align: center; color: #718096;">
+                    Los detalles del contrato se mostrarán aquí
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load JavaScript modules from LOCAL src folder -->
+<!-- IMPORTANT: Load in this exact order! -->
+<script src="src/config.js"></script>
+<script src="src/state.js"></script>
+<script src="src/utils.js"></script>
+<script src="src/api.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/main.js"></script>
+
+<script>
+// Add some debugging
+console.log('=== TUNERGIA LOADING CHECK ===');
+console.log('1. Config loaded:', typeof window.TunergiaConfig !== 'undefined');
+console.log('2. State loaded:', typeof window.TunergiaState !== 'undefined');
+console.log('3. Utils loaded:', typeof window.TunergiaUtils !== 'undefined');
+console.log('4. API loaded:', typeof window.TunergiaAPI !== 'undefined');
+console.log('5. UI loaded:', typeof window.TunergiaUI !== 'undefined');
+console.log('==============================');
+</script>
+
+</body>
+</html>

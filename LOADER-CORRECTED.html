@@ -1,0 +1,138 @@
+<!--
+   TUNERGIA INTERFACE LOADER - CORRECTED VERSION
+   ==============================================
+   Paste this into your Odoo website/HTML field or local test file.
+
+   IMPORTANT: Make sure your GitHub repository is PUBLIC for CDN to work!
+-->
+
+<div id="tunergiaApp" class="tunergia-dashboard">
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="loading-overlay active">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Cargando Tunergia...</div>
+    </div>
+
+    <!-- Error banner -->
+    <div id="errorBanner" class="error-banner">
+        <span class="error-icon">⚠️</span>
+        <span class="error-text" id="errorBannerText"></span>
+    </div>
+
+    <!-- User banner -->
+    <div class="user-banner">
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">TU</div>
+            <div class="user-details">
+                <h3><span id="welcomeName">Bienvenido</span>, <span id="userName">Usuario</span></h3>
+                <p id="userEmail">email@example.com</p>
+            </div>
+        </div>
+        <div class="user-id-badge" id="userIdBadge">ID: N/A</div>
+    </div>
+
+    <!-- Contracts section -->
+    <div class="contracts-section">
+        <div class="contracts-header">
+            <div class="contracts-title">
+                <h2>Contratos</h2>
+                <span class="contracts-count" id="totalContracts">0 Contratos</span>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <div class="contracts-filters">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-filter="all">Todos</button>
+                <button class="tab-btn" data-filter="activado">Activados</button>
+                <button class="tab-btn" data-filter="tramitado">Tramitados</button>
+            </div>
+            <div class="search-filters">
+                <div class="search-input">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar por cliente, CUPS, ID...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="contracts-table-container">
+            <table class="contracts-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Estado</th>
+                        <th>Tipo</th>
+                        <th>Fecha</th>
+                        <th>CUPS</th>
+                        <th>Consumo</th>
+                        <th>Tarifa</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="contractsTableBody">
+                    <tr>
+                        <td colspan="9" class="empty-state">Cargando contratos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Contract Detail Modal -->
+    <div id="contractDetailModal" class="contract-detail-modal">
+        <div class="contract-detail-overlay" onclick="window.TunergiaUI && window.TunergiaUI.closeContractDetail()"></div>
+        <div class="contract-detail-container">
+            <div class="contract-detail-header">
+                <button class="back-btn" id="closeContractDetailBtn" onclick="window.TunergiaUI && window.TunergiaUI.closeContractDetail()">
+                    ← Volver
+                </button>
+                <div class="contract-id-badge" id="modalContractId">ID: -</div>
+                <button class="action-btn primary" id="renovarContractBtn" style="display: none;">
+                    🔄 RENOVAR
+                </button>
+            </div>
+            <div id="contractDetailLoading" class="contract-detail-loading">
+                <div class="loading-spinner"></div>
+                <p>Cargando detalles...</p>
+            </div>
+            <div id="contractDetailError" class="contract-detail-error">
+                <span>⚠️</span>
+                <p id="contractDetailErrorText">Error al cargar</p>
+            </div>
+            <div id="contractDetailContent" class="contract-detail-content">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load CSS from GitHub via jsDelivr CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability-UKPeH/src/styles.css">
+
+<!-- Load JavaScript modules from GitHub via jsDelivr CDN -->
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability-UKPeH/src/config.js?v=1.0.1"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability-UKPeH/src/state.js?v=1.0.1"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability-UKPeH/src/utils.js?v=1.0.1"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability-UKPeH/src/api.js?v=1.0.1"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability-UKPeH/src/ui.js?v=1.0.1"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability-UKPeH/src/main.js?v=1.0.1"></script>
+
+<!--
+   ✅ CORRECTED VERSION
+   - Uses correct branch: claude/enhance-interface-usability-UKPeH
+   - Includes minimal HTML structure
+   - Version bumped to 1.0.1
+
+   ⚠️ IMPORTANT: Your repo must be PUBLIC for jsDelivr to work!
+   Check: https://github.com/pedrokrug/comparador_ui/settings
+
+   🧪 TEST URLS:
+   Try opening these URLs directly in your browser to verify they load:
+   https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability-UKPeH/src/config.js
+   https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability-UKPeH/src/styles.css
+
+   If they show "Package not found" = Repository is private
+   If they show JavaScript code = Working correctly!
+-->
