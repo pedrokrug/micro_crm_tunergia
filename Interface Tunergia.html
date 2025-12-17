@@ -3591,7 +3591,8 @@
                         concepto: data.concepto || '',
                         cnae: data.cnae_actividad || '9820',
                         observaciones: data.observaciones || 'Contrato generado desde Tunerface',
-                        tipo_contratacion: data.tipo_contratacion || ''
+                        tipo_contratacion: data.tipo_contratacion || '',
+                        comercial: state.idComercial
                     };
 
                     // Send to crear-contrato-nodo webhook
