@@ -1,0 +1,55 @@
+<!--
+   TUNERGIA INTERFACE LOADER
+   ==========================
+   Paste this ONCE into your Odoo website/HTML field.
+   All code updates will happen automatically via GitHub.
+
+   How it works:
+   - Uses jsDeliv CDN to load files from GitHub
+   - Change @main to @your-branch to load from specific branch
+   - Automatic caching with version updates
+-->
+
+<!-- Container for the dashboard -->
+<div id="tunergiaApp"></div>
+
+<!-- Load CSS from GitHub via jsDelivr CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability/src/styles.css">
+
+<!-- Load JavaScript modules from GitHub via jsDeliv CDN -->
+<!-- The '?v=1.0.0' is a cache buster - increment to force reload after updates -->
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability/src/config.js?v=1.0.0"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability/src/state.js?v=1.0.0"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability/src/utils.js?v=1.0.0"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability/src/api.js?v=1.0.0"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability/src/ui.js?v=1.0.0"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/comparador_ui@claude/enhance-interface-usability/src/main.js?v=1.0.0"></script>
+
+<!--
+   ✨ HOW TO UPDATE CODE ✨
+
+   1. Edit files in /src/ directory in GitHub
+   2. Commit and push to branch: claude/enhance-interface-usability
+   3. Wait ~5 minutes for jsDelivr CDN to refresh
+   4. (Optional) Increment ?v=X.X.X version number above to force immediate reload
+   5. Refresh your Odoo page - new code loads automatically!
+
+   📁 FILE STRUCTURE:
+   /src/config.js  - Configuration constants (webhooks, tables)
+   /src/state.js   - Application state management
+   /src/utils.js   - Utility functions (matching, parsing, formatting)
+   /src/api.js     - API calls (BigQuery, NODO, SIPS, Odoo)
+   /src/ui.js      - UI rendering and DOM manipulation
+   /src/main.js    - Main application initialization
+   /src/styles.css - All styling
+
+   🔄 CACHE CONTROL:
+   - jsDelivr caches for 7 days by default
+   - Increment ?v= version to bypass cache immediately
+   - Or use specific commit: @commit-hash instead of @branch-name
+
+   🌐 CDN ALTERNATIVES:
+   If jsDelivr is slow, you can use:
+   - GitHub Raw (no caching): https://raw.githubusercontent.com/user/repo/branch/file.js
+   - Your own server: https://tunuevaenergia.com/static/tunergia/file.js
+-->
