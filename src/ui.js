@@ -197,13 +197,28 @@ window.TunergiaUI = {
         const totalPages = Math.ceil(window.getState('filteredContracts').length / window.TunergiaConfig.itemsPerPage);
         const currentPage = window.getState('currentPage');
 
-        document.getElementById('paginationInfo').textContent = `${currentPage} of ${totalPages || 1}`;
-        document.getElementById('prevPage').disabled = currentPage <= 1;
-        document.getElementById('nextPage').disabled = currentPage >= totalPages;
+        const paginationInfo = document.getElementById('paginationInfo');
+        const prevPage = document.getElementById('prevPage');
+        const nextPage = document.getElementById('nextPage');
+        const loadedInfo = document.getElementById('loadedInfo');
+        const pagination = document.getElementById('pagination');
+
+        if (!paginationInfo || !prevPage || !nextPage || !loadedInfo) {
+            console.error('⚠️ Pagination elements not found in DOM. Required IDs: paginationInfo, prevPage, nextPage, loadedInfo');
+            return;
+        }
+
+        paginationInfo.textContent = `${currentPage} of ${totalPages || 1}`;
+        prevPage.disabled = currentPage <= 1;
+        nextPage.disabled = currentPage >= totalPages;
 
         const startIndex = (currentPage - 1) * window.TunergiaConfig.itemsPerPage;
         const endIndex = Math.min(startIndex + window.TunergiaConfig.itemsPerPage, window.getState('filteredContracts').length);
-        document.getElementById('loadedInfo').textContent = `Mostrando ${startIndex + 1}-${endIndex} de ${window.getState('filteredContracts').length}`;
+        loadedInfo.textContent = `Mostrando ${startIndex + 1}-${endIndex} de ${window.getState('filteredContracts').length}`;
+
+        if (pagination) pagination.style.display = 'flex';
+
+        console.log('✅ Pagination updated:', { currentPage, totalPages, showing: `${startIndex + 1}-${endIndex}` });
     },
 
     /**
@@ -214,9 +229,15 @@ window.TunergiaUI = {
         const table = document.querySelector('.contracts-table');
         const pagination = document.getElementById('pagination');
 
+        if (!emptyState) {
+            console.error('⚠️ Empty state element not found. Required ID: emptyState');
+        }
+
         if (emptyState) emptyState.style.display = show ? 'block' : 'none';
         if (table) table.style.display = show ? 'none' : 'table';
         if (pagination) pagination.style.display = show ? 'none' : 'flex';
+
+        console.log('✅ Empty state:', show ? 'shown' : 'hidden');
     },
 
     /**
@@ -229,6 +250,11 @@ window.TunergiaUI = {
         const selectedCountSpan = document.getElementById('selectedCount');
         const exportBtn = document.getElementById('exportBtn');
         const selectAllCheckbox = document.getElementById('selectAll');
+
+        if (!selectionInfo || !exportBtn) {
+            console.error('⚠️ Selection elements not found. Required IDs: selectionInfo, exportBtn');
+            return;
+        }
 
         if (selectedCount > 0) {
             if (selectionInfo) selectionInfo.style.display = 'flex';
@@ -250,16 +276,25 @@ window.TunergiaUI = {
             selectAllCheckbox.checked = selectedCount === allCheckboxes.length;
             selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < allCheckboxes.length;
         }
+
+        console.log('✅ Selection updated:', { selectedCount, total: allCheckboxes.length });
     },
 
     /**
      * Render contracts table
      */
     renderContractsTable() {
+        console.log('🎨 renderContractsTable called');
+
         const tbody = document.getElementById('contractsTableBody');
         const allContracts = window.getState('filteredContracts');
 
-        if (!tbody) return;
+        if (!tbody) {
+            console.error('⚠️ Table body not found. Required ID: contractsTableBody');
+            return;
+        }
+
+        console.log('📊 Contracts to render:', allContracts?.length || 0);
 
         if (!allContracts || allContracts.length === 0) {
             tbody.innerHTML = `
@@ -283,6 +318,8 @@ window.TunergiaUI = {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         const contracts = allContracts.slice(startIndex, endIndex);
+
+        console.log('📄 Rendering page:', { currentPage, itemsPerPage, showing: contracts.length, total: allContracts.length });
 
         const escapeHtml = window.TunergiaUtils.escapeHtml;
         const getStatusClass = window.TunergiaUtils.getStatusClass;
@@ -338,12 +375,16 @@ window.TunergiaUI = {
         });
 
         // Add checkbox change handlers
-        tbody.querySelectorAll('.row-checkbox').forEach(checkbox => {
+        const checkboxes = tbody.querySelectorAll('.row-checkbox');
+        console.log('✅ Adding checkbox listeners to', checkboxes.length, 'rows');
+        checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', () => this.updateSelectionInfo());
         });
 
         // Update pagination display
         this.updatePagination();
+
+        console.log('✅ Table render complete');
     },
 
     /**
@@ -505,8 +546,12 @@ window.TunergiaUI = {
      * Setup all event listeners
      */
     setupEventListeners() {
+        console.log('🎧 Setting up event listeners...');
+
         // Date filter buttons
-        document.querySelectorAll('.filter-btn[data-days]').forEach(btn => {
+        const dateFilterBtns = document.querySelectorAll('.filter-btn[data-days]');
+        console.log('📅 Date filter buttons found:', dateFilterBtns.length);
+        dateFilterBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
                 document.querySelectorAll('.filter-btn[data-days]').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
@@ -542,17 +587,22 @@ window.TunergiaUI = {
         const prevPage = document.getElementById('prevPage');
         if (prevPage) {
             prevPage.addEventListener('click', () => {
+                console.log('⬅️ Previous page clicked');
                 const currentPage = window.getState('currentPage');
                 if (currentPage > 1) {
                     window.setState({ currentPage: currentPage - 1 });
                     this.renderContractsTable();
                 }
             });
+            console.log('✅ Previous page button listener added');
+        } else {
+            console.warn('⚠️ Previous page button not found (ID: prevPage)');
         }
 
         const nextPage = document.getElementById('nextPage');
         if (nextPage) {
             nextPage.addEventListener('click', () => {
+                console.log('➡️ Next page clicked');
                 const currentPage = window.getState('currentPage');
                 const totalPages = Math.ceil(window.getState('filteredContracts').length / window.TunergiaConfig.itemsPerPage);
                 if (currentPage < totalPages) {
@@ -560,23 +610,33 @@ window.TunergiaUI = {
                     this.renderContractsTable();
                 }
             });
+            console.log('✅ Next page button listener added');
+        } else {
+            console.warn('⚠️ Next page button not found (ID: nextPage)');
         }
 
         // Select all checkbox
         const selectAll = document.getElementById('selectAll');
         if (selectAll) {
             selectAll.addEventListener('change', (e) => {
+                console.log('☑️ Select all toggled:', e.target.checked);
                 document.querySelectorAll('.row-checkbox').forEach(cb => {
                     cb.checked = e.target.checked;
                 });
                 this.updateSelectionInfo();
             });
+            console.log('✅ Select all checkbox listener added');
+        } else {
+            console.warn('⚠️ Select all checkbox not found (ID: selectAll)');
         }
 
         // Sortable columns
-        document.querySelectorAll('.sortable').forEach(th => {
+        const sortableHeaders = document.querySelectorAll('.sortable');
+        console.log('🔽 Sortable headers found:', sortableHeaders.length);
+        sortableHeaders.forEach(th => {
             th.addEventListener('click', () => {
                 const column = th.dataset.sort;
+                console.log('🔽 Sort clicked:', column);
                 const currentColumn = window.getState('sortColumn');
                 const currentDirection = window.getState('sortDirection');
 
