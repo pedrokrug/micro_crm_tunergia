@@ -10,15 +10,15 @@
 <div class="tunergia-dashboard">
 
     <!-- Loading overlay -->
-    <div class="loading-overlay" id="dashboardLoading">
+    <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
         <p class="loading-text">Cargando datos del dashboard...</p>
     </div>
 
     <!-- Error banner -->
-    <div class="error-banner" id="dashboardError">
+    <div class="error-banner" id="errorBanner">
         <span class="error-icon">⚠️</span>
-        <span class="error-text" id="errorText">Ha ocurrido un error al cargar los datos.</span>
+        <span class="error-text" id="errorBannerText">Ha ocurrido un error al cargar los datos.</span>
     </div>
 
     <!-- User banner -->
@@ -213,7 +213,7 @@
                         <th>
                             <input type="checkbox" id="selectAllCheckbox" style="cursor: pointer;">
                         </th>
-                        <th class="sortable" data-column="id_contrato_nodo">
+                        <th class="sortable" data-column="id">
                             ID
                             <span class="sort-arrow">↕</span>
                         </th>
@@ -225,20 +225,23 @@
                             Estado
                             <span class="sort-arrow">↕</span>
                         </th>
-                        <th class="sortable" data-column="tipo_contrato">
+                        <th class="sortable" data-column="tipo">
                             Tipo
                             <span class="sort-arrow">↕</span>
                         </th>
+                        <th class="sortable" data-column="tarifa_acceso">
+                            Tarifa
+                            <span class="sort-arrow">↕</span>
+                        </th>
+                        <th class="sortable" data-column="consumo">
+                            Consumo
+                            <span class="sort-arrow">↕</span>
+                        </th>
+                        <th>CUPS</th>
                         <th class="sortable active desc" data-column="fecha">
                             Fecha
                             <span class="sort-arrow">↓</span>
                         </th>
-                        <th>CUPS</th>
-                        <th class="sortable" data-column="consumo_anual_kwh">
-                            Consumo
-                            <span class="sort-arrow">↕</span>
-                        </th>
-                        <th>Tarifa</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -289,15 +292,15 @@
 </div>
 
 <!-- Load CSS from GitHub via jsDelivr CDN -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/styles.css?v=1.0.4">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/styles.css?v=1.0.5">
 
 <!-- Load JavaScript modules from GitHub via jsDelivr CDN -->
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/config.js?v=1.0.4"></script>
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/state.js?v=1.0.4"></script>
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/utils.js?v=1.0.4"></script>
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/api.js?v=1.0.4"></script>
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/ui.js?v=1.0.4"></script>
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/main.js?v=1.0.4"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/config.js?v=1.0.5"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/state.js?v=1.0.5"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/utils.js?v=1.0.5"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/api.js?v=1.0.5"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/ui.js?v=1.0.5"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/main.js?v=1.0.5"></script>
 
 <!--
    ✅ COMPLETE VERSION - Matches original Interface Tunergia.html exactly
@@ -314,7 +317,7 @@
    - Pagination controls
 
    🔄 UPDATED: Repository name changed to micro_crm_tunergia
-   📦 Version: 1.0.4 (Dashboard statistics + clickable filters working!)
+   📦 Version: 1.0.5 (Fixed table headers + element IDs - UI fully working!)
 
    ⚠️ IMPORTANT: Your repo must be PUBLIC for jsDelivr to work!
    Check: https://github.com/pedrokrug/micro_crm_tunergia/settings
