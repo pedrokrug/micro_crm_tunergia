@@ -27,12 +27,17 @@ window.TunergiaAPI = {
 
         let data = [];
 
-        // Case 1: Response has 'data' array (aggregated by Code node)
-        if (result && result.data && Array.isArray(result.data)) {
+        // Case 1: Array with first item containing data property (current n8n format)
+        if (Array.isArray(result) && result.length > 0 && result[0] && result[0].data) {
+            console.log('Found array[0].data with', result[0].data.length, 'items');
+            data = result[0].data;
+        }
+        // Case 2: Response has 'data' array (aggregated by Code node)
+        else if (result && result.data && Array.isArray(result.data)) {
             console.log('Found result.data array with', result.data.length, 'items');
             data = result.data;
         }
-        // Case 2: Direct array of results
+        // Case 3: Direct array of results
         else if (Array.isArray(result)) {
             console.log('Direct array response with', result.length, 'items');
             // Check if items have .json property (n8n format)
@@ -42,7 +47,7 @@ window.TunergiaAPI = {
                 data = result;
             }
         }
-        // Case 3: Single object (fallback for old format)
+        // Case 4: Single object (fallback for old format)
         else if (result && typeof result === 'object') {
             console.log('Single object response (old format)');
             if (result.id || result.estado || result.cups || result.cliente || result.total) {

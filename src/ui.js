@@ -49,6 +49,148 @@ window.TunergiaUI = {
     },
 
     /**
+     * Update dashboard statistics
+     */
+    async updateStatistics() {
+        try {
+            // Get date ranges based on filter
+            const now = new Date();
+            const currentStart = new Date();
+            currentStart.setDate(now.getDate() - window.getState('dateFilter'));
+            const currentStartStr = currentStart.toISOString().split('T')[0];
+            const previousStart = new Date(currentStart);
+            previousStart.setDate(previousStart.getDate() - window.getState('dateFilter'));
+            const previousStartStr = previousStart.toISOString().split('T')[0];
+
+            console.log('Date ranges:', { currentStartStr, previousStartStr });
+
+            // Get stats data
+            const query = `
+                SELECT
+                    estado,
+                    fecha_activacion,
+                    fecha_cancelacion,
+                    consumo
+                FROM ${window.TunergiaConfig.bigQueryTable}
+                WHERE (borrado = 0 OR borrado IS NULL)
+                    AND id_comercial = '${window.getState('idComercial')}'
+            `;
+
+            const data = await window.TunergiaAPI.executeQuery(query);
+            console.log('Stats raw data count:', data.length);
+
+            // Process data
+            let tramitados = 0, kwhTramitados = 0;
+            let activadosCurrent = 0, kwhActivadosCurrent = 0;
+            let activadosPrevious = 0, kwhActivadosPrevious = 0;
+            let bajasCurrent = 0, kwhBajasCurrent = 0;
+            let bajasPrevious = 0, kwhBajasPrevious = 0;
+
+            const tramitacionEstados = ['TEMPORAL', 'PDTE', 'PENDIENTE', 'INCIDENCIA', 'TRAMITADO', 'VALIDADO', 'FIRMA', 'LISTO'];
+
+            data.forEach(row => {
+                const estado = (row.estado || '').toUpperCase();
+                const consumo = parseFloat(row.consumo) || 0;
+                const fechaActivacion = row.fecha_activacion || '';
+                const fechaCancelacion = row.fecha_cancelacion || '';
+
+                const hasActivacion = fechaActivacion && fechaActivacion !== '' && !fechaActivacion.startsWith('0000');
+                const hasCancelacion = fechaCancelacion && fechaCancelacion !== '' && !fechaCancelacion.startsWith('0000');
+
+                // EN TRAMITACIÓN
+                if (!hasActivacion && !hasCancelacion) {
+                    const isTramitacion = tramitacionEstados.some(e => estado.includes(e));
+                    if (isTramitacion) {
+                        tramitados++;
+                        kwhTramitados += consumo;
+                    }
+                }
+
+                // ACTIVADOS
+                if (hasActivacion && estado.includes('ACTIVADO')) {
+                    let activacionDate = fechaActivacion;
+                    if (fechaActivacion.includes('/')) {
+                        const parts = fechaActivacion.split('/');
+                        if (parts.length === 3) {
+                            activacionDate = parts[2] + '-' + parts[1].padStart(2, '0') + '-' + parts[0].padStart(2, '0');
+                        }
+                    }
+
+                    if (activacionDate >= currentStartStr) {
+                        activadosCurrent++;
+                        kwhActivadosCurrent += consumo;
+                    } else if (activacionDate >= previousStartStr && activacionDate < currentStartStr) {
+                        activadosPrevious++;
+                        kwhActivadosPrevious += consumo;
+                    }
+                }
+
+                // BAJAS
+                if (hasCancelacion) {
+                    let cancelacionDate = fechaCancelacion;
+                    if (fechaCancelacion.includes('/')) {
+                        const parts = fechaCancelacion.split('/');
+                        if (parts.length === 3) {
+                            cancelacionDate = parts[2] + '-' + parts[1].padStart(2, '0') + '-' + parts[0].padStart(2, '0');
+                        }
+                    }
+
+                    if (cancelacionDate >= currentStartStr) {
+                        bajasCurrent++;
+                        kwhBajasCurrent += consumo;
+                    } else if (cancelacionDate >= previousStartStr && cancelacionDate < currentStartStr) {
+                        bajasPrevious++;
+                        kwhBajasPrevious += consumo;
+                    }
+                }
+            });
+
+            // Calculate percentage changes
+            const calcChange = (current, previous) => {
+                if (previous === 0) return current > 0 ? 100 : 0;
+                return ((current - previous) / previous * 100).toFixed(1);
+            };
+
+            const activadosChange = calcChange(activadosCurrent, activadosPrevious);
+            const kwhActivadosChange = calcChange(kwhActivadosCurrent, kwhActivadosPrevious);
+            const bajasChange = calcChange(bajasCurrent, bajasPrevious);
+            const kwhBajasChange = calcChange(kwhBajasCurrent, kwhBajasPrevious);
+
+            console.log('Stats calculated:', { tramitados, activadosCurrent, bajasCurrent });
+
+            // Update UI - Numbers
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+
+            setText('statTramitados', window.TunergiaUtils.formatNumber(tramitados));
+            setText('statActivados', window.TunergiaUtils.formatNumber(activadosCurrent));
+            setText('statBajas', window.TunergiaUtils.formatNumber(bajasCurrent));
+            setText('statKwhTramitacion', window.TunergiaUtils.formatLargeNumber(kwhTramitados));
+            setText('statKwhActivados', window.TunergiaUtils.formatLargeNumber(kwhActivadosCurrent));
+            setText('statKwhBajas', window.TunergiaUtils.formatLargeNumber(kwhBajasCurrent));
+
+            // Update comparison indicators
+            const updateChangeIndicator = (id, change, invertPositivity = false) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const isPositive = invertPositivity ? parseFloat(change) <= 0 : parseFloat(change) >= 0;
+                el.className = 'stat-change ' + (isPositive ? 'positive' : 'negative');
+                el.innerHTML = `<span class="change-icon">${parseFloat(change) >= 0 ? '↑' : '↓'}</span><span>${Math.abs(change)}% vs período anterior</span>`;
+            };
+
+            updateChangeIndicator('changeActivados', activadosChange);
+            updateChangeIndicator('changeKwhActivados', kwhActivadosChange);
+            updateChangeIndicator('changeBajas', bajasChange, true);
+            updateChangeIndicator('changeKwhBajas', kwhBajasChange, true);
+
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    },
+
+    /**
      * Render contracts table
      */
     renderContractsTable() {
@@ -259,6 +401,18 @@ window.TunergiaUI = {
      * Setup all event listeners
      */
     setupEventListeners() {
+        // Date filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+
+                const days = parseInt(e.target.dataset.days) || 30;
+                window.setState({ dateFilter: days });
+                await this.updateStatistics();
+            });
+        });
+
         // Search input
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
