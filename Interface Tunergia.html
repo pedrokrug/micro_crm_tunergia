@@ -2800,16 +2800,16 @@
             const tipoClienteValue = tipoClienteMap[tipoCliente] || tipoCliente;
 
             // Build query with filters
-            let query = `SELECT DISTINCT PRODUCTO, TARIFA, TIPO_CLIENTE FROM ${CONFIG.productosTable} WHERE COMPA____A = '${comercializadora}' AND TARIFA = '${tarifa}'`;
+            let query = `SELECT DISTINCT PRODUCTO, TARIFA, TIPO_DE_CLIENTE FROM ${CONFIG.productosTable} WHERE COMPA____A = '${comercializadora}' AND TARIFA = '${tarifa}'`;
 
             if (tipoCliente) {
-                // Handle multiple values in TIPO_CLIENTE field
+                // Handle multiple values in TIPO_DE_CLIENTE field
                 if (tipoClienteValue.includes(';')) {
                     const values = tipoClienteValue.split(';');
-                    const conditions = values.map(v => `TIPO_CLIENTE LIKE '%${v}%'`).join(' OR ');
+                    const conditions = values.map(v => `TIPO_DE_CLIENTE LIKE '%${v}%'`).join(' OR ');
                     query += ` AND (${conditions})`;
                 } else {
-                    query += ` AND (TIPO_CLIENTE = '${tipoClienteValue}' OR TIPO_CLIENTE = 'TODO')`;
+                    query += ` AND (TIPO_DE_CLIENTE = '${tipoClienteValue}' OR TIPO_DE_CLIENTE = 'TODO')`;
                 }
             }
 
