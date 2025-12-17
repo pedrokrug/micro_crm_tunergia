@@ -60,7 +60,7 @@ window.TunergiaUI = {
         if (!contracts || contracts.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="empty-state">
+                    <td colspan="10" class="empty-state">
                         <div class="empty-icon">📋</div>
                         <h3>No hay contratos</h3>
                         <p>No se encontraron contratos con los filtros aplicados</p>
@@ -70,29 +70,58 @@ window.TunergiaUI = {
             return;
         }
 
+        const escapeHtml = window.TunergiaUtils.escapeHtml;
+        const getStatusClass = window.TunergiaUtils.getStatusClass;
+        const formatNumber = window.TunergiaUtils.formatNumber;
+        const formatDate = window.TunergiaUtils.formatDate;
+
         tbody.innerHTML = contracts.map(contract => `
-            <tr>
+            <tr data-id="${contract.id || ''}">
+                <td class="checkbox-cell">
+                    <input type="checkbox" class="row-checkbox" data-id="${contract.id || ''}">
+                </td>
                 <td class="id-cell">${contract.id || '-'}</td>
                 <td class="name-cell">
                     <div class="client-info">
-                        <div class="client-name">${contract.cliente || '-'}</div>
+                        <div class="client-name">${escapeHtml(contract.cliente || 'Sin nombre')}</div>
+                        <div class="client-email">${escapeHtml(contract.poblacion || '')}</div>
                     </div>
                 </td>
                 <td class="status-cell">
-                    <span class="status-badge ${(contract.estado || 'default').toLowerCase()}">${contract.estado || '-'}</span>
+                    <span class="status-badge ${getStatusClass(contract.estado)}">
+                        ${escapeHtml((contract.estado || 'Sin estado').substring(0, 12))}${(contract.estado || '').length > 12 ? '...' : ''}
+                    </span>
                 </td>
-                <td class="comercializadora-cell">${contract.tipo || '-'}</td>
-                <td class="fecha-cell">${window.TunergiaUtils.formatDate(contract.fecha)}</td>
-                <td class="cups-cell"><span class="cups-code">${contract.cups || '-'}</span></td>
-                <td class="consumo-cell">${window.TunergiaUtils.formatNumber(contract.consumo || 0)}</td>
-                <td class="tarifa-cell"><span class="tarifa-badge">${contract.tarifa_acceso || '-'}</span></td>
+                <td class="comercializadora-cell" title="${escapeHtml(contract.tipo || '')}">${escapeHtml((contract.tipo || '-').substring(0, 10))}${(contract.tipo || '').length > 10 ? '...' : ''}</td>
+                <td class="tarifa-cell"><span class="tarifa-badge">${escapeHtml(contract.tarifa_acceso || '-')}</span></td>
+                <td class="consumo-cell">${contract.consumo ? formatNumber(parseFloat(contract.consumo)) : '-'}</td>
+                <td class="cups-cell"><span class="cups-code">${escapeHtml((contract.cups || '-').substring(0, 15))}...</span></td>
+                <td class="fecha-cell">${formatDate(contract.fecha)}</td>
                 <td class="action-cell">
-                    <button class="view-btn" onclick="window.TunergiaUI.openContractDetail(${contract.id})" title="Ver detalles">
-                        👁️
-                    </button>
+                    <button class="view-btn" title="Ver detalles" data-id="${contract.id}">👁️</button>
                 </td>
             </tr>
         `).join('');
+
+        // Add click handlers for view buttons
+        tbody.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = e.currentTarget.dataset.id;
+                this.openContractDetail(id);
+            });
+        });
+
+        // Add click handler for entire row
+        tbody.querySelectorAll('tr[data-id]').forEach(row => {
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', (e) => {
+                // Don't trigger if clicking checkbox or button
+                if (e.target.type === 'checkbox' || e.target.closest('.view-btn')) return;
+                const id = row.dataset.id;
+                if (id) this.openContractDetail(id);
+            });
+        });
     },
 
     /**

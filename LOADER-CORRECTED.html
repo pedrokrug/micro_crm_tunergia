@@ -1,0 +1,325 @@
+<!--
+   TUNERGIA INTERFACE LOADER - COMPLETE VERSION
+   ============================================
+   Paste this into your Odoo website/HTML field.
+
+   IMPORTANT: Repository has been renamed to micro_crm_tunergia
+   Make sure your GitHub repository is PUBLIC for CDN to work!
+-->
+
+<div class="tunergia-dashboard">
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="dashboardLoading">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Cargando datos del dashboard...</p>
+    </div>
+
+    <!-- Error banner -->
+    <div class="error-banner" id="dashboardError">
+        <span class="error-icon">⚠️</span>
+        <span class="error-text" id="errorText">Ha ocurrido un error al cargar los datos.</span>
+    </div>
+
+    <!-- User banner -->
+    <div class="user-banner" id="userBanner">
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">--</div>
+            <div class="user-details">
+                <h3 id="userName">Cargando...</h3>
+                <p id="userEmail">Cargando información del usuario...</p>
+            </div>
+        </div>
+        <div class="user-id-badge" id="userIdBadge">ID: ---</div>
+    </div>
+
+    <!-- Dashboard header -->
+    <div class="dashboard-header">
+        <div class="header-left">
+            <h1>Bienvenido, <span id="welcomeName">Usuario</span></h1>
+            <p>Gestiona tus contratos, centraliza tu información y haz comparativas</p>
+        </div>
+        <div class="header-right">
+            <div class="alert-badge">
+                <span class="alert-icon">⚡</span>
+                <span>¡Atención! Nuevas actualizaciones de precio disponibles</span>
+            </div>
+            <button class="notification-btn" title="Notificaciones">🔔</button>
+        </div>
+    </div>
+
+    <!-- Date filter buttons -->
+    <div class="date-filters">
+        <div class="filter-buttons">
+            <button class="filter-btn" data-days="365">12 meses</button>
+            <button class="filter-btn" data-days="180">6 meses</button>
+            <button class="filter-btn active" data-days="30">30 días</button>
+            <button class="filter-btn" data-days="7">7 días</button>
+        </div>
+        <span style="font-size: 12px; color: #718096;">← Filtro para estadísticas</span>
+    </div>
+
+    <!-- Stats grid - Row 1 -->
+    <div class="stats-grid" style="margin-bottom: 12px;">
+        <div class="stat-card centered">
+            <div class="stat-label">Contratos En Tramitación</div>
+            <div class="stat-value-centered">
+                <span id="statTramitados">--</span>
+            </div>
+            <div class="stat-change neutral" id="changeTramitados">
+                <span class="change-icon">⏳</span>
+                <span>pendientes actualmente</span>
+            </div>
+        </div>
+
+        <div class="stat-card centered">
+            <div class="stat-label">Contratos Activados</div>
+            <div class="stat-value-centered">
+                <span id="statActivados">--</span>
+            </div>
+            <div class="stat-change positive" id="changeActivados">
+                <span class="change-icon">↑</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+
+        <div class="stat-card centered">
+            <div class="stat-label">Contratos Bajas</div>
+            <div class="stat-value-centered">
+                <span id="statBajas">--</span>
+            </div>
+            <div class="stat-change negative" id="changeBajas">
+                <span class="change-icon">↓</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats grid - Row 2 -->
+    <div class="stats-grid">
+        <div class="stat-card centered">
+            <div class="stat-label">kWh En Tramitación</div>
+            <div class="stat-value-centered">
+                <span id="statKwhTramitacion">--</span>
+            </div>
+            <div class="stat-change neutral" id="changeKwhTramitacion">
+                <span class="change-icon">⏳</span>
+                <span>pendiente</span>
+            </div>
+        </div>
+
+        <div class="stat-card centered">
+            <div class="stat-label">kWh Activados</div>
+            <div class="stat-value-centered">
+                <span id="statKwhActivados">--</span>
+            </div>
+            <div class="stat-change positive" id="changeKwhActivados">
+                <span class="change-icon">⚡</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+
+        <div class="stat-card centered">
+            <div class="stat-label">kWh Bajas</div>
+            <div class="stat-value-centered">
+                <span id="statKwhBajas">--</span>
+            </div>
+            <div class="stat-change negative" id="changeKwhBajas">
+                <span class="change-icon">↓</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contracts section -->
+    <div class="contracts-section">
+        <div class="contracts-header">
+            <div class="contracts-title">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <h2>Todos tus Contratos</h2>
+                        <span class="contracts-count" id="totalContracts">0 Contratos</span>
+                        <span class="contracts-count" id="filteredCount" style="display: none; background: #fef3c7; color: #92400e;"></span>
+                    </div>
+                    <p>Listado completo de tus clientes y contratos.</p>
+                </div>
+            </div>
+            <div class="contracts-actions">
+                <div id="selectionInfo" style="display: none; align-items: center; gap: 8px; padding: 8px 12px; background: #ebf8ff; border-radius: 6px; margin-right: 8px;">
+                    <span id="selectedCount" style="font-weight: 600; color: #2b6cb0;">0 seleccionados</span>
+                    <button id="selectAllContracts" class="action-btn" style="padding: 4px 8px; font-size: 11px; display: none;">
+                        Seleccionar todos los <span id="selectAllCount">0</span> contratos
+                    </button>
+                </div>
+                <button class="action-btn" id="exportBtn" disabled title="Selecciona contratos para exportar">
+                    <span>📤</span> Exportar
+                </button>
+                <button class="action-btn primary" id="createBtn">
+                    <span>+</span> Crear Contrato
+                </button>
+            </div>
+        </div>
+
+        <!-- List date filter -->
+        <div class="list-date-filter" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px 16px; background: #f7fafc; border-radius: 8px; flex-wrap: wrap;">
+            <span style="font-size: 13px; font-weight: 600; color: #4a5568;">📅 Filtrar por fecha:</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 12px; color: #718096;">Desde</label>
+                <input type="date" id="listDateFrom" style="padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 12px; color: #718096;">Hasta</label>
+                <input type="date" id="listDateTo" style="padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px;">
+            </div>
+            <button id="applyDateFilter" class="action-btn" style="padding: 6px 12px; font-size: 12px;">Aplicar</button>
+            <button id="clearDateFilter" class="action-btn" style="padding: 6px 12px; font-size: 12px;">Limpiar</button>
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 12px; color: #718096;">Ver</label>
+                <select id="itemsPerPage" style="padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px;">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <span style="font-size: 12px; color: #718096;">por página</span>
+            </div>
+        </div>
+
+        <!-- Tab filters -->
+        <div class="contracts-filters">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-filter="all">Todos</button>
+                <button class="tab-btn" data-filter="tramitado">En Tramitación</button>
+                <button class="tab-btn" data-filter="oportunidad">Oportunidad</button>
+                <button class="tab-btn" data-filter="activado">Activados</button>
+                <button class="tab-btn" data-filter="baja">Bajas</button>
+            </div>
+            <div class="search-filters">
+                <div class="search-input">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar cliente, CUPS, comercializadora...">
+                </div>
+                <button class="filters-btn">
+                    <span>☰</span> Filtros
+                </button>
+            </div>
+        </div>
+
+        <!-- Contracts table -->
+        <div class="contracts-table-container">
+            <table class="contracts-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="selectAllCheckbox" style="cursor: pointer;">
+                        </th>
+                        <th class="sortable" data-column="id_contrato_nodo">
+                            ID
+                            <span class="sort-arrow">↕</span>
+                        </th>
+                        <th class="sortable" data-column="cliente">
+                            Cliente
+                            <span class="sort-arrow">↕</span>
+                        </th>
+                        <th class="sortable" data-column="estado">
+                            Estado
+                            <span class="sort-arrow">↕</span>
+                        </th>
+                        <th class="sortable" data-column="tipo_contrato">
+                            Tipo
+                            <span class="sort-arrow">↕</span>
+                        </th>
+                        <th class="sortable active desc" data-column="fecha">
+                            Fecha
+                            <span class="sort-arrow">↓</span>
+                        </th>
+                        <th>CUPS</th>
+                        <th class="sortable" data-column="consumo_anual_kwh">
+                            Consumo
+                            <span class="sort-arrow">↕</span>
+                        </th>
+                        <th>Tarifa</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="contractsTableBody">
+                    <tr>
+                        <td colspan="10" class="empty-state">Cargando contratos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="paginationControls" style="display: none;">
+            <button class="pagination-btn" id="prevPage" disabled>← Anterior</button>
+            <div class="pagination-info">
+                Página <span id="currentPage">1</span> de <span id="totalPages">1</span>
+            </div>
+            <button class="pagination-btn" id="nextPage">Siguiente →</button>
+        </div>
+    </div>
+
+    <!-- Contract Detail Modal -->
+    <div id="contractDetailModal" class="contract-detail-modal">
+        <div class="contract-detail-overlay" onclick="window.TunergiaUI && window.TunergiaUI.closeContractDetail()"></div>
+        <div class="contract-detail-container">
+            <div class="contract-detail-header">
+                <button class="back-btn" id="closeContractDetailBtn" onclick="window.TunergiaUI && window.TunergiaUI.closeContractDetail()">
+                    ← Volver
+                </button>
+                <div class="contract-id-badge" id="modalContractId">ID: -</div>
+                <button class="action-btn primary" id="renovarContractBtn" style="display: none;">
+                    🔄 RENOVAR
+                </button>
+            </div>
+            <div id="contractDetailLoading" class="contract-detail-loading">
+                <div class="loading-spinner"></div>
+                <p>Cargando detalles...</p>
+            </div>
+            <div id="contractDetailError" class="contract-detail-error">
+                <span>⚠️</span>
+                <p id="contractDetailErrorText">Error al cargar</p>
+            </div>
+            <div id="contractDetailContent" class="contract-detail-content">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load CSS from GitHub via jsDelivr CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/styles.css?v=1.0.3">
+
+<!-- Load JavaScript modules from GitHub via jsDelivr CDN -->
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/config.js?v=1.0.3"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/state.js?v=1.0.3"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/utils.js?v=1.0.3"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/api.js?v=1.0.3"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/ui.js?v=1.0.3"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/main.js?v=1.0.3"></script>
+
+<!--
+   ✅ COMPLETE VERSION - Matches original Interface Tunergia.html exactly
+
+   Includes all elements:
+   - Dashboard header with welcome message
+   - Date filter buttons (12 months, 6 months, 30 days, 7 days)
+   - 6 statistics cards (Contratos & kWh)
+   - List date filter with date range picker
+   - Complete tab filters (Todos, En Tramitación, Oportunidad, Activados, Bajas)
+   - Export button and selection controls
+   - Items per page selector
+   - Sortable table headers with checkbox column
+   - Pagination controls
+
+   🔄 UPDATED: Repository name changed to micro_crm_tunergia
+   📦 Version: 1.0.3 (Fixed data display issues)
+
+   ⚠️ IMPORTANT: Your repo must be PUBLIC for jsDelivr to work!
+   Check: https://github.com/pedrokrug/micro_crm_tunergia/settings
+
+   🧪 TEST URLS:
+   https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/config.js
+   https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/styles.css
+-->

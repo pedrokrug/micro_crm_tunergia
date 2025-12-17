@@ -123,6 +123,33 @@ window.TunergiaUtils = {
             'CCPP': 'CCPP'
         };
         return typeMapping[tipoEmpresa] || 'Residencial';
+    },
+
+    /**
+     * Escape HTML to prevent XSS
+     */
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+
+    /**
+     * Get CSS class for contract status badge
+     */
+    getStatusClass(estado) {
+        if (!estado) return 'default';
+        const estadoUpper = estado.toUpperCase();
+
+        if (estadoUpper.includes('ACTIVADO')) return 'activado';
+        if (estadoUpper.includes('BAJA') || estadoUpper.includes('CANCELADO')) return 'baja';
+        if (estadoUpper.includes('OPORTUNIDAD')) return 'oportunidad';
+        if (estadoUpper.includes('TRAMITADO') || estadoUpper.includes('PENDIENTE') ||
+            estadoUpper.includes('VALIDADO') || estadoUpper.includes('TEMPORAL') ||
+            estadoUpper.includes('FIRMA') || estadoUpper.includes('LISTO')) return 'tramitado';
+
+        return 'default';
     }
 };
 
