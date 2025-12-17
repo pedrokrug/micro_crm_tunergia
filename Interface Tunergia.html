@@ -1,0 +1,3630 @@
+<style>
+.tunergia-dashboard {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.tunergia-dashboard * {
+    box-sizing: border-box;
+}
+
+.tunergia-dashboard h1,
+.tunergia-dashboard h2,
+.tunergia-dashboard h3,
+.tunergia-dashboard h4,
+.tunergia-dashboard p {
+    text-indent: 0;
+    padding-left: 0;
+}
+
+/* Header Section */
+.tunergia-dashboard .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.tunergia-dashboard .header-left h1 {
+    margin: 0 0 8px 0;
+    padding: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a202c;
+    text-indent: 0;
+}
+
+.tunergia-dashboard .header-left p {
+    margin: 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+.tunergia-dashboard .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tunergia-dashboard .alert-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fffaf0;
+    border: 1px solid #f6ad55;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #c05621;
+}
+
+.tunergia-dashboard .alert-badge .alert-icon {
+    font-size: 16px;
+}
+
+.tunergia-dashboard .notification-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .notification-btn:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+}
+
+/* Date Filter Section */
+.tunergia-dashboard .date-filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.tunergia-dashboard .filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tunergia-dashboard .filter-btn {
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .filter-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tunergia-dashboard .filter-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.tunergia-dashboard .date-picker-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .date-picker-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+/* Stats Cards */
+.tunergia-dashboard .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.tunergia-dashboard .stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.tunergia-dashboard .stat-card .stat-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #718096;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tunergia-dashboard .stat-card .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tunergia-dashboard .stat-card .stat-chart {
+    width: 80px;
+    height: 40px;
+}
+
+.tunergia-dashboard .stat-card .stat-change {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tunergia-dashboard .stat-card .stat-change.positive {
+    color: #38a169;
+}
+
+.tunergia-dashboard .stat-card .stat-change.negative {
+    color: #e53e3e;
+}
+
+.tunergia-dashboard .stat-card .stat-change.neutral {
+    color: #718096;
+}
+
+.tunergia-dashboard .stat-card .stat-change .change-icon {
+    font-size: 12px;
+}
+
+.tunergia-dashboard .stat-card.centered {
+    text-align: center;
+}
+
+.tunergia-dashboard .stat-card .stat-value-centered {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 12px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tunergia-dashboard .stat-card.centered .stat-change {
+    justify-content: center;
+}
+
+/* Contracts Section */
+.tunergia-dashboard .contracts-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.tunergia-dashboard .contracts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.tunergia-dashboard .contracts-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tunergia-dashboard .contracts-title h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.tunergia-dashboard .contracts-count {
+    background: #edf2f7;
+    color: #4a5568;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tunergia-dashboard .contracts-title p {
+    margin: 4px 0 0 0;
+    color: #718096;
+    font-size: 13px;
+}
+
+.tunergia-dashboard .contracts-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.tunergia-dashboard .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .action-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tunergia-dashboard .action-btn.primary {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.tunergia-dashboard .action-btn.primary:hover {
+    background: #5a67d8;
+    border-color: #5a67d8;
+}
+
+.tunergia-dashboard .action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Tabs and Search */
+.tunergia-dashboard .contracts-filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 16px;
+}
+
+.tunergia-dashboard .tab-buttons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.tunergia-dashboard .tab-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #718096;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .tab-btn:hover {
+    background: #f7fafc;
+    color: #4a5568;
+}
+
+.tunergia-dashboard .tab-btn.active {
+    background: #edf2f7;
+    color: #1a202c;
+    font-weight: 600;
+}
+
+.tunergia-dashboard .search-filters {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.tunergia-dashboard .search-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    min-width: 200px;
+}
+
+.tunergia-dashboard .search-input input {
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: #1a202c;
+    width: 100%;
+    background: transparent;
+}
+
+.tunergia-dashboard .search-input input::placeholder {
+    color: #a0aec0;
+}
+
+.tunergia-dashboard .search-input .search-icon {
+    color: #a0aec0;
+    font-size: 14px;
+}
+
+.tunergia-dashboard .filters-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .filters-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+/* Table */
+.tunergia-dashboard .contracts-table-container {
+    overflow-x: auto;
+}
+
+.tunergia-dashboard .contracts-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.tunergia-dashboard .contracts-table thead {
+    background: #f7fafc;
+}
+
+.tunergia-dashboard .contracts-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.tunergia-dashboard .contracts-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.tunergia-dashboard .contracts-table th.sortable:hover {
+    color: #667eea;
+}
+
+.tunergia-dashboard .contracts-table th .sort-icon {
+    margin-left: 4px;
+    font-size: 10px;
+}
+
+.tunergia-dashboard .contracts-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #2d3748;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+
+.tunergia-dashboard .contracts-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.tunergia-dashboard .contracts-table tbody tr:hover {
+    background: #f7fafc;
+}
+
+.tunergia-dashboard .contracts-table .checkbox-cell {
+    width: 40px;
+}
+
+.tunergia-dashboard .contracts-table input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+/* Table column widths */
+.tunergia-dashboard .contracts-table {
+    table-layout: fixed;
+}
+
+.tunergia-dashboard .contracts-table .id-cell {
+    width: 60px;
+}
+
+.tunergia-dashboard .contracts-table .name-cell {
+    width: 140px;
+    overflow: hidden;
+}
+
+.tunergia-dashboard .contracts-table .status-cell {
+    width: 100px;
+}
+
+.tunergia-dashboard .contracts-table .comercializadora-cell {
+    width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tunergia-dashboard .contracts-table .tarifa-cell {
+    width: 60px;
+}
+
+.tunergia-dashboard .contracts-table .consumo-cell {
+    width: 70px;
+    text-align: right;
+}
+
+.tunergia-dashboard .contracts-table .cups-cell {
+    width: 130px;
+    overflow: hidden;
+}
+
+.tunergia-dashboard .contracts-table .fecha-cell {
+    width: 85px;
+}
+
+.tunergia-dashboard .contracts-table .action-cell {
+    width: 45px;
+    position: sticky;
+    right: 0;
+    background: white;
+}
+
+.tunergia-dashboard .contracts-table tbody tr:hover .action-cell {
+    background: #f7fafc;
+}
+
+.tunergia-dashboard .client-info .client-name {
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 2px;
+}
+
+.tunergia-dashboard .client-info .client-email {
+    font-size: 12px;
+    color: #718096;
+}
+
+.tunergia-dashboard .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.tunergia-dashboard .status-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.tunergia-dashboard .status-badge.activado {
+    background: #c6f6d5;
+    color: #22543d;
+}
+.tunergia-dashboard .status-badge.activado::before {
+    background: #38a169;
+}
+
+.tunergia-dashboard .status-badge.tramitado {
+    background: #bee3f8;
+    color: #2a4365;
+}
+.tunergia-dashboard .status-badge.tramitado::before {
+    background: #3182ce;
+}
+
+.tunergia-dashboard .status-badge.baja {
+    background: #fed7d7;
+    color: #742a2a;
+}
+.tunergia-dashboard .status-badge.baja::before {
+    background: #e53e3e;
+}
+
+.tunergia-dashboard .status-badge.incidencia {
+    background: #feebc8;
+    color: #744210;
+}
+.tunergia-dashboard .status-badge.incidencia::before {
+    background: #dd6b20;
+}
+
+.tunergia-dashboard .status-badge.temporal {
+    background: #e9d8fd;
+    color: #553c9a;
+}
+.tunergia-dashboard .status-badge.temporal::before {
+    background: #805ad5;
+}
+
+.tunergia-dashboard .status-badge.pdte-firma {
+    background: #faf089;
+    color: #744210;
+}
+.tunergia-dashboard .status-badge.pdte-firma::before {
+    background: #d69e2e;
+}
+
+.tunergia-dashboard .status-badge.ko {
+    background: #feb2b2;
+    color: #742a2a;
+}
+.tunergia-dashboard .status-badge.ko::before {
+    background: #c53030;
+}
+
+.tunergia-dashboard .status-badge.no-renovado {
+    background: #fed7aa;
+    color: #9a3412;
+}
+.tunergia-dashboard .status-badge.no-renovado::before {
+    background: #ea580c;
+}
+
+.tunergia-dashboard .status-badge.oportunidad {
+    background: #fef3c7;
+    color: #92400e;
+}
+.tunergia-dashboard .status-badge.oportunidad::before {
+    background: #f59e0b;
+}
+
+.tunergia-dashboard .status-badge.default {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+.tunergia-dashboard .status-badge.default::before {
+    background: #718096;
+}
+
+.tunergia-dashboard .cups-code {
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    color: #4a5568;
+    background: #f7fafc;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.tunergia-dashboard .tarifa-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: #553c9a;
+    background: #e9d8fd;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.tunergia-dashboard .action-cell {
+    width: 50px;
+    text-align: center;
+}
+
+.tunergia-dashboard .view-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #718096;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 18px;
+}
+
+.tunergia-dashboard .view-btn:hover {
+    background: #edf2f7;
+    color: #667eea;
+}
+
+.tunergia-dashboard .edit-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #718096;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .edit-btn:hover {
+    background: #edf2f7;
+    color: #667eea;
+}
+
+/* Pagination */
+.tunergia-dashboard .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.tunergia-dashboard .pagination-info {
+    font-size: 13px;
+    color: #718096;
+}
+
+.tunergia-dashboard .pagination-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.tunergia-dashboard .pagination-btn {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .pagination-btn:hover:not(:disabled) {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tunergia-dashboard .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Loading State */
+.tunergia-dashboard .loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.9);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.tunergia-dashboard .loading-overlay.active {
+    display: flex;
+}
+
+.tunergia-dashboard .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: dashboard-spin 0.8s linear infinite;
+}
+
+@keyframes dashboard-spin {
+    to { transform: rotate(360deg); }
+}
+
+.tunergia-dashboard .loading-text {
+    margin-top: 16px;
+    font-size: 14px;
+    color: #4a5568;
+}
+
+/* User Info Banner */
+.tunergia-dashboard .user-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tunergia-dashboard .user-banner .user-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.tunergia-dashboard .user-banner .user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.tunergia-dashboard .user-banner .user-details h3 {
+    margin: 0 0 4px 0;
+    padding: 0;
+    font-size: 16px;
+    font-weight: 600;
+    text-indent: 0;
+}
+
+.tunergia-dashboard .user-banner .user-details p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.tunergia-dashboard .user-banner .user-id-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Empty State */
+.tunergia-dashboard .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #718096;
+}
+
+.tunergia-dashboard .empty-state .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.tunergia-dashboard .empty-state h3 {
+    margin: 0 0 8px 0;
+    color: #4a5568;
+    font-size: 18px;
+}
+
+.tunergia-dashboard .empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Error State */
+.tunergia-dashboard .error-banner {
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-left: 4px solid #e53e3e;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: none;
+}
+
+.tunergia-dashboard .error-banner.active {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tunergia-dashboard .error-banner .error-icon {
+    font-size: 20px;
+}
+
+.tunergia-dashboard .error-banner .error-text {
+    color: #c53030;
+    font-size: 14px;
+}
+
+/* Mini chart SVG */
+.tunergia-dashboard .mini-chart {
+    width: 80px;
+    height: 40px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tunergia-dashboard {
+        padding: 12px;
+    }
+    
+    .tunergia-dashboard .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .tunergia-dashboard .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .tunergia-dashboard .stat-card .stat-value {
+        font-size: 24px;
+    }
+    
+    .tunergia-dashboard .contracts-filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .tunergia-dashboard .search-filters {
+        width: 100%;
+    }
+    
+    .tunergia-dashboard .search-input {
+        flex: 1;
+    }
+    
+    .tunergia-dashboard .user-banner {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .tunergia-dashboard .user-banner .user-info {
+        flex-direction: column;
+    }
+    
+    .tunergia-dashboard .list-date-filter {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .tunergia-dashboard .list-date-filter > div {
+        width: 100%;
+    }
+}
+
+/* Date inputs styling */
+.tunergia-dashboard input[type="date"] {
+    font-family: inherit;
+    color: #2d3748;
+    background: white;
+    cursor: pointer;
+}
+
+.tunergia-dashboard input[type="date"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tunergia-dashboard select {
+    font-family: inherit;
+    color: #2d3748;
+    background: white;
+    cursor: pointer;
+}
+
+.tunergia-dashboard select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Contract Detail Modal */
+.tunergia-dashboard .contract-detail-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+}
+
+.tunergia-dashboard .contract-detail-modal.active {
+    display: block;
+}
+
+.tunergia-dashboard .contract-detail-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.tunergia-dashboard .contract-detail-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 900px;
+    height: 100%;
+    background: #f8fafc;
+    overflow-y: auto;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.tunergia-dashboard .contract-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.tunergia-dashboard .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    color: #4a5568;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .back-btn:hover {
+    background: #f7fafc;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tunergia-dashboard .contract-id-badge {
+    background: #667eea;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.tunergia-dashboard .contract-detail-loading,
+.tunergia-dashboard .contract-detail-error {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.tunergia-dashboard .contract-detail-loading.active,
+.tunergia-dashboard .contract-detail-error.active {
+    display: flex;
+}
+
+.tunergia-dashboard .contract-detail-error {
+    color: #c53030;
+    gap: 12px;
+}
+
+.tunergia-dashboard .contract-detail-content {
+    display: none;
+    padding: 24px;
+}
+
+.tunergia-dashboard .contract-detail-content.active {
+    display: block;
+}
+
+/* Detail Tabs */
+.tunergia-dashboard .detail-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.tunergia-dashboard .detail-tab {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #718096;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .detail-tab:hover {
+    color: #4a5568;
+}
+
+.tunergia-dashboard .detail-tab.active {
+    background: white;
+    color: #1a202c;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tunergia-dashboard .detail-tab-content {
+    display: none;
+}
+
+.tunergia-dashboard .detail-tab-content.active {
+    display: block;
+}
+
+/* Detail Sections */
+.tunergia-dashboard .detail-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.tunergia-dashboard .detail-section h3 {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.tunergia-dashboard .detail-section h4 {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #667eea;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tunergia-dashboard .section-subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: #718096;
+}
+
+.tunergia-dashboard .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.tunergia-dashboard .detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tunergia-dashboard .detail-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.tunergia-dashboard .detail-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+}
+
+.tunergia-dashboard .field-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #2d3748;
+    min-height: 20px;
+}
+
+.tunergia-dashboard .field-icon {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.tunergia-dashboard .cups-value {
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    background: #edf2f7;
+}
+
+/* Consumo Table */
+.tunergia-dashboard .consumo-table-container {
+    overflow-x: auto;
+}
+
+.tunergia-dashboard .consumo-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+}
+
+.tunergia-dashboard .consumo-table th,
+.tunergia-dashboard .consumo-table td {
+    padding: 12px 16px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+}
+
+.tunergia-dashboard .consumo-table th {
+    background: #667eea;
+    color: white;
+    font-weight: 600;
+}
+
+.tunergia-dashboard .consumo-table th:first-child {
+    background: #f7fafc;
+    color: #4a5568;
+}
+
+.tunergia-dashboard .consumo-table .row-label {
+    text-align: left;
+    font-weight: 600;
+    color: #4a5568;
+    background: #f7fafc;
+}
+
+.tunergia-dashboard .consumo-summary {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.tunergia-dashboard .consumo-total {
+    background: #667eea;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.tunergia-dashboard .consumo-total .label {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.tunergia-dashboard .consumo-total .value {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Documents */
+.tunergia-dashboard .documents-info p {
+    margin: 0 0 16px 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+.tunergia-dashboard .documents-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tunergia-dashboard .document-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.tunergia-dashboard .document-icon {
+    width: 40px;
+    height: 40px;
+    background: #e53e3e;
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.tunergia-dashboard .document-icon.jpg {
+    background: #38a169;
+}
+
+.tunergia-dashboard .document-info {
+    flex: 1;
+}
+
+.tunergia-dashboard .document-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.tunergia-dashboard .document-size {
+    font-size: 12px;
+    color: #a0aec0;
+}
+
+.tunergia-dashboard .no-docs {
+    color: #a0aec0;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Observations */
+.tunergia-dashboard .observations-box {
+    padding: 16px;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #4a5568;
+    line-height: 1.6;
+    min-height: 80px;
+}
+
+/* History Timeline */
+.tunergia-dashboard .history-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.tunergia-dashboard .history-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e2e8f0;
+}
+
+.tunergia-dashboard .history-item {
+    position: relative;
+    padding: 16px 20px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.tunergia-dashboard .history-item::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    background: #667eea;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px #667eea;
+}
+
+.tunergia-dashboard .history-date {
+    font-size: 12px;
+    color: #a0aec0;
+    margin-bottom: 4px;
+}
+
+.tunergia-dashboard .history-action {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 4px;
+}
+
+.tunergia-dashboard .history-detail {
+    font-size: 13px;
+    color: #718096;
+}
+
+.tunergia-dashboard .history-user {
+    font-size: 12px;
+    color: #a0aec0;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+.tunergia-dashboard .no-history {
+    color: #a0aec0;
+    font-style: italic;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+/* Form inputs for create contract */
+.tunergia-dashboard .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.tunergia-dashboard .form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tunergia-dashboard .form-input.small {
+    padding: 6px 8px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.tunergia-dashboard .form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.tunergia-dashboard .form-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tunergia-dashboard .upload-area {
+    border: 2px dashed #e2e8f0;
+    border-radius: 8px;
+    padding: 32px 20px;
+    text-align: center;
+    background: #f7fafc;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .upload-area:hover {
+    border-color: #667eea;
+    background: #ebf4ff;
+}
+
+.tunergia-dashboard .upload-area .upload-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.tunergia-dashboard .consumo-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tunergia-dashboard .consumo-table th,
+.tunergia-dashboard .consumo-table td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+.tunergia-dashboard .consumo-table th {
+    background: #f7fafc;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.tunergia-dashboard .consumo-table td:first-child {
+    text-align: left;
+    background: #f7fafc;
+}
+
+/* Document download styling */
+.tunergia-dashboard .document-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .document-item:hover {
+    background: #ebf8ff;
+    transform: translateX(4px);
+}
+
+.tunergia-dashboard .document-item .download-icon {
+    margin-left: auto;
+    color: #667eea;
+    font-size: 16px;
+}
+</style>
+
+<div class="tunergia-dashboard">
+    
+    <div class="loading-overlay" id="dashboardLoading">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Cargando datos del dashboard...</p>
+    </div>
+    
+    
+    <div class="error-banner" id="dashboardError">
+        <span class="error-icon">⚠️</span>
+        <span class="error-text" id="errorText">Ha ocurrido un error al cargar los datos.</span>
+    </div>
+    
+    
+    <div class="user-banner" id="userBanner">
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">--</div>
+            <div class="user-details">
+                <h3 id="userName">Cargando...</h3>
+                <p id="userEmail">Cargando información del usuario...</p>
+            </div>
+        </div>
+        <div class="user-id-badge" id="userIdBadge">ID: ---</div>
+    </div>
+    
+    
+    <div class="dashboard-header">
+        <div class="header-left">
+            <h1>Bienvenido, <span id="welcomeName">Usuario</span></h1>
+            <p>Gestiona tus contratos, centraliza tu información y haz comparativas</p>
+        </div>
+        <div class="header-right">
+            <div class="alert-badge">
+                <span class="alert-icon">⚡</span>
+                <span>¡Atención! Nuevas actualizaciones de precio disponibles</span>
+            </div>
+            <button class="notification-btn" title="Notificaciones">🔔</button>
+        </div>
+    </div>
+    
+    
+    <div class="date-filters">
+        <div class="filter-buttons">
+            <button class="filter-btn" data-days="365">12 meses</button>
+            <button class="filter-btn" data-days="180">6 meses</button>
+            <button class="filter-btn active" data-days="30">30 días</button>
+            <button class="filter-btn" data-days="7">7 días</button>
+        </div>
+        <span style="font-size: 12px; color: #718096;">← Filtro para estadísticas</span>
+    </div>
+    
+    
+    <div class="stats-grid" style="margin-bottom: 12px;">
+        <div class="stat-card centered">
+            <div class="stat-label">Contratos En Tramitación</div>
+            <div class="stat-value-centered">
+                <span id="statTramitados">--</span>
+            </div>
+            <div class="stat-change neutral" id="changeTramitados">
+                <span class="change-icon">⏳</span>
+                <span>pendientes actualmente</span>
+            </div>
+        </div>
+        
+        <div class="stat-card centered">
+            <div class="stat-label">Contratos Activados</div>
+            <div class="stat-value-centered">
+                <span id="statActivados">--</span>
+            </div>
+            <div class="stat-change positive" id="changeActivados">
+                <span class="change-icon">↑</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+        
+        <div class="stat-card centered">
+            <div class="stat-label">Contratos Bajas</div>
+            <div class="stat-value-centered">
+                <span id="statBajas">--</span>
+            </div>
+            <div class="stat-change negative" id="changeBajas">
+                <span class="change-icon">↓</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="stats-grid">
+        <div class="stat-card centered">
+            <div class="stat-label">kWh En Tramitación</div>
+            <div class="stat-value-centered">
+                <span id="statKwhTramitacion">--</span>
+            </div>
+            <div class="stat-change neutral" id="changeKwhTramitacion">
+                <span class="change-icon">⏳</span>
+                <span>pendiente</span>
+            </div>
+        </div>
+        
+        <div class="stat-card centered">
+            <div class="stat-label">kWh Activados</div>
+            <div class="stat-value-centered">
+                <span id="statKwhActivados">--</span>
+            </div>
+            <div class="stat-change positive" id="changeKwhActivados">
+                <span class="change-icon">⚡</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+        
+        <div class="stat-card centered">
+            <div class="stat-label">kWh Bajas</div>
+            <div class="stat-value-centered">
+                <span id="statKwhBajas">--</span>
+            </div>
+            <div class="stat-change negative" id="changeKwhBajas">
+                <span class="change-icon">↓</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="contracts-section">
+        <div class="contracts-header">
+            <div class="contracts-title">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <h2>Todos tus Contratos</h2>
+                        <span class="contracts-count" id="totalContracts">0 Contratos</span>
+                        <span class="contracts-count" id="filteredCount" style="display: none; background: #fef3c7; color: #92400e;"></span>
+                    </div>
+                    <p>Listado completo de tus clientes y contratos.</p>
+                </div>
+            </div>
+            <div class="contracts-actions">
+                <div id="selectionInfo" style="display: none; align-items: center; gap: 8px; padding: 8px 12px; background: #ebf8ff; border-radius: 6px; margin-right: 8px;">
+                    <span id="selectedCount" style="font-weight: 600; color: #2b6cb0;">0 seleccionados</span>
+                    <button id="selectAllContracts" class="action-btn" style="padding: 4px 8px; font-size: 11px; display: none;">
+                        Seleccionar todos los <span id="selectAllCount">0</span> contratos
+                    </button>
+                </div>
+                <button class="action-btn" id="exportBtn" disabled="" title="Selecciona contratos para exportar">
+                    <span>📤</span> Exportar
+                </button>
+                <button class="action-btn primary" id="createBtn">
+                    <span>+</span> Crear Contrato
+                </button>
+            </div>
+        </div>
+        
+        
+        <div class="list-date-filter" style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px 16px; background: #f7fafc; border-radius: 8px; flex-wrap: wrap;">
+            <span style="font-size: 13px; font-weight: 600; color: #4a5568;">📅 Filtrar por fecha:</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 12px; color: #718096;">Desde</label>
+                <input type="date" id="listDateFrom" style="padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 12px; color: #718096;">Hasta</label>
+                <input type="date" id="listDateTo" style="padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px;">
+            </div>
+            <button id="applyDateFilter" class="action-btn" style="padding: 6px 12px; font-size: 12px;">Aplicar</button>
+            <button id="clearDateFilter" class="action-btn" style="padding: 6px 12px; font-size: 12px;">Limpiar</button>
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 12px; color: #718096;">Ver</label>
+                <select id="itemsPerPage" style="padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px;">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <span style="font-size: 12px; color: #718096;">por página</span>
+            </div>
+        </div>
+        
+        <div class="contracts-filters">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-filter="all">Todos</button>
+                <button class="tab-btn" data-filter="tramitado">En Tramitación</button>
+                <button class="tab-btn" data-filter="oportunidad">Oportunidad</button>
+                <button class="tab-btn" data-filter="activado">Activados</button>
+                <button class="tab-btn" data-filter="baja">Bajas</button>
+            </div>
+            <div class="search-filters">
+                <div class="search-input">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar cliente, CUPS, comercializadora...">
+                </div>
+                <button class="filters-btn">
+                    <span>☰</span> Filtros
+                </button>
+            </div>
+        </div>
+        
+        <div class="contracts-table-container">
+            <table class="contracts-table">
+                <thead>
+                    <tr>
+                        <th class="checkbox-cell"><input type="checkbox" id="selectAll"></th>
+                        <th class="sortable" data-sort="id">ID <span class="sort-icon">↕</span></th>
+                        <th class="sortable" data-sort="cliente">Nombre <span class="sort-icon">↕</span></th>
+                        <th class="sortable" data-sort="estado">Estado <span class="sort-icon">↕</span></th>
+                        <th class="sortable" data-sort="tipo">Comercializadora <span class="sort-icon">↕</span></th>
+                        <th>Tarifa</th>
+                        <th class="sortable" data-sort="consumo">Consumo <span class="sort-icon">↕</span></th>
+                        <th>CUPS</th>
+                        <th class="sortable" data-sort="fecha">Fecha Creación <span class="sort-icon">↕</span></th>
+                        <th class="action-cell"></th>
+                    </tr>
+                </thead>
+                <tbody id="contractsTableBody">
+                    
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">📋</div>
+            <h3>No hay contratos</h3>
+            <p>No se encontraron contratos para este comercial.</p>
+        </div>
+        
+        <div class="pagination" id="pagination">
+            <div class="pagination-info">
+                <span id="paginationInfo">1 of 1</span>
+                <span style="margin-left: 16px; color: #718096; font-size: 12px;" id="loadedInfo">Mostrando 0 de 0</span>
+            </div>
+            <div class="pagination-controls" style="display: flex; align-items: center; gap: 12px;">
+                <button class="pagination-btn" id="prevPage" disabled="">&lt;</button>
+                <button class="pagination-btn" id="nextPage">Avanzar</button>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="contract-detail-modal" id="contractDetailModal">
+        <div class="contract-detail-overlay" id="contractDetailOverlay"></div>
+        <div class="contract-detail-container">
+            <div class="contract-detail-header">
+                <button class="back-btn" id="backToListBtn">
+                    <span>←</span> Volver al listado
+                </button>
+                <div class="contract-id-badge" id="modalContractId">ID: ---</div>
+            </div>
+            
+            <div class="contract-detail-loading" id="contractDetailLoading">
+                <div class="loading-spinner"></div>
+                <p>Cargando datos del contrato...</p>
+            </div>
+            
+            <div class="contract-detail-error" id="contractDetailError">
+                <span>⚠️</span>
+                <span id="contractDetailErrorText">Error al cargar los datos</span>
+            </div>
+            
+            <div class="contract-detail-content" id="contractDetailContent">
+                
+                <div class="detail-tabs">
+                    <button class="detail-tab active" data-tab="cliente">Datos del Cliente</button>
+                    <button class="detail-tab" data-tab="historial">Historial</button>
+                </div>
+                
+                
+                <div class="detail-tab-content active" id="tabCliente">
+                    <div class="detail-section">
+                        <h3>Datos del Contrato</h3>
+                        <p class="section-subtitle">Información General, Documentos y Trámite de Contratación.</p>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Datos Personales</h4>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Nombre Completo</label>
+                                <div class="field-value" id="detailNombre">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Tipo de Cliente</label>
+                                <div class="field-value" id="detailTipoCliente">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Correo</label>
+                                <div class="field-value"><span class="field-icon">✉️</span> <span id="detailCorreo">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Móvil</label>
+                                <div class="field-value"><span class="field-icon">📱</span> <span id="detailMovil">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>DNI/CIF</label>
+                                <div class="field-value"><span class="field-icon">🪪</span> <span id="detailDNI">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>IBAN</label>
+                                <div class="field-value"><span class="field-icon">🏦</span> <span id="detailIBAN">-</span></div>
+                            </div>
+                            <div class="detail-field full-width">
+                                <label>Dirección Fiscal</label>
+                                <div class="field-value"><span class="field-icon">📍</span> <span id="detailDireccion">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Código Postal</label>
+                                <div class="field-value"><span class="field-icon">📮</span> <span id="detailCP">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Población</label>
+                                <div class="field-value"><span class="field-icon">🏘️</span> <span id="detailPoblacion">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Provincia</label>
+                                <div class="field-value"><span class="field-icon">🏛️</span> <span id="detailProvincia">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Datos de Suministro</h4>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Nombre Completo</label>
+                                <div class="field-value" id="detailNombreSuministro">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>DNI</label>
+                                <div class="field-value"><span class="field-icon">🪪</span> <span id="detailDNISuministro">-</span></div>
+                            </div>
+                            <div class="detail-field full-width">
+                                <label>Dirección</label>
+                                <div class="field-value"><span class="field-icon">📍</span> <span id="detailDireccionSuministro">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Población</label>
+                                <div class="field-value"><span class="field-icon">🏘️</span> <span id="detailPoblacionSuministro">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Código Postal</label>
+                                <div class="field-value"><span class="field-icon">📮</span> <span id="detailCPSuministro">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Provincia</label>
+                                <div class="field-value"><span class="field-icon">🏛️</span> <span id="detailProvinciaSuministro">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Comercializadora Saliente</label>
+                                <div class="field-value"><span class="field-icon">⚡</span> <span id="detailComercializadoraSaliente">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>CUPS</label>
+                                <div class="field-value cups-value"><span class="field-icon">🔌</span> <span id="detailCUPS">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Datos de Contratación</h4>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Comercializadora Elegida</label>
+                                <div class="field-value"><span class="field-icon">⚡</span> <span id="detailComercializadora">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Concepto</label>
+                                <div class="field-value"><span class="field-icon">📋</span> <span id="detailConcepto">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Seleccionar Tarifa</label>
+                                <div class="field-value" id="detailTarifa">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Tarifa de Acceso</label>
+                                <div class="field-value" id="detailTarifaAcceso">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Tipo de Contratación</label>
+                                <div class="field-value" id="detailTipoContratacion">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Código CNAE</label>
+                                <div class="field-value"><span class="field-icon">🏢</span> <span id="detailCNAE">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Firma Digital</label>
+                                <div class="field-value" id="detailFirmaDigital">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Factura Electrónica</label>
+                                <div class="field-value" id="detailFacturaElectronica">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Cambio de Comercializadora</label>
+                                <div class="field-value" id="detailCambioComercializadora">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Autoconsumo</label>
+                                <div class="field-value" id="detailAutoconsumo">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Futura Activación</label>
+                                <div class="field-value" id="detailFuturaActivacion">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Fecha de Activación</label>
+                                <div class="field-value"><span class="field-icon">📅</span> <span id="detailFechaActivacion">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Fecha de Cancelación</label>
+                                <div class="field-value"><span class="field-icon">📅</span> <span id="detailFechaCancelacion">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Comercial</label>
+                                <div class="field-value"><span class="field-icon">👤</span> <span id="detailComercial">-</span></div>
+                            </div>
+                            <div class="detail-field">
+                                <label>KAM</label>
+                                <div class="field-value"><span class="field-icon">👔</span> <span id="detailKAM">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Datos de Consumo</h4>
+                        <div class="consumo-table-container">
+                            <table class="consumo-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>P1</th>
+                                        <th>P2</th>
+                                        <th>P3</th>
+                                        <th>P4</th>
+                                        <th>P5</th>
+                                        <th>P6</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="row-label">Potencia Contratada (kW)</td>
+                                        <td id="detailPotP1">-</td>
+                                        <td id="detailPotP2">-</td>
+                                        <td id="detailPotP3">-</td>
+                                        <td id="detailPotP4">-</td>
+                                        <td id="detailPotP5">-</td>
+                                        <td id="detailPotP6">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="row-label">Consumo (kWh)</td>
+                                        <td id="detailConsP1">-</td>
+                                        <td id="detailConsP2">-</td>
+                                        <td id="detailConsP3">-</td>
+                                        <td id="detailConsP4">-</td>
+                                        <td id="detailConsP5">-</td>
+                                        <td id="detailConsP6">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="consumo-summary">
+                            <div class="consumo-total">
+                                <span class="label">Consumo Total Anual:</span>
+                                <span class="value" id="detailConsumoTotal">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Documentos</h4>
+                        <div class="documents-info">
+                            <p>Sube aquí todos los documentos <strong>obligatorios</strong> para la tramitación.</p>
+                            <div class="documents-list" id="detailDocumentos">
+                                <p class="no-docs">No hay documentos adjuntos</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Observaciones</h4>
+                        <div class="observations-box" id="detailObservaciones">
+                            Sin observaciones
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="detail-tab-content" id="tabHistorial">
+                    <div class="detail-section">
+                        <h3>Historial del Contrato</h3>
+                        <p class="section-subtitle">Registro de cambios y eventos del contrato.</p>
+                    </div>
+                    
+                    <div class="history-timeline" id="historyTimeline">
+                        <p class="no-history">Cargando historial...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    <div class="contract-detail-modal" id="createContractModal">
+        <div class="contract-detail-overlay" id="createContractOverlay"></div>
+        <div class="contract-detail-container">
+            <div class="contract-detail-header">
+                <button class="back-btn" id="backFromCreateBtn">
+                    <span>←</span> Volver al listado
+                </button>
+                <div class="contract-id-badge" style="background: #38a169;">
+                    <span>✨ Nuevo Contrato</span>
+                </div>
+            </div>
+            
+            <div class="contract-detail-content" style="display: block;">
+                <form id="createContractForm">
+                    
+                    <div class="detail-section">
+                        <h4>Datos Personales</h4>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Nombre Completo *</label>
+                                <input type="text" name="nombre_cliente" class="form-input" required="">
+                            </div>
+                            <div class="detail-field">
+                                <label>Tipo de Cliente</label>
+                                <select name="tipo_empresa" class="form-input">
+                                    <option value="PARTICULAR">Particular</option>
+                                    <option value="AUTONOMO">Autónomo</option>
+                                    <option value="EMPRESA">Empresa</option>
+                                </select>
+                            </div>
+                            <div class="detail-field">
+                                <label>Correo Electrónico *</label>
+                                <input type="email" name="email" class="form-input" required="">
+                            </div>
+                            <div class="detail-field">
+                                <label>Teléfono Móvil *</label>
+                                <input type="tel" name="movil" class="form-input" required="">
+                            </div>
+                            <div class="detail-field">
+                                <label>DNI/NIF/CIF *</label>
+                                <input type="text" name="nif" class="form-input" required="">
+                            </div>
+                            <div class="detail-field">
+                                <label>IBAN</label>
+                                <input type="text" name="iban_contrato" class="form-input" placeholder="ES00 0000 0000 0000 0000 0000">
+                            </div>
+                            <div class="detail-field full-width">
+                                <label>Dirección Fiscal</label>
+                                <input type="text" name="direccion" class="form-input">
+                            </div>
+                            <div class="detail-field">
+                                <label>Código Postal</label>
+                                <input type="text" name="cp" class="form-input" maxlength="5">
+                            </div>
+                            <div class="detail-field">
+                                <label>Población</label>
+                                <input type="text" name="poblacion" class="form-input">
+                            </div>
+                            <div class="detail-field">
+                                <label>Provincia</label>
+                                <input type="text" name="provincia" class="form-input">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Datos de Suministro</h4>
+                        <div class="detail-grid">
+                            <div class="detail-field full-width">
+                                <label><input type="checkbox" id="sameAsPersonal"> Mismos datos que titular</label>
+                            </div>
+                            <div class="detail-field">
+                                <label>Nombre Completo</label>
+                                <input type="text" name="persona_contacto" class="form-input">
+                            </div>
+                            <div class="detail-field">
+                                <label>DNI</label>
+                                <input type="text" name="persona_contacto_nif" class="form-input">
+                            </div>
+                            <div class="detail-field full-width">
+                                <label>Dirección de Suministro</label>
+                                <input type="text" name="direccion_suministro" class="form-input">
+                            </div>
+                            <div class="detail-field">
+                                <label>Código Postal</label>
+                                <input type="text" name="cp_suministro" class="form-input" maxlength="5">
+                            </div>
+                            <div class="detail-field">
+                                <label>Población</label>
+                                <input type="text" name="poblacion_suministro" class="form-input">
+                            </div>
+                            <div class="detail-field">
+                                <label>Provincia</label>
+                                <input type="text" name="provincia_suministro" class="form-input">
+                            </div>
+                            <div class="detail-field">
+                                <label>CUPS *</label>
+                                <input type="text" name="cups" class="form-input" required="" maxlength="22" placeholder="ES0000000000000000XX">
+                            </div>
+                            <div class="detail-field">
+                                <label>Comercializadora Saliente</label>
+                                <input type="text" name="comercializadora_saliente" class="form-input">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Datos de Contratación</h4>
+                        <div class="detail-grid">
+                            <div class="detail-field">
+                                <label>Comercializadora *</label>
+                                <select name="comercializadora" class="form-input" required="" id="createComercializadora">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="GANA_GAIAG">GANA ENERGÍA</option>
+                                    <option value="IGNIS_GAIAG">IGNIS ENERGÍA</option>
+                                    <option value="ALDRO_GAIAG">ALDRO ENERGÍA</option>
+                                </select>
+                            </div>
+                            <div class="detail-field">
+                                <label>Producto</label>
+                                <select name="concepto" class="form-input" id="createProducto" disabled="">
+                                    <option value="">Seleccionar comercializadora primero...</option>
+                                </select>
+                                <small style="color: #718096; font-size: 11px;">Se carga tras seleccionar comercializadora y tarifa</small>
+                            </div>
+                            <div class="detail-field">
+                                <label>Tarifa de Acceso *</label>
+                                <select name="tarifa_acceso" class="form-input" required="" id="createTarifaAcceso">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="2.0TD">2.0TD</option>
+                                    <option value="3.0TD">3.0TD</option>
+                                    <option value="6.1TD">6.1TD</option>
+                                </select>
+                            </div>
+                            <div class="detail-field">
+                                <label>Código CNAE</label>
+                                <input type="text" name="cnae_actividad" class="form-input">
+                            </div>
+                            <div class="detail-field">
+                                <label>Firma Digital</label>
+                                <select name="firma_digital" class="form-input">
+                                    <option value="0">No</option>
+                                    <option value="1">Sí</option>
+                                </select>
+                            </div>
+                            <div class="detail-field">
+                                <label>Factura Electrónica</label>
+                                <select name="fact_electronica" class="form-input">
+                                    <option value="">No</option>
+                                    <option value="SI">Sí</option>
+                                </select>
+                            </div>
+                            <div class="detail-field">
+                                <label>Autoconsumo</label>
+                                <select name="luz_autoconsumo" class="form-input">
+                                    <option value="">No</option>
+                                    <option value="SI">Sí</option>
+                                </select>
+                            </div>
+                            <div class="detail-field">
+                                <label>Tipo Contratación</label>
+                                <select name="tipo_contratacion" class="form-input">
+                                    <option value="">Nueva alta</option>
+                                    <option value="RENOVACION">Renovación</option>
+                                    <option value="CAMBIO">Cambio comercializadora</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Datos de Consumo</h4>
+                        <table class="consumo-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>P1</th>
+                                    <th>P2</th>
+                                    <th>P3</th>
+                                    <th>P4</th>
+                                    <th>P5</th>
+                                    <th>P6</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Potencia (kW)</strong></td>
+                                    <td><input type="number" step="0.01" name="potencia_contratada_1" class="form-input small"></td>
+                                    <td><input type="number" step="0.01" name="potencia_contratada_2" class="form-input small"></td>
+                                    <td><input type="number" step="0.01" name="potencia_contratada_3" class="form-input small"></td>
+                                    <td><input type="number" step="0.01" name="potencia_contratada_4" class="form-input small"></td>
+                                    <td><input type="number" step="0.01" name="potencia_contratada_5" class="form-input small"></td>
+                                    <td><input type="number" step="0.01" name="potencia_contratada_6" class="form-input small"></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Consumo (kWh)</strong></td>
+                                    <td><input type="number" step="0.01" name="consumo_1" class="form-input small"></td>
+                                    <td><input type="number" step="0.01" name="consumo_2" class="form-input small"></td>
+                                    <td><input type="number" step="0.01" name="consumo_3" class="form-input small"></td>
+                                    <td><input type="number" step="0.01" name="consumo_4" class="form-input small"></td>
+                                    <td><input type="number" step="0.01" name="consumo_5" class="form-input small"></td>
+                                    <td><input type="number" step="0.01" name="consumo_6" class="form-input small"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="detail-field" style="margin-top: 12px;">
+                            <label>Consumo Anual Total (kWh)</label>
+                            <input type="number" step="0.01" name="consumo" class="form-input" style="max-width: 200px;">
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Documentos</h4>
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">📎</div>
+                            <p>Arrastra archivos aquí o <label for="fileInput" style="color: #667eea; cursor: pointer; text-decoration: underline;">selecciona archivos</label></p>
+                            <input type="file" id="fileInput" multiple="" style="display: none;">
+                        </div>
+                        <div id="uploadedFilesList" class="documents-list" style="margin-top: 12px;">
+                            
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="detail-section">
+                        <h4>Observaciones</h4>
+                        <textarea name="observaciones" class="form-textarea" rows="4" placeholder="Notas o comentarios adicionales sobre el contrato..."></textarea>
+                    </div>
+                    
+                    
+                    <div class="form-actions" style="display: flex; gap: 12px; padding: 20px 0; border-top: 1px solid #e2e8f0; margin-top: 20px;">
+                        <button type="button" class="action-btn" id="cancelCreateBtn">Cancelar</button>
+                        <button type="submit" class="action-btn primary" style="flex: 1;">
+                            <span>💾</span> Guardar Contrato
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // Configuration
+    const CONFIG = {
+        webhookUrl: 'https://tunuevaenergia.com/webhook/59200adf-d6df-4dd2-b319-5ab57d2e5052',
+        nodoWebhookUrl: 'https://tunuevaenergia.com/webhook/nodo',
+        documentWebhookUrl: 'https://tunuevaenergia.com/webhook/documento-nodo',
+        bigQueryTable: '`tunergia-1722509306765.NODO.Contratos_Comisiones`',
+        itemsPerPage: 10
+    };
+    
+    // State
+    let state = {
+        currentUser: null,
+        idComercial: null,
+        contracts: [],
+        filteredContracts: [],
+        currentPage: 1,
+        currentFilter: 'all',
+        searchTerm: '',
+        sortColumn: 'fecha',
+        sortDirection: 'desc',
+        dateFilter: 30, // For stats only
+        listDateFrom: null, // For contracts list
+        listDateTo: null, // For contracts list
+        contractsLimit: 500,
+        totalContracts: 0,
+        currentContractId: null,
+        selectAllMode: false
+    };
+    
+    // Initialize on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+    async function init() {
+        showLoading(true);
+        try {
+            await loadUserInfo();
+            if (state.idComercial) {
+                await loadDashboardData();
+            } else {
+                showError('No se pudo obtener el ID del comercial. Por favor, contacta con soporte.');
+            }
+        } catch (error) {
+            console.error('Initialization error:', error);
+            showError('Error al inicializar el dashboard: ' + error.message);
+        } finally {
+            showLoading(false);
+        }
+        
+        setupEventListeners();
+    }
+    
+    async function loadUserInfo() {
+        try {
+            // Try to get user from Odoo session
+            const sessionResponse = await fetch('/web/session/get_session_info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params: {} })
+            });
+            
+            const sessionData = await sessionResponse.json();
+            
+            if (sessionData.result && sessionData.result.uid) {
+                state.currentUser = {
+                    uid: sessionData.result.uid,
+                    name: sessionData.result.name || 'Usuario',
+                    email: sessionData.result.username || ''
+                };
+                
+                // Now get the x_studio_persona_de_contacto field from res.partner
+                const partnerResponse = await fetch('/web/dataset/call_kw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        method: 'call',
+                        params: {
+                            model: 'res.users',
+                            method: 'read',
+                            args: [[sessionData.result.uid], ['partner_id']],
+                            kwargs: {}
+                        }
+                    })
+                });
+                
+                const partnerData = await partnerResponse.json();
+                
+                if (partnerData.result && partnerData.result[0] && partnerData.result[0].partner_id) {
+                    const partnerId = partnerData.result[0].partner_id[0];
+                    
+                    // Get the x_studio_persona_de_contacto from res.partner
+                    const contactResponse = await fetch('/web/dataset/call_kw', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            jsonrpc: '2.0',
+                            method: 'call',
+                            params: {
+                                model: 'res.partner',
+                                method: 'read',
+                                args: [[partnerId], ['x_studio_persona_de_contacto']],
+                                kwargs: {}
+                            }
+                        })
+                    });
+                    
+                    const contactData = await contactResponse.json();
+                    
+                    if (contactData.result && contactData.result[0]) {
+                        state.idComercial = contactData.result[0].x_studio_persona_de_contacto;
+                    }
+                }
+                
+                updateUserUI();
+            }
+        } catch (error) {
+            console.error('Error loading user info:', error);
+            // For testing without Odoo session - remove in production
+            state.currentUser = { name: 'Demo User', email: 'demo@tunergia.es' };
+            state.idComercial = null; // Will show empty state
+            updateUserUI();
+        }
+    }
+    
+    function updateUserUI() {
+        const user = state.currentUser;
+        if (!user) return;
+        
+        document.getElementById('userName').textContent = user.name;
+        document.getElementById('userEmail').textContent = user.email;
+        document.getElementById('welcomeName').textContent = user.name.split(' ')[0];
+        document.getElementById('userAvatar').textContent = getInitials(user.name);
+        document.getElementById('userIdBadge').textContent = `ID: ${state.idComercial || 'N/A'}`;
+    }
+    
+    function getInitials(name) {
+        return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+    
+    async function loadDashboardData() {
+        console.log('Loading dashboard data for id_comercial:', state.idComercial);
+        await Promise.all([
+            loadStats(),
+            loadContracts()
+        ]);
+    }
+    
+
+    async function loadStats() {
+        try {
+            // Get date ranges based on filter
+            const now = new Date();
+            const currentStart = new Date();
+            currentStart.setDate(now.getDate() - state.dateFilter);
+            const currentStartStr = currentStart.toISOString().split('T')[0];
+            const previousStart = new Date(currentStart);
+            previousStart.setDate(previousStart.getDate() - state.dateFilter);
+            const previousStartStr = previousStart.toISOString().split('T')[0];
+            
+            console.log('Date ranges:', { currentStartStr, previousStartStr });
+            
+            // Single query to get all relevant data
+            const query = `
+                SELECT 
+                    estado,
+                    fecha_activacion,
+                    fecha_cancelacion,
+                    consumo
+                FROM ${CONFIG.bigQueryTable}
+                WHERE (borrado = 0 OR borrado IS NULL)
+                    AND id_comercial = '${state.idComercial}'
+            `;
+            
+            const data = await executeQuery(query);
+            console.log('Stats raw data count:', data.length);
+            
+            // Process data in JavaScript
+            let tramitados = 0, kwhTramitados = 0;
+            let activadosCurrent = 0, kwhActivadosCurrent = 0;
+            let activadosPrevious = 0, kwhActivadosPrevious = 0;
+            let bajasCurrent = 0, kwhBajasCurrent = 0;
+            let bajasPrevious = 0, kwhBajasPrevious = 0;
+            
+            const tramitacionEstados = ['TEMPORAL', 'PDTE', 'PENDIENTE', 'INCIDENCIA', 'TRAMITADO', 'VALIDADO', 'FIRMA', 'LISTO'];
+            
+            data.forEach(row => {
+                const estado = (row.estado || '').toUpperCase();
+                const consumo = parseFloat(row.consumo) || 0;
+                const fechaActivacion = row.fecha_activacion || '';
+                const fechaCancelacion = row.fecha_cancelacion || '';
+                
+                // Check if dates are valid (not empty, not 0000-00-00)
+                const hasActivacion = fechaActivacion && fechaActivacion !== '' && !fechaActivacion.startsWith('0000');
+                const hasCancelacion = fechaCancelacion && fechaCancelacion !== '' && !fechaCancelacion.startsWith('0000');
+                
+                // EN TRAMITACIÓN: no activation, no cancellation, tramitacion estado
+                if (!hasActivacion && !hasCancelacion) {
+                    const isTramitacion = tramitacionEstados.some(e => estado.includes(e));
+                    if (isTramitacion) {
+                        tramitados++;
+                        kwhTramitados += consumo;
+                    }
+                }
+                
+                // ACTIVADOS: has activation, ACTIVADO estado
+                if (hasActivacion && estado.includes('ACTIVADO')) {
+                    // Normalize date format (could be DD/MM/YYYY or YYYY-MM-DD)
+                    let activacionDate = fechaActivacion;
+                    if (fechaActivacion.includes('/')) {
+                        const parts = fechaActivacion.split('/');
+                        if (parts.length === 3) {
+                            activacionDate = parts[2] + '-' + parts[1].padStart(2, '0') + '-' + parts[0].padStart(2, '0');
+                        }
+                    }
+                    
+                    if (activacionDate >= currentStartStr) {
+                        activadosCurrent++;
+                        kwhActivadosCurrent += consumo;
+                    } else if (activacionDate >= previousStartStr && activacionDate < currentStartStr) {
+                        activadosPrevious++;
+                        kwhActivadosPrevious += consumo;
+                    }
+                }
+                
+                // BAJAS: has cancellation date
+                if (hasCancelacion) {
+                    // Normalize date format
+                    let cancelacionDate = fechaCancelacion;
+                    if (fechaCancelacion.includes('/')) {
+                        const parts = fechaCancelacion.split('/');
+                        if (parts.length === 3) {
+                            cancelacionDate = parts[2] + '-' + parts[1].padStart(2, '0') + '-' + parts[0].padStart(2, '0');
+                        }
+                    }
+                    
+                    if (cancelacionDate >= currentStartStr) {
+                        bajasCurrent++;
+                        kwhBajasCurrent += consumo;
+                    } else if (cancelacionDate >= previousStartStr && cancelacionDate < currentStartStr) {
+                        bajasPrevious++;
+                        kwhBajasPrevious += consumo;
+                    }
+                }
+            });
+            
+            // Calculate percentage changes
+            const calcChange = (current, previous) => {
+                if (previous === 0) return current > 0 ? 100 : 0;
+                return ((current - previous) / previous * 100).toFixed(1);
+            };
+            
+            const activadosChange = calcChange(activadosCurrent, activadosPrevious);
+            const kwhActivadosChange = calcChange(kwhActivadosCurrent, kwhActivadosPrevious);
+            const bajasChange = calcChange(bajasCurrent, bajasPrevious);
+            const kwhBajasChange = calcChange(kwhBajasCurrent, kwhBajasPrevious);
+            
+            console.log('Stats calculated:', { 
+                tramitados, activadosCurrent, bajasCurrent, 
+                kwhTramitados, kwhActivadosCurrent, kwhBajasCurrent,
+                activadosChange, bajasChange
+            });
+            
+            // Update stats UI - Numbers
+            document.getElementById('statTramitados').textContent = formatNumber(tramitados);
+            document.getElementById('statActivados').textContent = formatNumber(activadosCurrent);
+            document.getElementById('statBajas').textContent = formatNumber(bajasCurrent);
+            document.getElementById('statKwhTramitacion').textContent = formatLargeNumber(kwhTramitados);
+            document.getElementById('statKwhActivados').textContent = formatLargeNumber(kwhActivadosCurrent);
+            document.getElementById('statKwhBajas').textContent = formatLargeNumber(kwhBajasCurrent);
+            
+            // Update comparison indicators - Activados
+            const changeActivadosEl = document.getElementById('changeActivados');
+            if (changeActivadosEl) {
+                const isPositive = parseFloat(activadosChange) >= 0;
+                changeActivadosEl.className = 'stat-change ' + (isPositive ? 'positive' : 'negative');
+                changeActivadosEl.innerHTML = '<span class="change-icon">' + (isPositive ? '↑' : '↓') + '</span><span>' + Math.abs(activadosChange) + '% vs período anterior</span>';
+            }
+            
+            // Update comparison indicators - kWh Activados
+            const changeKwhActivadosEl = document.getElementById('changeKwhActivados');
+            if (changeKwhActivadosEl) {
+                const isPositive = parseFloat(kwhActivadosChange) >= 0;
+                changeKwhActivadosEl.className = 'stat-change ' + (isPositive ? 'positive' : 'negative');
+                changeKwhActivadosEl.innerHTML = '<span class="change-icon">' + (isPositive ? '↑' : '↓') + '</span><span>' + Math.abs(kwhActivadosChange) + '% vs período anterior</span>';
+            }
+            
+            // Update comparison indicators - Bajas
+            const changeBajasEl = document.getElementById('changeBajas');
+            if (changeBajasEl) {
+                const isNegativeChange = parseFloat(bajasChange) <= 0;
+                changeBajasEl.className = 'stat-change ' + (isNegativeChange ? 'positive' : 'negative');
+                changeBajasEl.innerHTML = '<span class="change-icon">' + (parseFloat(bajasChange) >= 0 ? '↑' : '↓') + '</span><span>' + Math.abs(bajasChange) + '% vs período anterior</span>';
+            }
+            
+            // Update comparison indicators - kWh Bajas
+            const changeKwhBajasEl = document.getElementById('changeKwhBajas');
+            if (changeKwhBajasEl) {
+                const isNegativeChange = parseFloat(kwhBajasChange) <= 0;
+                changeKwhBajasEl.className = 'stat-change ' + (isNegativeChange ? 'positive' : 'negative');
+                changeKwhBajasEl.innerHTML = '<span class="change-icon">' + (parseFloat(kwhBajasChange) >= 0 ? '↑' : '↓') + '</span><span>' + Math.abs(kwhBajasChange) + '% vs período anterior</span>';
+            }
+            
+        } catch (error) {
+            console.error('Error loading stats:', error);
+            // Show zeros on error
+            document.getElementById('statTramitados').textContent = '0';
+            document.getElementById('statActivados').textContent = '0';
+            document.getElementById('statBajas').textContent = '0';
+            document.getElementById('statKwhTramitacion').textContent = '0';
+            document.getElementById('statKwhActivados').textContent = '0';
+            document.getElementById('statKwhBajas').textContent = '0';
+        }
+    }
+
+    async function loadContracts() {
+        try {
+            // First get total count
+            const countQuery = `
+                SELECT COUNT(*) as total
+                FROM ${CONFIG.bigQueryTable}
+                WHERE (borrado = 0 OR borrado IS NULL)
+                    AND id_comercial = '${state.idComercial}'
+            `;
+            
+            const countData = await executeQuery(countQuery);
+            const totalCount = countData[0] ? parseInt(countData[0].total) || 0 : 0;
+            state.totalContracts = totalCount;
+            
+            document.getElementById('totalContracts').textContent = `${formatNumber(totalCount)} Contratos`;
+            
+            // Build date filter for list if date range is set
+            let dateFilter = '';
+            if (state.listDateFrom || state.listDateTo) {
+                if (state.listDateFrom) {
+                    dateFilter += ` AND fecha >= '${state.listDateFrom}'`;
+                }
+                if (state.listDateTo) {
+                    dateFilter += ` AND fecha <= '${state.listDateTo}'`;
+                }
+            }
+            
+            // Load contracts with current limit
+            const query = `
+                SELECT 
+                    id, tipo, estado, fecha, cups, cliente, poblacion, provincia, 
+                    consumo, fecha_activacion, fecha_cancelacion, tarifa, tarifa_acceso, observaciones
+                FROM ${CONFIG.bigQueryTable}
+                WHERE (borrado = 0 OR borrado IS NULL)
+                    AND id_comercial = '${state.idComercial}'
+                    ${dateFilter}
+                ORDER BY fecha DESC
+                LIMIT ${state.contractsLimit}
+            `;
+            
+            const data = await executeQuery(query);
+            console.log('Contracts data received:', data.length, 'items');
+            
+            if (!data || data.length === 0) {
+                console.warn('No contracts data returned');
+                showEmptyState(true);
+                return;
+            }
+            
+            state.contracts = data;
+            state.filteredContracts = [...data];
+            
+            // Update load more button visibility
+            updateLoadMoreButton();
+            
+            applyFilters();
+            
+        } catch (error) {
+            console.error('Error loading contracts:', error);
+            showEmptyState(true);
+        }
+    }
+    
+    function updateLoadMoreButton() {
+        const loadedInfo = document.getElementById('loadedInfo');
+        
+        if (loadedInfo) {
+            const loaded = state.contracts.length;
+            const total = state.totalContracts || loaded;
+            
+            loadedInfo.textContent = `Mostrando ${formatNumber(loaded)} de ${formatNumber(total)}`;
+        }
+    }
+    
+    async function changeContractsLimit(newLimit) {
+        state.contractsLimit = newLimit;
+        showLoading(true);
+        await loadContracts();
+        showLoading(false);
+    }
+    
+    // Contract Detail Modal Functions
+    async function openContractDetail(contractId) {
+        const modal = document.getElementById('contractDetailModal');
+        const loading = document.getElementById('contractDetailLoading');
+        const error = document.getElementById('contractDetailError');
+        const content = document.getElementById('contractDetailContent');
+        const contractIdBadge = document.getElementById('modalContractId');
+        
+        // Store current contract ID
+        state.currentContractId = contractId;
+        
+        // Show modal
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Reset state
+        loading.classList.add('active');
+        error.classList.remove('active');
+        content.classList.remove('active');
+        contractIdBadge.textContent = `ID: ${contractId}`;
+        
+        // Reset tabs to first tab
+        document.querySelectorAll('.detail-tab').forEach((tab, i) => {
+            tab.classList.toggle('active', i === 0);
+        });
+        document.querySelectorAll('.detail-tab-content').forEach((content, i) => {
+            content.classList.toggle('active', i === 0);
+        });
+        
+        try {
+            // Call NODO webhook
+            const response = await fetch(CONFIG.nodoWebhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: contractId })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error del servidor: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('NODO response:', data);
+            
+            // Parse and display data
+            populateContractDetail(data);
+            
+            loading.classList.remove('active');
+            content.classList.add('active');
+            
+        } catch (err) {
+            console.error('Error loading contract details:', err);
+            loading.classList.remove('active');
+            document.getElementById('contractDetailErrorText').textContent = 
+                `Error al cargar los datos: ${err.message}`;
+            error.classList.add('active');
+        }
+    }
+    
+    function closeContractDetail() {
+        const modal = document.getElementById('contractDetailModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    // Create Contract Modal Functions
+    function openCreateContract() {
+        const modal = document.getElementById('createContractModal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Reset form
+        document.getElementById('createContractForm').reset();
+        document.getElementById('uploadedFilesList').innerHTML = '';
+    }
+    
+    function closeCreateContract() {
+        const modal = document.getElementById('createContractModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    // Handle file upload in create form
+    function handleFileUpload(files) {
+        const filesList = document.getElementById('uploadedFilesList');
+        
+        Array.from(files).forEach(file => {
+            const ext = file.name.split('.').pop().toUpperCase();
+            const size = (file.size / 1024).toFixed(1) + ' KB';
+            
+            const fileItem = document.createElement('div');
+            fileItem.className = 'document-item';
+            fileItem.innerHTML = `
+                <div class="document-icon ${['JPG', 'JPEG', 'PNG', 'GIF'].includes(ext) ? 'jpg' : ''}">${ext}</div>
+                <div class="document-info">
+                    <div class="document-name">${escapeHtml(file.name)}</div>
+                    <div class="document-size">${size}</div>
+                </div>
+                <button type="button" class="remove-file-btn" style="margin-left: auto; background: none; border: none; color: #e53e3e; cursor: pointer; font-size: 18px;">✕</button>
+            `;
+            
+            fileItem.querySelector('.remove-file-btn').addEventListener('click', () => {
+                fileItem.remove();
+            });
+            
+            filesList.appendChild(fileItem);
+        });
+    }
+    
+    // Document download function
+    function downloadDocument(url, filename) {
+        // Open document URL directly (NODO serves via their API)
+        const fullUrl = 'https://gaiag.nodogestion.com' + url;
+        window.open(fullUrl, '_blank');
+    }
+    
+    function populateContractDetail(data) {
+        // NODO API returns array with {resultado, datos} structure
+        let contract = {};
+        
+        if (Array.isArray(data) && data.length > 0 && data[0].datos) {
+            contract = data[0].datos;
+        } else if (data.datos) {
+            contract = data.datos;
+        } else if (data.data && data.data.datos) {
+            contract = data.data.datos;
+        } else {
+            contract = data;
+        }
+        
+        console.log('Parsed contract data:', contract);
+        
+        // Populate Datos Personales
+        setText('detailNombre', contract.nombre_cliente || contract.persona_contacto || '-');
+        setText('detailTipoCliente', contract.tipo_empresa || 'Particular');
+        setText('detailCorreo', contract.email || '-');
+        setText('detailMovil', contract.movil || contract.telefono || '-');
+        setText('detailDNI', contract.nif || contract.persona_contacto_nif || '-');
+        setText('detailIBAN', contract.iban_contrato || '-');
+        setText('detailDireccion', contract.direccion || '-');
+        setText('detailCP', contract.cp || '-');
+        setText('detailPoblacion', contract.poblacion || '-');
+        setText('detailProvincia', contract.provincia || '-');
+        
+        // Populate Datos de Suministro
+        setText('detailNombreSuministro', contract.persona_contacto || contract.nombre_cliente || '-');
+        setText('detailDNISuministro', contract.persona_contacto_nif || contract.nif || '-');
+        setText('detailDireccionSuministro', contract.direccion_suministro || contract.direccion || '-');
+        setText('detailPoblacionSuministro', contract.poblacion_suministro || contract.poblacion || '-');
+        setText('detailCPSuministro', contract.cp_suministro || contract.cp || '-');
+        setText('detailProvinciaSuministro', contract.provincia_suministro || contract.provincia || '-');
+        setText('detailComercializadoraSaliente', contract.comercializadora_saliente || '-');
+        setText('detailCUPS', contract.cups || '-');
+        
+        // Populate Datos de Contratación
+        setText('detailComercializadora', contract.comercializadora || '-');
+        setText('detailConcepto', contract.concepto || '-');
+        setText('detailTarifa', contract.tarifa || '-');
+        setText('detailTarifaAcceso', extractTarifaAcceso(contract.concepto) || '-');
+        setText('detailTipoContratacion', contract.tipo_contratacion || '-');
+        setText('detailCNAE', contract.cnae_actividad || '-');
+        setText('detailFirmaDigital', contract.firma_digital === '1' || contract.firma_digital === 1 ? 'Sí' : 'No');
+        setText('detailFacturaElectronica', contract.fact_electronica === '1' || contract.fact_electronica === 1 ? 'Sí' : 'No');
+        setText('detailCambioComercializadora', contract.cambio_comercializadora || 'Sin cambios');
+        setText('detailAutoconsumo', contract.luz_autoconsumo === '1' || contract.luz_autoconsumo === 1 ? 'Sí' : 'No');
+        setText('detailFuturaActivacion', contract.futura_activacion || 'Cuanto antes');
+        setText('detailFechaActivacion', contract.fecha_activacion || '-');
+        setText('detailFechaCancelacion', contract.fecha_cancelacion || contract.fecha_baja || '-');
+        setText('detailComercial', contract.comercial || '-');
+        setText('detailKAM', contract.kam || '-');
+        
+        // Populate Datos de Consumo - Potencias
+        setText('detailPotP1', formatDecimal(contract.potencia_contratada_1));
+        setText('detailPotP2', formatDecimal(contract.potencia_contratada_2));
+        setText('detailPotP3', formatDecimal(contract.potencia_contratada_3));
+        setText('detailPotP4', formatDecimal(contract.potencia_contratada_4));
+        setText('detailPotP5', formatDecimal(contract.potencia_contratada_5));
+        setText('detailPotP6', formatDecimal(contract.potencia_contratada_6));
+        
+        // Populate Datos de Consumo - Consumos
+        setText('detailConsP1', formatDecimal(contract.consumo_1));
+        setText('detailConsP2', formatDecimal(contract.consumo_2));
+        setText('detailConsP3', formatDecimal(contract.consumo_3));
+        setText('detailConsP4', formatDecimal(contract.consumo_4));
+        setText('detailConsP5', formatDecimal(contract.consumo_5));
+        setText('detailConsP6', formatDecimal(contract.consumo_6));
+        
+        // Calculate total consumo
+        const consumoTotal = parseFloat(contract.consumo) || 
+            (parseFloat(contract.consumo_1 || 0) + parseFloat(contract.consumo_2 || 0) + 
+             parseFloat(contract.consumo_3 || 0) + parseFloat(contract.consumo_4 || 0) + 
+             parseFloat(contract.consumo_5 || 0) + parseFloat(contract.consumo_6 || 0));
+        setText('detailConsumoTotal', formatNumber(consumoTotal) + ' kWh');
+        
+        // Populate Estado badge
+        const estadoBadge = document.querySelector('.contract-id-badge');
+        if (estadoBadge && contract.estado) {
+            estadoBadge.innerHTML = `<span style="margin-right: 8px;">ID: ${contract.id || state.currentContractId || '-'}</span><span class="status-badge ${getStatusClass(contract.estado)}" style="font-size: 11px;">${contract.estado}</span>`;
+        }
+        
+        // Populate Observaciones
+        const obs = contract.observaciones || contract.observaciones_internas || '';
+        document.getElementById('detailObservaciones').textContent = obs || 'Sin observaciones';
+        
+        // Populate Documentos
+        const docsContainer = document.getElementById('detailDocumentos');
+        const documentos = contract.documentacion || [];
+        
+        if (Array.isArray(documentos) && documentos.length > 0) {
+            docsContainer.innerHTML = documentos.map((doc, index) => {
+                const name = doc.nombre_original || doc.nombre || doc.filename || doc.name || 'Documento';
+                const url = doc.url_descarga || '';
+                const fecha = doc.fecha || '';
+                const tipo = doc.tipo || '';
+                const ext = name.split('.').pop().toUpperCase();
+                const iconClass = ['JPG', 'JPEG', 'PNG', 'GIF'].includes(ext) ? 'jpg' : '';
+                
+                return `
+                    <div class="document-item" data-url="${escapeHtml(url)}" data-name="${escapeHtml(name)}" onclick="window.tunergiaDownloadDoc('${escapeHtml(url)}', '${escapeHtml(name)}')">
+                        <div class="document-icon ${iconClass}">${ext}</div>
+                        <div class="document-info">
+                            <div class="document-name">${escapeHtml(name)}</div>
+                            <div class="document-size">${fecha} ${tipo ? '• ' + tipo : ''}</div>
+                        </div>
+                        <span class="download-icon">⬇️</span>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            docsContainer.innerHTML = '<p class="no-docs">No hay documentos adjuntos</p>';
+        }
+        
+        // Populate Historial
+        const historyContainer = document.getElementById('historyTimeline');
+        const historial = contract.historico || [];
+        
+        if (Array.isArray(historial) && historial.length > 0) {
+            historyContainer.innerHTML = historial.map(item => {
+                return `
+                    <div class="history-item">
+                        <div class="history-date">${item.fecha || ''}</div>
+                        <div class="history-action">${escapeHtml(item.accion || '')}</div>
+                        <div class="history-detail">${escapeHtml(item.texto || '')}</div>
+                        <div class="history-user">Por: ${escapeHtml(item.usuario || '')}</div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            historyContainer.innerHTML = '<p class="no-history">No hay historial disponible para este contrato</p>';
+        }
+    }
+    
+    function extractTarifaAcceso(concepto) {
+        if (!concepto) return null;
+        const match = concepto.match(/(\d\.\d[A-Z]+)/);
+        return match ? match[1] : null;
+    }
+    
+    function formatDecimal(value) {
+        if (value === null || value === undefined || value === '') return '0.00';
+        const num = parseFloat(value);
+        return isNaN(num) ? '0.00' : num.toFixed(2);
+    }
+    
+    function setText(elementId, value) {
+        const el = document.getElementById(elementId);
+        if (el) {
+            el.textContent = value || '-';
+        }
+    }
+    
+    async function executeQuery(query) {
+        console.log('Executing query:', query);
+        
+        const response = await fetch(CONFIG.webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('Raw webhook response:', result);
+        
+        let data = [];
+        
+        // Case 1: Response has 'data' array (aggregated by Code node)
+        if (result && result.data && Array.isArray(result.data)) {
+            console.log('Found result.data array with', result.data.length, 'items');
+            data = result.data;
+        }
+        // Case 2: Direct array of results
+        else if (Array.isArray(result)) {
+            console.log('Direct array response with', result.length, 'items');
+            if (result.length > 0 && result[0] && result[0].json) {
+                data = result.map(item => item.json);
+            } else {
+                data = result;
+            }
+        }
+        // Case 3: Single object (fallback for old format - first item only)
+        else if (result && typeof result === 'object') {
+            console.log('Single object response (old format)');
+            if (result.id || result.estado || result.cups || result.cliente || result.count) {
+                data = [result];
+            }
+        }
+        
+        console.log('Final parsed data:', data.length, 'items');
+        return data;
+    }
+    
+    function applyFilters() {
+        let filtered = [...state.contracts];
+        
+        // Apply tab filter with correct business logic
+        if (state.currentFilter !== 'all') {
+            filtered = filtered.filter(c => {
+                const estado = (c.estado || '').toUpperCase();
+                // Check for valid dates (not null, empty, or 0000-00-00)
+                const hasActivacion = c.fecha_activacion && 
+                    c.fecha_activacion !== '' && 
+                    c.fecha_activacion !== null &&
+                    c.fecha_activacion !== '0000-00-00';
+                const hasCancelacion = c.fecha_cancelacion && 
+                    c.fecha_cancelacion !== '' && 
+                    c.fecha_cancelacion !== null &&
+                    c.fecha_cancelacion !== '0000-00-00';
+                
+                switch (state.currentFilter) {
+                    case 'activado': 
+                        // Active: has activation date, no cancellation, active estado
+                        return hasActivacion && !hasCancelacion && estado.includes('ACTIVADO');
+                    case 'tramitado': 
+                        // In process: no activation date, no cancellation date, pending estados
+                        // Includes: TEMPORAL, PDTE*, PENDIENTE*, INCIDENCIA*, TRAMITADO, VALIDADO, FIRMA, LISTO
+                        return !hasActivacion && !hasCancelacion && (
+                            estado.includes('TEMPORAL') ||
+                            estado.includes('INCIDENCIA') ||
+                            estado.includes('PDTE') ||
+                            estado.includes('PENDIENTE') ||
+                            estado.includes('TRAMITADO') ||
+                            estado.includes('VALIDADO') ||
+                            estado.includes('FIRMA') ||
+                            estado.includes('LISTO')
+                        );
+                    case 'baja': 
+                        // Cancelled: has cancellation date
+                        return hasCancelacion;
+                    case 'oportunidad': 
+                        // Oportunidad includes:
+                        // 1. NO RENOVADO contracts
+                        // 2. Active contracts approaching 1 year anniversary (within 3 months)
+                        if (estado === 'NO RENOVADO') return true;
+                        if (estado === 'INTERESADO' || estado.includes('OPORTUNIDAD') || estado === 'LISTO GESTION') return true;
+                        
+                        // Check if active contract is within 3 months of 1 year anniversary
+                        if (hasActivacion && estado.includes('ACTIVADO')) {
+                            const activacionDate = parseDate(c.fecha_activacion);
+                            if (activacionDate) {
+                                const now = new Date();
+                                const oneYearAgo = new Date(now);
+                                oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+                                const threeMonthsBeforeNow = new Date(now);
+                                threeMonthsBeforeNow.setMonth(threeMonthsBeforeNow.getMonth() - 3);
+                                
+                                // Contract is due for renewal if activation date is between 9-12 months ago
+                                const nineMonthsAgo = new Date(now);
+                                nineMonthsAgo.setMonth(nineMonthsAgo.getMonth() - 9);
+                                const twelveMonthsAgo = new Date(now);
+                                twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+                                
+                                // If activated between 9 and 12 months ago, it's approaching anniversary
+                                if (activacionDate <= nineMonthsAgo && activacionDate >= twelveMonthsAgo) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    default: 
+                        return true;
+                }
+            });
+        }
+        
+        // Apply search
+        if (state.searchTerm) {
+            const term = state.searchTerm.toLowerCase();
+            filtered = filtered.filter(c => 
+                (c.id && c.id.toLowerCase().includes(term)) ||
+                (c.cliente && c.cliente.toLowerCase().includes(term)) ||
+                (c.cups && c.cups.toLowerCase().includes(term)) ||
+                (c.tipo && c.tipo.toLowerCase().includes(term)) ||
+                (c.poblacion && c.poblacion.toLowerCase().includes(term)) ||
+                (c.provincia && c.provincia.toLowerCase().includes(term))
+            );
+        }
+        
+        // Apply sorting
+        filtered.sort((a, b) => {
+            let valA = a[state.sortColumn] || '';
+            let valB = b[state.sortColumn] || '';
+            
+            if (state.sortColumn === 'fecha' || state.sortColumn === 'fecha_activacion' || state.sortColumn === 'fecha_cancelacion') {
+                valA = new Date(valA).getTime() || 0;
+                valB = new Date(valB).getTime() || 0;
+            }
+            
+            if (valA < valB) return state.sortDirection === 'asc' ? -1 : 1;
+            if (valA > valB) return state.sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+        
+        state.filteredContracts = filtered;
+        state.currentPage = 1;
+        
+        // Update filtered count display
+        const filteredCount = document.getElementById('filteredCount');
+        if (filteredCount) {
+            if (state.currentFilter !== 'all' || state.searchTerm) {
+                filteredCount.textContent = `(${formatNumber(filtered.length)} mostrados)`;
+                filteredCount.style.display = 'inline';
+            } else {
+                filteredCount.style.display = 'none';
+            }
+        }
+        
+        renderContracts();
+        updatePagination();
+    }
+    
+    function renderContracts() {
+        const tbody = document.getElementById('contractsTableBody');
+        const startIndex = (state.currentPage - 1) * CONFIG.itemsPerPage;
+        const endIndex = startIndex + CONFIG.itemsPerPage;
+        const pageContracts = state.filteredContracts.slice(startIndex, endIndex);
+        
+        if (pageContracts.length === 0) {
+            showEmptyState(true);
+            return;
+        }
+        
+        showEmptyState(false);
+        
+        tbody.innerHTML = pageContracts.map(contract => `
+            <tr data-id="${contract.id || ''}">
+                <td class="checkbox-cell">
+                    <input type="checkbox" class="row-checkbox" data-id="${contract.id || ''}">
+                </td>
+                <td class="id-cell">${contract.id || '-'}</td>
+                <td class="name-cell">
+                    <div class="client-info">
+                        <div class="client-name">${escapeHtml(contract.cliente || 'Sin nombre')}</div>
+                        <div class="client-email">${escapeHtml(contract.poblacion || '')}</div>
+                    </div>
+                </td>
+                <td class="status-cell">
+                    <span class="status-badge ${getStatusClass(contract.estado)}">
+                        ${escapeHtml((contract.estado || 'Sin estado').substring(0, 12))}${(contract.estado || '').length > 12 ? '...' : ''}
+                    </span>
+                </td>
+                <td class="comercializadora-cell" title="${escapeHtml(contract.tipo || '')}">${escapeHtml((contract.tipo || '-').substring(0, 10))}${(contract.tipo || '').length > 10 ? '...' : ''}</td>
+                <td class="tarifa-cell"><span class="tarifa-badge">${escapeHtml(contract.tarifa_acceso || '-')}</span></td>
+                <td class="consumo-cell">${contract.consumo ? formatNumber(parseFloat(contract.consumo)) : '-'}</td>
+                <td class="cups-cell"><span class="cups-code">${escapeHtml((contract.cups || '-').substring(0, 15))}...</span></td>
+                <td class="fecha-cell">${formatDate(contract.fecha)}</td>
+                <td class="action-cell">
+                    <button class="view-btn" title="Ver detalles" data-id="${contract.id}">👁️</button>
+                </td>
+            </tr>
+        `).join('');
+        
+        // Add click handlers for view buttons
+        tbody.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = e.currentTarget.dataset.id;
+                openContractDetail(id);
+            });
+        });
+        
+        // Add click handler for entire row
+        tbody.querySelectorAll('tr[data-id]').forEach(row => {
+            row.style.cursor = 'pointer';
+            row.addEventListener('click', (e) => {
+                // Don't trigger if clicking checkbox or button
+                if (e.target.type === 'checkbox' || e.target.closest('.view-btn')) return;
+                const id = row.dataset.id;
+                if (id) openContractDetail(id);
+            });
+        });
+        
+        // Add checkbox handlers
+        tbody.querySelectorAll('.row-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectionInfo);
+        });
+    }
+    
+    // Selection management
+    function updateSelectionInfo() {
+        const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+        const selectedCount = checkboxes.length;
+        const selectionInfo = document.getElementById('selectionInfo');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const selectAllBtn = document.getElementById('selectAllContracts');
+        const selectAllCount = document.getElementById('selectAllCount');
+        const exportBtn = document.getElementById('exportBtn');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        
+        if (selectedCount > 0) {
+            selectionInfo.style.display = 'flex';
+            selectedCountSpan.textContent = `${selectedCount} seleccionado${selectedCount > 1 ? 's' : ''}`;
+            exportBtn.disabled = false;
+            exportBtn.title = 'Exportar contratos seleccionados';
+            
+            // Show "Select all" button if there are more contracts than currently visible
+            const visibleCount = document.querySelectorAll('.row-checkbox').length;
+            if (state.selectAllMode) {
+                selectedCountSpan.textContent = `${state.filteredContracts.length} seleccionados (todos)`;
+                selectAllBtn.style.display = 'none';
+            } else if (selectedCount === visibleCount && state.filteredContracts.length > visibleCount) {
+                selectAllBtn.style.display = 'inline-block';
+                selectAllCount.textContent = state.filteredContracts.length;
+            } else {
+                selectAllBtn.style.display = 'none';
+            }
+        } else {
+            selectionInfo.style.display = 'none';
+            exportBtn.disabled = true;
+            exportBtn.title = 'Selecciona contratos para exportar';
+            state.selectAllMode = false;
+        }
+        
+        // Update selectAll checkbox state
+        const allCheckboxes = document.querySelectorAll('.row-checkbox');
+        if (allCheckboxes.length > 0) {
+            selectAllCheckbox.checked = selectedCount === allCheckboxes.length;
+            selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < allCheckboxes.length;
+        }
+    }
+    
+    function getStatusClass(estado) {
+        if (!estado) return 'default';
+        const s = estado.toUpperCase();
+        
+        if (s.includes('ACTIVADO')) return 'activado';
+        if (s.includes('TRAMITADO')) return 'tramitado';
+        if (s.includes('BAJA')) return 'baja';
+        if (s.includes('INCIDENCIA')) return 'incidencia';
+        if (s.includes('TEMPORAL')) return 'temporal';
+        if (s.includes('PDTE') || s.includes('FIRMA')) return 'pdte-firma';
+        if (s.includes('KO')) return 'ko';
+        if (s.includes('NO RENOVADO')) return 'no-renovado';
+        if (s.includes('INTERESADO') || s.includes('OPORTUNIDAD')) return 'oportunidad';
+        
+        return 'default';
+    }
+    
+    function updatePagination() {
+        const totalPages = Math.ceil(state.filteredContracts.length / CONFIG.itemsPerPage);
+        document.getElementById('paginationInfo').textContent = `${state.currentPage} of ${totalPages || 1}`;
+        document.getElementById('prevPage').disabled = state.currentPage <= 1;
+        document.getElementById('nextPage').disabled = state.currentPage >= totalPages;
+    }
+    
+    function setupEventListeners() {
+        // Date filter buttons - ONLY affect stats, not contracts list
+        document.querySelectorAll('.filter-btn[data-days]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                document.querySelectorAll('.filter-btn[data-days]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.dateFilter = parseInt(btn.dataset.days);
+                // Only reload stats, not contracts
+                showLoading(true);
+                await loadStats();
+                showLoading(false);
+            });
+        });
+        
+        // Tab filter buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentFilter = btn.dataset.filter;
+                applyFilters();
+            });
+        });
+        
+        // Search input
+        document.getElementById('searchInput').addEventListener('input', debounce((e) => {
+            state.searchTerm = e.target.value;
+            applyFilters();
+        }, 300));
+        
+        // Pagination
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (state.currentPage > 1) {
+                state.currentPage--;
+                renderContracts();
+                updatePagination();
+            }
+        });
+        
+        document.getElementById('nextPage').addEventListener('click', () => {
+            const totalPages = Math.ceil(state.filteredContracts.length / CONFIG.itemsPerPage);
+            if (state.currentPage < totalPages) {
+                state.currentPage++;
+                renderContracts();
+                updatePagination();
+            }
+        });
+        
+        // Select all checkbox
+        document.getElementById('selectAll').addEventListener('change', (e) => {
+            state.selectAllMode = false;
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.checked = e.target.checked;
+            });
+            updateSelectionInfo();
+        });
+        
+        // Select all contracts button (Gmail-style)
+        document.getElementById('selectAllContracts').addEventListener('click', () => {
+            state.selectAllMode = true;
+            updateSelectionInfo();
+        });
+        
+        // Create Contract button
+        document.getElementById('createBtn').addEventListener('click', openCreateContract);
+        
+        // Sortable columns
+        document.querySelectorAll('.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const column = th.dataset.sort;
+                if (state.sortColumn === column) {
+                    state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    state.sortColumn = column;
+                    state.sortDirection = 'asc';
+                }
+                applyFilters();
+            });
+        });
+        
+        // Export button
+        document.getElementById('exportBtn').addEventListener('click', exportToCSV);
+        
+        // Contract Detail Modal - Back button
+        const backBtn = document.getElementById('backToListBtn');
+        if (backBtn) {
+            backBtn.addEventListener('click', closeContractDetail);
+        }
+        
+        // Contract Detail Modal - Overlay click to close
+        const overlay = document.getElementById('contractDetailOverlay');
+        if (overlay) {
+            overlay.addEventListener('click', closeContractDetail);
+        }
+        
+        // Contract Detail Modal - Tab switching
+        document.querySelectorAll('.detail-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                
+                // Update active tab button
+                document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Update active tab content
+                document.querySelectorAll('.detail-tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1)).classList.add('active');
+            });
+        });
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeContractDetail();
+                closeCreateContract();
+            }
+        });
+        
+        // Create Contract Modal - Back button
+        const backFromCreateBtn = document.getElementById('backFromCreateBtn');
+        if (backFromCreateBtn) {
+            backFromCreateBtn.addEventListener('click', closeCreateContract);
+        }
+        
+        // Create Contract Modal - Cancel button
+        const cancelCreateBtn = document.getElementById('cancelCreateBtn');
+        if (cancelCreateBtn) {
+            cancelCreateBtn.addEventListener('click', closeCreateContract);
+        }
+        
+        // Create Contract Modal - Overlay click to close
+        const createOverlay = document.getElementById('createContractOverlay');
+        if (createOverlay) {
+            createOverlay.addEventListener('click', closeCreateContract);
+        }
+        
+        // Create Contract Modal - File upload handling
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                handleFileUpload(e.target.files);
+            });
+        }
+        
+        if (uploadArea) {
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#667eea';
+                uploadArea.style.background = '#ebf4ff';
+            });
+            
+            uploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#e2e8f0';
+                uploadArea.style.background = '#f7fafc';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#e2e8f0';
+                uploadArea.style.background = '#f7fafc';
+                handleFileUpload(e.dataTransfer.files);
+            });
+        }
+        
+        // Create Contract Form - Same as personal checkbox
+        const sameAsPersonal = document.getElementById('sameAsPersonal');
+        if (sameAsPersonal) {
+            sameAsPersonal.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    const form = document.getElementById('createContractForm');
+                    form.persona_contacto.value = form.nombre_cliente.value;
+                    form.persona_contacto_nif.value = form.nif.value;
+                    form.direccion_suministro.value = form.direccion.value;
+                    form.cp_suministro.value = form.cp.value;
+                    form.poblacion_suministro.value = form.poblacion.value;
+                    form.provincia_suministro.value = form.provincia.value;
+                }
+            });
+        }
+        
+        // Create Contract Form - Submit
+        const createForm = document.getElementById('createContractForm');
+        if (createForm) {
+            createForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(createForm);
+                const data = Object.fromEntries(formData.entries());
+                console.log('Contract data to save:', data);
+                alert('Funcionalidad de guardado próximamente. Datos recogidos en consola.');
+                // TODO: Send to NODO API
+            });
+        }
+        
+        // Global document download function - GET request with direct link (avoids CORS)
+        window.tunergiaDownloadDoc = function(url, filename) {
+            if (!url) {
+                alert('URL de documento no disponible');
+                return;
+            }
+            
+            // Build the GET URL with query parameter
+            const downloadUrl = `${CONFIG.documentWebhookUrl}?query=${encodeURIComponent(url)}`;
+            
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = filename || 'documento'; // Suggest filename
+            link.target = '_blank'; // Fallback if download doesn't work
+            
+            // Trigger the download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+        
+        // Date range inputs for contracts list
+        const dateFromInput = document.getElementById('listDateFrom');
+        const dateToInput = document.getElementById('listDateTo');
+        const applyDateBtn = document.getElementById('applyDateFilter');
+        const clearDateBtn = document.getElementById('clearDateFilter');
+        
+        if (applyDateBtn) {
+            applyDateBtn.addEventListener('click', async () => {
+                state.listDateFrom = dateFromInput.value || null;
+                state.listDateTo = dateToInput.value || null;
+                showLoading(true);
+                await loadContracts();
+                showLoading(false);
+            });
+        }
+        
+        if (clearDateBtn) {
+            clearDateBtn.addEventListener('click', async () => {
+                dateFromInput.value = '';
+                dateToInput.value = '';
+                state.listDateFrom = null;
+                state.listDateTo = null;
+                showLoading(true);
+                await loadContracts();
+                showLoading(false);
+            });
+        }
+        
+        // Items per page selector
+        const itemsPerPageSelect = document.getElementById('itemsPerPage');
+        if (itemsPerPageSelect) {
+            itemsPerPageSelect.addEventListener('change', (e) => {
+                CONFIG.itemsPerPage = parseInt(e.target.value);
+                state.currentPage = 1;
+                renderContracts();
+                updatePagination();
+            });
+        }
+    }
+    
+    function exportToCSV() {
+        let contractsToExport = [];
+        
+        if (state.selectAllMode) {
+            // Export all filtered contracts
+            contractsToExport = state.filteredContracts;
+        } else {
+            // Export only selected contracts
+            const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked'))
+                .map(cb => cb.dataset.id);
+            
+            if (selectedIds.length === 0) {
+                alert('Por favor, selecciona al menos un contrato para exportar');
+                return;
+            }
+            
+            contractsToExport = state.filteredContracts.filter(c => selectedIds.includes(c.id));
+        }
+        
+        if (contractsToExport.length === 0) {
+            alert('No hay datos para exportar');
+            return;
+        }
+        
+        const headers = ['ID', 'Cliente', 'Estado', 'Comercializadora', 'Tarifa Acceso', 'CUPS', 'Población', 'Provincia', 'Consumo', 'Fecha Creación', 'Fecha Activación'];
+        const rows = contractsToExport.map(c => [
+            c.id || '',
+            c.cliente || '',
+            c.estado || '',
+            c.tipo || '',
+            c.tarifa_acceso || '',
+            c.cups || '',
+            c.poblacion || '',
+            c.provincia || '',
+            c.consumo || '',
+            c.fecha || '',
+            c.fecha_activacion || ''
+        ]);
+        
+        const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `contratos_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        // Reset selection after export
+        state.selectAllMode = false;
+        document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+        document.getElementById('selectAll').checked = false;
+        updateSelectionInfo();
+    }
+    
+    // Utility functions
+    function showLoading(show) {
+        document.getElementById('dashboardLoading').classList.toggle('active', show);
+    }
+    
+    function showError(message) {
+        document.getElementById('errorText').textContent = message;
+        document.getElementById('dashboardError').classList.add('active');
+    }
+    
+    function showEmptyState(show) {
+        document.getElementById('emptyState').style.display = show ? 'block' : 'none';
+        document.querySelector('.contracts-table').style.display = show ? 'none' : 'table';
+        document.getElementById('pagination').style.display = show ? 'none' : 'flex';
+    }
+    
+    function formatNumber(num) {
+        return new Intl.NumberFormat('es-ES').format(num);
+    }
+    
+    function formatLargeNumber(num) {
+        if (num >= 1000000) {
+            return (num / 1000000).toFixed(1).replace('.', ',') + 'M';
+        } else if (num >= 1000) {
+            return formatNumber(Math.round(num));
+        }
+        return formatNumber(num);
+    }
+    
+    function formatDate(dateStr) {
+        if (!dateStr) return '-';
+        try {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        } catch {
+            return '-';
+        }
+    }
+    
+    function parseDate(dateStr) {
+        if (!dateStr || dateStr === '' || dateStr.startsWith('0000')) return null;
+        try {
+            // Handle DD/MM/YYYY format
+            if (dateStr.includes('/')) {
+                const parts = dateStr.split('/');
+                if (parts.length === 3) {
+                    return new Date(parts[2], parseInt(parts[1]) - 1, parts[0]);
+                }
+            }
+            // Handle YYYY-MM-DD format
+            return new Date(dateStr);
+        } catch {
+            return null;
+        }
+    }
+    
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+})();
+</script>
