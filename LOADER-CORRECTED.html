@@ -10,15 +10,15 @@
 <div class="tunergia-dashboard">
 
     <!-- Loading overlay -->
-    <div class="loading-overlay" id="dashboardLoading">
+    <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
         <p class="loading-text">Cargando datos del dashboard...</p>
     </div>
 
     <!-- Error banner -->
-    <div class="error-banner" id="dashboardError">
+    <div class="error-banner" id="errorBanner">
         <span class="error-icon">⚠️</span>
-        <span class="error-text" id="errorText">Ha ocurrido un error al cargar los datos.</span>
+        <span class="error-text" id="errorBannerText">Ha ocurrido un error al cargar los datos.</span>
     </div>
 
     <!-- User banner -->
@@ -211,34 +211,37 @@
                 <thead>
                     <tr>
                         <th>
-                            <input type="checkbox" id="selectAllCheckbox" style="cursor: pointer;">
+                            <input type="checkbox" id="selectAll" style="cursor: pointer;">
                         </th>
-                        <th class="sortable" data-column="id_contrato_nodo">
+                        <th class="sortable" data-sort="id">
                             ID
-                            <span class="sort-arrow">↕</span>
+                            <span class="sort-icon">↕</span>
                         </th>
-                        <th class="sortable" data-column="cliente">
+                        <th class="sortable" data-sort="cliente">
                             Cliente
-                            <span class="sort-arrow">↕</span>
+                            <span class="sort-icon">↕</span>
                         </th>
-                        <th class="sortable" data-column="estado">
+                        <th class="sortable" data-sort="estado">
                             Estado
-                            <span class="sort-arrow">↕</span>
+                            <span class="sort-icon">↕</span>
                         </th>
-                        <th class="sortable" data-column="tipo_contrato">
+                        <th class="sortable" data-sort="tipo">
                             Tipo
-                            <span class="sort-arrow">↕</span>
+                            <span class="sort-icon">↕</span>
                         </th>
-                        <th class="sortable active desc" data-column="fecha">
-                            Fecha
-                            <span class="sort-arrow">↓</span>
+                        <th class="sortable" data-sort="tarifa_acceso">
+                            Tarifa
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="sortable" data-sort="consumo">
+                            Consumo
+                            <span class="sort-icon">↕</span>
                         </th>
                         <th>CUPS</th>
-                        <th class="sortable" data-column="consumo_anual_kwh">
-                            Consumo
-                            <span class="sort-arrow">↕</span>
+                        <th class="sortable active desc" data-sort="fecha">
+                            Fecha
+                            <span class="sort-icon">↓</span>
                         </th>
-                        <th>Tarifa</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -250,13 +253,23 @@
             </table>
         </div>
 
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">📋</div>
+            <h3>No hay contratos</h3>
+            <p>No se encontraron contratos para este comercial.</p>
+        </div>
+
         <!-- Pagination -->
-        <div class="pagination" id="paginationControls" style="display: none;">
-            <button class="pagination-btn" id="prevPage" disabled>← Anterior</button>
+        <div class="pagination" id="pagination" style="display: none;">
             <div class="pagination-info">
-                Página <span id="currentPage">1</span> de <span id="totalPages">1</span>
+                <span id="paginationInfo">1 of 1</span>
+                <span style="margin-left: 16px; color: #718096; font-size: 12px;" id="loadedInfo">Mostrando 0 de 0</span>
             </div>
-            <button class="pagination-btn" id="nextPage">Siguiente →</button>
+            <div class="pagination-controls" style="display: flex; align-items: center; gap: 12px;">
+                <button class="pagination-btn" id="prevPage" disabled>&lt;</button>
+                <button class="pagination-btn" id="nextPage">Avanzar</button>
+            </div>
         </div>
     </div>
 
@@ -289,15 +302,15 @@
 </div>
 
 <!-- Load CSS from GitHub via jsDelivr CDN -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/styles.css?v=1.0.4">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/styles.css?v=1.0.6">
 
 <!-- Load JavaScript modules from GitHub via jsDelivr CDN -->
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/config.js?v=1.0.4"></script>
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/state.js?v=1.0.4"></script>
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/utils.js?v=1.0.4"></script>
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/api.js?v=1.0.4"></script>
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/ui.js?v=1.0.4"></script>
-<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/main.js?v=1.0.4"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/config.js?v=1.0.6"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/state.js?v=1.0.6"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/utils.js?v=1.0.6"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/api.js?v=1.0.6"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/ui.js?v=1.0.6"></script>
+<script src="https://cdn.jsdelivr.net/gh/pedrokrug/micro_crm_tunergia@claude/enhance-interface-usability-UKPeH/src/main.js?v=1.0.6"></script>
 
 <!--
    ✅ COMPLETE VERSION - Matches original Interface Tunergia.html exactly
@@ -314,7 +327,7 @@
    - Pagination controls
 
    🔄 UPDATED: Repository name changed to micro_crm_tunergia
-   📦 Version: 1.0.4 (Dashboard statistics + clickable filters working!)
+   📦 Version: 1.0.6 (COMPLETE REBUILD - All functionality restored!)
 
    ⚠️ IMPORTANT: Your repo must be PUBLIC for jsDelivr to work!
    Check: https://github.com/pedrokrug/micro_crm_tunergia/settings

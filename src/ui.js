@@ -191,15 +191,77 @@ window.TunergiaUI = {
     },
 
     /**
+     * Update pagination display
+     */
+    updatePagination() {
+        const totalPages = Math.ceil(window.getState('filteredContracts').length / window.TunergiaConfig.itemsPerPage);
+        const currentPage = window.getState('currentPage');
+
+        document.getElementById('paginationInfo').textContent = `${currentPage} of ${totalPages || 1}`;
+        document.getElementById('prevPage').disabled = currentPage <= 1;
+        document.getElementById('nextPage').disabled = currentPage >= totalPages;
+
+        const startIndex = (currentPage - 1) * window.TunergiaConfig.itemsPerPage;
+        const endIndex = Math.min(startIndex + window.TunergiaConfig.itemsPerPage, window.getState('filteredContracts').length);
+        document.getElementById('loadedInfo').textContent = `Mostrando ${startIndex + 1}-${endIndex} de ${window.getState('filteredContracts').length}`;
+    },
+
+    /**
+     * Show/hide empty state
+     */
+    showEmptyState(show) {
+        const emptyState = document.getElementById('emptyState');
+        const table = document.querySelector('.contracts-table');
+        const pagination = document.getElementById('pagination');
+
+        if (emptyState) emptyState.style.display = show ? 'block' : 'none';
+        if (table) table.style.display = show ? 'none' : 'table';
+        if (pagination) pagination.style.display = show ? 'none' : 'flex';
+    },
+
+    /**
+     * Update selection info
+     */
+    updateSelectionInfo() {
+        const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+        const selectedCount = checkboxes.length;
+        const selectionInfo = document.getElementById('selectionInfo');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const exportBtn = document.getElementById('exportBtn');
+        const selectAllCheckbox = document.getElementById('selectAll');
+
+        if (selectedCount > 0) {
+            if (selectionInfo) selectionInfo.style.display = 'flex';
+            if (selectedCountSpan) selectedCountSpan.textContent = `${selectedCount} seleccionado${selectedCount > 1 ? 's' : ''}`;
+            if (exportBtn) {
+                exportBtn.disabled = false;
+                exportBtn.title = 'Exportar contratos seleccionados';
+            }
+        } else {
+            if (selectionInfo) selectionInfo.style.display = 'none';
+            if (exportBtn) {
+                exportBtn.disabled = true;
+                exportBtn.title = 'Selecciona contratos para exportar';
+            }
+        }
+
+        const allCheckboxes = document.querySelectorAll('.row-checkbox');
+        if (selectAllCheckbox && allCheckboxes.length > 0) {
+            selectAllCheckbox.checked = selectedCount === allCheckboxes.length;
+            selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < allCheckboxes.length;
+        }
+    },
+
+    /**
      * Render contracts table
      */
     renderContractsTable() {
         const tbody = document.getElementById('contractsTableBody');
-        const contracts = window.getState('filteredContracts');
+        const allContracts = window.getState('filteredContracts');
 
         if (!tbody) return;
 
-        if (!contracts || contracts.length === 0) {
+        if (!allContracts || allContracts.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="10" class="empty-state">
@@ -209,8 +271,18 @@ window.TunergiaUI = {
                     </td>
                 </tr>
             `;
+            this.showEmptyState(true);
             return;
         }
+
+        this.showEmptyState(false);
+
+        // Pagination logic
+        const currentPage = window.getState('currentPage');
+        const itemsPerPage = window.TunergiaConfig.itemsPerPage;
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const contracts = allContracts.slice(startIndex, endIndex);
 
         const escapeHtml = window.TunergiaUtils.escapeHtml;
         const getStatusClass = window.TunergiaUtils.getStatusClass;
@@ -264,6 +336,14 @@ window.TunergiaUI = {
                 if (id) this.openContractDetail(id);
             });
         });
+
+        // Add checkbox change handlers
+        tbody.querySelectorAll('.row-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', () => this.updateSelectionInfo());
+        });
+
+        // Update pagination display
+        this.updatePagination();
     },
 
     /**
@@ -369,7 +449,7 @@ window.TunergiaUI = {
      * Apply filters to contracts
      */
     applyFilters() {
-        let filtered = window.getState('contracts');
+        let filtered = [...window.getState('contracts')];
         const searchTerm = window.getState('searchTerm').toLowerCase();
         const currentFilter = window.getState('currentFilter');
 
@@ -387,7 +467,31 @@ window.TunergiaUI = {
             filtered = filtered.filter(c => (c.estado || '').toLowerCase() === currentFilter.toLowerCase());
         }
 
-        window.setState({ filteredContracts: filtered });
+        // Apply sorting
+        const sortColumn = window.getState('sortColumn');
+        const sortDirection = window.getState('sortDirection');
+
+        if (sortColumn) {
+            filtered.sort((a, b) => {
+                let aVal = a[sortColumn] || '';
+                let bVal = b[sortColumn] || '';
+
+                // Handle numeric columns
+                if (sortColumn === 'id' || sortColumn === 'consumo') {
+                    aVal = parseFloat(aVal) || 0;
+                    bVal = parseFloat(bVal) || 0;
+                } else {
+                    aVal = String(aVal).toLowerCase();
+                    bVal = String(bVal).toLowerCase();
+                }
+
+                if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        window.setState({ filteredContracts: filtered, currentPage: 1 });
         this.renderContractsTable();
 
         // Update count
@@ -402,14 +506,15 @@ window.TunergiaUI = {
      */
     setupEventListeners() {
         // Date filter buttons
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
+        document.querySelectorAll('.filter-btn[data-days]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                document.querySelectorAll('.filter-btn[data-days]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
 
-                const days = parseInt(e.target.dataset.days) || 30;
-                window.setState({ dateFilter: days });
+                window.setState({ dateFilter: parseInt(btn.dataset.days) });
+                this.showLoading(true);
                 await this.updateStatistics();
+                this.showLoading(false);
             });
         });
 
@@ -424,12 +529,69 @@ window.TunergiaUI = {
 
         // Filter tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
+                btn.classList.add('active');
 
-                const filter = e.target.dataset.filter || 'all';
-                window.setState({ currentFilter: filter });
+                window.setState({ currentFilter: btn.dataset.filter || 'all' });
+                this.applyFilters();
+            });
+        });
+
+        // Pagination buttons
+        const prevPage = document.getElementById('prevPage');
+        if (prevPage) {
+            prevPage.addEventListener('click', () => {
+                const currentPage = window.getState('currentPage');
+                if (currentPage > 1) {
+                    window.setState({ currentPage: currentPage - 1 });
+                    this.renderContractsTable();
+                }
+            });
+        }
+
+        const nextPage = document.getElementById('nextPage');
+        if (nextPage) {
+            nextPage.addEventListener('click', () => {
+                const currentPage = window.getState('currentPage');
+                const totalPages = Math.ceil(window.getState('filteredContracts').length / window.TunergiaConfig.itemsPerPage);
+                if (currentPage < totalPages) {
+                    window.setState({ currentPage: currentPage + 1 });
+                    this.renderContractsTable();
+                }
+            });
+        }
+
+        // Select all checkbox
+        const selectAll = document.getElementById('selectAll');
+        if (selectAll) {
+            selectAll.addEventListener('change', (e) => {
+                document.querySelectorAll('.row-checkbox').forEach(cb => {
+                    cb.checked = e.target.checked;
+                });
+                this.updateSelectionInfo();
+            });
+        }
+
+        // Sortable columns
+        document.querySelectorAll('.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const column = th.dataset.sort;
+                const currentColumn = window.getState('sortColumn');
+                const currentDirection = window.getState('sortDirection');
+
+                if (currentColumn === column) {
+                    window.setState({ sortDirection: currentDirection === 'asc' ? 'desc' : 'asc' });
+                } else {
+                    window.setState({ sortColumn: column, sortDirection: 'asc' });
+                }
+
+                // Update visual indicators
+                document.querySelectorAll('.sortable').forEach(header => {
+                    header.classList.remove('active', 'asc', 'desc');
+                });
+                th.classList.add('active', window.getState('sortDirection'));
+
                 this.applyFilters();
             });
         });
