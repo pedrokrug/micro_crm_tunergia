@@ -2050,7 +2050,7 @@
                                     <option value="PARTICULAR">Particular</option>
                                     <option value="AUTONOMO">Autónomo</option>
                                     <option value="EMPRESA">Empresa</option>
-                                    <option value="CCMM">CCMM</option>
+                                    <option value="CCPP">CCPP (Comunidad de Propietarios)</option>
                                 </select>
                             </div>
                             <div class="detail-field">
@@ -2278,6 +2278,7 @@
         nodoWebhookUrl: 'https://tunuevaenergia.com/webhook/nodo',
         documentWebhookUrl: 'https://tunuevaenergia.com/webhook/documento-nodo',
         bigQueryTable: '`tunergia-1722509306765.NODO.Contratos_Comisiones`',
+        productosTable: '`tunergia-1722509306765.Precios_Tunergia.Tarifas Fijas Portfolio`',
         itemsPerPage: 10
     };
     
@@ -2746,7 +2747,7 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    query: `SELECT DISTINCT COMPA____A FROM ${CONFIG.bigQueryTable} WHERE COMPA____A IS NOT NULL ORDER BY COMPA____A`
+                    query: `SELECT DISTINCT COMPA____A FROM ${CONFIG.productosTable} WHERE COMPA____A IS NOT NULL ORDER BY COMPA____A`
                 })
             });
 
@@ -2793,13 +2794,13 @@
                 'PARTICULAR': 'Residencial',
                 'AUTONOMO': 'Empresa;CCPP',
                 'EMPRESA': 'EMPRESA',
-                'CCMM': 'TODO'
+                'CCPP': 'TODO'
             };
 
             const tipoClienteValue = tipoClienteMap[tipoCliente] || tipoCliente;
 
             // Build query with filters
-            let query = `SELECT DISTINCT PRODUCTO, TARIFA, TIPO_CLIENTE FROM ${CONFIG.bigQueryTable} WHERE COMPA____A = '${comercializadora}' AND TARIFA = '${tarifa}'`;
+            let query = `SELECT DISTINCT PRODUCTO, TARIFA, TIPO_CLIENTE FROM ${CONFIG.productosTable} WHERE COMPA____A = '${comercializadora}' AND TARIFA = '${tarifa}'`;
 
             if (tipoCliente) {
                 // Handle multiple values in TIPO_CLIENTE field
