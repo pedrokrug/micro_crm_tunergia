@@ -43,9 +43,12 @@
             // Step 2: Update user UI
             window.TunergiaUI.updateUserUI();
 
-            // Step 3: Load contracts
-            console.log('📋 Loading contracts...');
-            await window.TunergiaAPI.loadContracts();
+            // Step 3: Load dashboard data in parallel
+            console.log('📊 Loading dashboard data...');
+            await Promise.all([
+                window.TunergiaUI.updateStatistics(),
+                window.TunergiaAPI.loadContracts()
+            ]);
 
             const contractCount = window.getState('contracts').length;
             console.log(`✅ Loaded ${contractCount} contracts`);
