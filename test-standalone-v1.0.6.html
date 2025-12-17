@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tunergia - Local Test v1.0.6</title>
+
+    <!-- Load CSS from LOCAL src folder -->
+    <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+
+<div class="tunergia-dashboard">
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Cargando datos del dashboard...</p>
+    </div>
+
+    <!-- Error banner -->
+    <div class="error-banner" id="errorBanner">
+        <span class="error-icon">⚠️</span>
+        <span class="error-text" id="errorBannerText">Ha ocurrido un error al cargar los datos.</span>
+    </div>
+
+    <!-- User banner -->
+    <div class="user-banner" id="userBanner">
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">--</div>
+            <div class="user-details">
+                <h3 id="userName">Cargando...</h3>
+                <p id="userEmail">Cargando información del usuario...</p>
+            </div>
+        </div>
+        <div class="user-id-badge" id="userIdBadge">ID: ---</div>
+    </div>
+
+    <!-- Dashboard header -->
+    <div class="dashboard-header">
+        <div class="header-left">
+            <h1>Bienvenido, <span id="welcomeName">Usuario</span></h1>
+            <p>Gestiona tus contratos, centraliza tu información y haz comparativas</p>
+        </div>
+        <div class="header-right">
+            <div class="alert-badge">
+                <span class="alert-icon">⚡</span>
+                <span>¡Atención! Nuevas actualizaciones de precio disponibles</span>
+            </div>
+            <button class="notification-btn" title="Notificaciones">🔔</button>
+        </div>
+    </div>
+
+    <!-- Date filter buttons -->
+    <div class="date-filters">
+        <div class="filter-buttons">
+            <button class="filter-btn" data-days="365">12 meses</button>
+            <button class="filter-btn" data-days="180">6 meses</button>
+            <button class="filter-btn active" data-days="30">30 días</button>
+            <button class="filter-btn" data-days="7">7 días</button>
+        </div>
+        <span style="font-size: 12px; color: #718096;">← Filtro para estadísticas</span>
+    </div>
+
+    <!-- Stats grid - Row 1 -->
+    <div class="stats-grid" style="margin-bottom: 12px;">
+        <div class="stat-card centered">
+            <div class="stat-label">Contratos En Tramitación</div>
+            <div class="stat-value-centered">
+                <span id="statTramitados">--</span>
+            </div>
+            <div class="stat-change neutral" id="changeTramitados">
+                <span class="change-icon">⏳</span>
+                <span>pendientes actualmente</span>
+            </div>
+        </div>
+
+        <div class="stat-card centered">
+            <div class="stat-label">Contratos Activados</div>
+            <div class="stat-value-centered">
+                <span id="statActivados">--</span>
+            </div>
+            <div class="stat-change positive" id="changeActivados">
+                <span class="change-icon">↑</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+
+        <div class="stat-card centered">
+            <div class="stat-label">Contratos Bajas</div>
+            <div class="stat-value-centered">
+                <span id="statBajas">--</span>
+            </div>
+            <div class="stat-change negative" id="changeBajas">
+                <span class="change-icon">↓</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats grid - Row 2 -->
+    <div class="stats-grid">
+        <div class="stat-card centered">
+            <div class="stat-label">kWh En Tramitación</div>
+            <div class="stat-value-centered">
+                <span id="statKwhTramitacion">--</span>
+            </div>
+            <div class="stat-change neutral" id="changeKwhTramitacion">
+                <span class="change-icon">⏳</span>
+                <span>pendiente</span>
+            </div>
+        </div>
+
+        <div class="stat-card centered">
+            <div class="stat-label">kWh Activados</div>
+            <div class="stat-value-centered">
+                <span id="statKwhActivados">--</span>
+            </div>
+            <div class="stat-change positive" id="changeKwhActivados">
+                <span class="change-icon">⚡</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+
+        <div class="stat-card centered">
+            <div class="stat-label">kWh Bajas</div>
+            <div class="stat-value-centered">
+                <span id="statKwhBajas">--</span>
+            </div>
+            <div class="stat-change negative" id="changeKwhBajas">
+                <span class="change-icon">↓</span>
+                <span>--% vs período anterior</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contracts section -->
+    <div class="contracts-section">
+        <div class="contracts-header">
+            <div class="contracts-title">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <h2>Todos tus Contratos</h2>
+                        <span class="contracts-count" id="totalContracts">0 Contratos</span>
+                    </div>
+                    <p>Listado completo de tus clientes y contratos.</p>
+                </div>
+            </div>
+            <div class="contracts-actions">
+                <div id="selectionInfo" style="display: none; align-items: center; gap: 8px; padding: 8px 12px; background: #ebf8ff; border-radius: 6px; margin-right: 8px;">
+                    <span id="selectedCount" style="font-weight: 600; color: #2b6cb0;">0 seleccionados</span>
+                </div>
+                <button class="action-btn" id="exportBtn" disabled title="Selecciona contratos para exportar">
+                    <span>📤</span> Exportar
+                </button>
+                <button class="action-btn primary" id="createBtn">
+                    <span>+</span> Crear Contrato
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab filters -->
+        <div class="contracts-filters">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-filter="all">Todos</button>
+                <button class="tab-btn" data-filter="tramitado">En Tramitación</button>
+                <button class="tab-btn" data-filter="oportunidad">Oportunidad</button>
+                <button class="tab-btn" data-filter="activado">Activados</button>
+                <button class="tab-btn" data-filter="baja">Bajas</button>
+            </div>
+            <div class="search-filters">
+                <div class="search-input">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Buscar cliente, CUPS, comercializadora...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Contracts table -->
+        <div class="contracts-table-container">
+            <table class="contracts-table">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="selectAll" style="cursor: pointer;">
+                        </th>
+                        <th class="sortable" data-sort="id">
+                            ID
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="sortable" data-sort="cliente">
+                            Cliente
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="sortable" data-sort="estado">
+                            Estado
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="sortable" data-sort="tipo">
+                            Tipo
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="sortable" data-sort="tarifa_acceso">
+                            Tarifa
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th class="sortable" data-sort="consumo">
+                            Consumo
+                            <span class="sort-icon">↕</span>
+                        </th>
+                        <th>CUPS</th>
+                        <th class="sortable active desc" data-sort="fecha">
+                            Fecha
+                            <span class="sort-icon">↓</span>
+                        </th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="contractsTableBody">
+                    <tr>
+                        <td colspan="10" class="empty-state">Cargando contratos...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">📋</div>
+            <h3>No hay contratos</h3>
+            <p>No se encontraron contratos para este comercial.</p>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination" style="display: none;">
+            <div class="pagination-info">
+                <span id="paginationInfo">1 of 1</span>
+                <span style="margin-left: 16px; color: #718096; font-size: 12px;" id="loadedInfo">Mostrando 0 de 0</span>
+            </div>
+            <div class="pagination-controls" style="display: flex; align-items: center; gap: 12px;">
+                <button class="pagination-btn" id="prevPage" disabled>&lt;</button>
+                <button class="pagination-btn" id="nextPage">Avanzar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contract Detail Modal -->
+    <div id="contractDetailModal" class="contract-detail-modal">
+        <div class="contract-detail-overlay" onclick="window.TunergiaUI && window.TunergiaUI.closeContractDetail()"></div>
+        <div class="contract-detail-container">
+            <div class="contract-detail-header">
+                <button class="back-btn" id="closeContractDetailBtn" onclick="window.TunergiaUI && window.TunergiaUI.closeContractDetail()">
+                    ← Volver
+                </button>
+                <div class="contract-id-badge" id="modalContractId">ID: -</div>
+            </div>
+            <div id="contractDetailLoading" class="contract-detail-loading">
+                <div class="loading-spinner"></div>
+                <p>Cargando detalles...</p>
+            </div>
+            <div id="contractDetailError" class="contract-detail-error">
+                <span>⚠️</span>
+                <p id="contractDetailErrorText">Error al cargar</p>
+            </div>
+            <div id="contractDetailContent" class="contract-detail-content">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load JavaScript modules from LOCAL src folder -->
+<script src="src/config.js"></script>
+<script src="src/state.js"></script>
+<script src="src/utils.js"></script>
+<script src="src/api.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/main.js"></script>
+
+<script>
+// Debug: Check all modules loaded
+console.log('=== MODULE LOADING CHECK v1.0.6 ===');
+console.log('1. Config loaded:', typeof window.TunergiaConfig !== 'undefined', window.TunergiaConfig);
+console.log('2. State loaded:', typeof window.TunergiaState !== 'undefined', window.TunergiaState);
+console.log('3. Utils loaded:', typeof window.TunergiaUtils !== 'undefined');
+console.log('4. API loaded:', typeof window.TunergiaAPI !== 'undefined');
+console.log('5. UI loaded:', typeof window.TunergiaUI !== 'undefined');
+console.log('6. UI.updatePagination exists:', typeof window.TunergiaUI?.updatePagination === 'function');
+console.log('7. UI.showEmptyState exists:', typeof window.TunergiaUI?.showEmptyState === 'function');
+console.log('8. UI.updateSelectionInfo exists:', typeof window.TunergiaUI?.updateSelectionInfo === 'function');
+console.log('9. setupEventListeners exists:', typeof window.TunergiaUI?.setupEventListeners === 'function');
+console.log('=====================================');
+</script>
+
+</body>
+</html>
