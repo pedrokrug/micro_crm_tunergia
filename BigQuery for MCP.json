@@ -29,28 +29,6 @@
     },
     {
       "parameters": {
-        "url": "=https://gaiag.nodogestion.com/api/operaciones/consultar/{{ $json.body.id }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBasicAuth",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        224,
-        224
-      ],
-      "id": "eb543d13-01b3-41dd-99bd-c69fbe7c5160",
-      "name": "HTTP Request",
-      "credentials": {
-        "httpBasicAuth": {
-          "id": "8Vg7TyHllfv2EefZ",
-          "name": "NODO - Prod"
-        }
-      }
-    },
-    {
-      "parameters": {
         "httpMethod": "POST",
         "path": "59200adf-d6df-4dd2-b319-5ab57d2e5052",
         "responseMode": "lastNode",
@@ -154,6 +132,270 @@
         448,
         448
       ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crear-contrato-nodo",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        672
+      ],
+      "id": "8ad7cef1-634f-43b5-9530-5bfa7966c058",
+      "name": "Crear Contrato en NODO",
+      "webhookId": "59200adf-d6df-4dd2-b319-5ab57d2e5052"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gaiag.nodogestion.com/api/operaciones/crear",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "nombre_cliente",
+              "value": "={{ $json.contract_data.titular }}"
+            },
+            {
+              "name": "nif",
+              "value": "={{ $json.contract_data.nif }}"
+            },
+            {
+              "name": "tipo_empresa",
+              "value": "={{ $json.tipo_empresa }}"
+            },
+            {
+              "name": "telefono",
+              "value": "={{ $json.telefono || '' }}"
+            },
+            {
+              "name": "direccion",
+              "value": "={{ $json.contract_data.direccion_fiscal }}"
+            },
+            {
+              "name": "cp",
+              "value": "={{ $json.contract_data.cp_fiscal }}"
+            },
+            {
+              "name": "poblacion",
+              "value": "={{ $json.contract_data.poblacion_fiscal }}"
+            },
+            {
+              "name": "provincia",
+              "value": "={{ $json.contract_data.provincia_fiscal }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.contract_data.email }}"
+            },
+            {
+              "name": "movil",
+              "value": "={{ $json.contract_data.movil }}"
+            },
+            {
+              "name": "cups",
+              "value": "={{ $json.contract_data.cups }}"
+            },
+            {
+              "name": "fecha",
+              "value": "={{ new Date().toISOString().slice(0, 19).replace('T', ' ') }}"
+            },
+            {
+              "name": "comercializadora",
+              "value": "={{ $json.comercializadora }}"
+            },
+            {
+              "name": "tarifa"
+            },
+            {
+              "name": "concepto",
+              "value": "={{ $json.concepto }}"
+            },
+            {
+              "name": "comercial",
+              "value": "1731"
+            },
+            {
+              "name": "comercializadora_saliente",
+              "value": "={{ $json.contract_data.comercializadora_actual }}"
+            },
+            {
+              "name": "cnae_actividad",
+              "value": "={{ $json.cnae || '9820' }}"
+            },
+            {
+              "name": "firma_digital",
+              "value": "1"
+            },
+            {
+              "name": "direccion_suministro",
+              "value": "={{ $json.contract_data.direccion_suministro }}"
+            },
+            {
+              "name": "poblacion_suministro",
+              "value": "={{ $json.contract_data.poblacion_suministro }}"
+            },
+            {
+              "name": "provincia_suministro",
+              "value": "={{ $json.contract_data.provincia_suministro }}"
+            },
+            {
+              "name": "cp_suministro",
+              "value": "={{ $json.contract_data.cp_suministro }}"
+            },
+            {
+              "name": "persona_contacto",
+              "value": "={{ $json.contract_data.titular }}"
+            },
+            {
+              "name": "persona_contacto_nif",
+              "value": "={{ $json.contract_data.nif }}"
+            },
+            {
+              "name": "iban_contrato",
+              "value": "={{ $json.contract_data.iban }}"
+            },
+            {
+              "name": "consumo",
+              "value": "={{ $json.contract_data.consumo_anual_kwh || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_1",
+              "value": "={{ $json.contract_data.potencia_p1 || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_2",
+              "value": "={{ $json.contract_data.potencia_p2 || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_3",
+              "value": "={{ $json.contract_data.potencia_p3 || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_4",
+              "value": "={{ $json.contract_data.potencia_p4 || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_5",
+              "value": "={{ $json.contract_data.potencia_p5 || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_6",
+              "value": "={{ $json.contract_data.potencia_p6 || 0 }}"
+            },
+            {
+              "name": "consumo_1",
+              "value": "={{ $json.contract_data.consumo_p1 || 0 }}"
+            },
+            {
+              "name": "consumo_2",
+              "value": "={{ $json.contract_data.consumo_p2 || 0 }}"
+            },
+            {
+              "name": "consumo_3",
+              "value": "={{ $json.contract_data.consumo_p3 || 0 }}"
+            },
+            {
+              "name": "consumo_4",
+              "value": "={{ $json.contract_data.consumo_p4 || 0 }}"
+            },
+            {
+              "name": "consumo_5",
+              "value": "={{ $json.contract_data.consumo_p5 || 0 }}"
+            },
+            {
+              "name": "consumo_6",
+              "value": "={{ $json.contract_data.consumo_p6 || 0 }}"
+            },
+            {
+              "name": "coste_operativo",
+              "value": "0"
+            },
+            {
+              "name": "cambio_comercializadora",
+              "value": "SI"
+            },
+            {
+              "name": "tarifa_acceso",
+              "value": "={{ $json.contract_data.tarifa_acceso }}"
+            },
+            {
+              "name": "fact_electronica",
+              "value": "SI"
+            },
+            {
+              "name": "luz_autoconsumo",
+              "value": "NO"
+            },
+            {
+              "name": "observaciones",
+              "value": "Contrato generado desde Tunerface"
+            },
+            {
+              "name": "futura_activacion",
+              "value": "CUANTO ANTES"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6fdf997-d56c-413c-bb1f-35445b3ba898",
+      "name": "NODO - Crear Contrato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        672
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "z40Y68JtmeUQHIop",
+          "name": "NODO - Test"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        672
+      ],
+      "id": "465880b3-a4f4-4cd6-8304-123b268c7e50",
+      "name": "DYNAMIC CONTRACT NODE"
+    },
+    {
+      "parameters": {
+        "url": "=https://gaiag.nodogestion.com/api/operaciones/consultar/{{ $json.body.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        224
+      ],
+      "id": "eb543d13-01b3-41dd-99bd-c69fbe7c5160",
+      "name": "Consulta NODO",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "8Vg7TyHllfv2EefZ",
+          "name": "NODO - Prod"
+        }
+      }
     }
   ],
   "connections": {
@@ -183,7 +425,7 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Consulta NODO",
             "type": "main",
             "index": 0
           }
@@ -206,6 +448,28 @@
         [
           {
             "node": "Respond to Document from NODO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Contrato en NODO": {
+      "main": [
+        [
+          {
+            "node": "DYNAMIC CONTRACT NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DYNAMIC CONTRACT NODE": {
+      "main": [
+        [
+          {
+            "node": "NODO - Crear Contrato",
             "type": "main",
             "index": 0
           }
