@@ -1,0 +1,270 @@
+/**
+ * Tunergia UI Module
+ * DOM manipulation and UI rendering functions
+ */
+
+window.TunergiaUI = {
+
+    /**
+     * Show/hide loading overlay
+     */
+    showLoading(show) {
+        const overlay = document.getElementById('loadingOverlay');
+        if (overlay) {
+            overlay.classList.toggle('active', show);
+        }
+    },
+
+    /**
+     * Show error message
+     */
+    showError(message) {
+        const banner = document.getElementById('errorBanner');
+        if (banner) {
+            document.getElementById('errorBannerText').textContent = message;
+            banner.classList.add('active');
+            setTimeout(() => banner.classList.remove('active'), 5000);
+        } else {
+            alert('Error: ' + message);
+        }
+    },
+
+    /**
+     * Update user UI elements
+     */
+    updateUserUI() {
+        const user = window.getState('currentUser');
+        if (!user) return;
+
+        const updateEl = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        };
+
+        updateEl('userName', user.name);
+        updateEl('userEmail', user.email);
+        updateEl('welcomeName', user.name.split(' ')[0]);
+        updateEl('userAvatar', window.TunergiaUtils.getInitials(user.name));
+        updateEl('userIdBadge', `ID: ${window.getState('idComercial') || 'N/A'}`);
+    },
+
+    /**
+     * Render contracts table
+     */
+    renderContractsTable() {
+        const tbody = document.getElementById('contractsTableBody');
+        const contracts = window.getState('filteredContracts');
+
+        if (!tbody) return;
+
+        if (!contracts || contracts.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="9" class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <h3>No hay contratos</h3>
+                        <p>No se encontraron contratos con los filtros aplicados</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = contracts.map(contract => `
+            <tr>
+                <td class="id-cell">${contract.id || '-'}</td>
+                <td class="name-cell">
+                    <div class="client-info">
+                        <div class="client-name">${contract.cliente || '-'}</div>
+                    </div>
+                </td>
+                <td class="status-cell">
+                    <span class="status-badge ${(contract.estado || 'default').toLowerCase()}">${contract.estado || '-'}</span>
+                </td>
+                <td class="comercializadora-cell">${contract.tipo || '-'}</td>
+                <td class="fecha-cell">${window.TunergiaUtils.formatDate(contract.fecha)}</td>
+                <td class="cups-cell"><span class="cups-code">${contract.cups || '-'}</span></td>
+                <td class="consumo-cell">${window.TunergiaUtils.formatNumber(contract.consumo || 0)}</td>
+                <td class="tarifa-cell"><span class="tarifa-badge">${contract.tarifa_acceso || '-'}</span></td>
+                <td class="action-cell">
+                    <button class="view-btn" onclick="window.TunergiaUI.openContractDetail(${contract.id})" title="Ver detalles">
+                        👁️
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    /**
+     * Open contract detail modal
+     */
+    async openContractDetail(contractId) {
+        const modal = document.getElementById('contractDetailModal');
+        if (!modal) return;
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        window.setState({ currentContractId: contractId });
+
+        const loading = document.getElementById('contractDetailLoading');
+        const content = document.getElementById('contractDetailContent');
+        const error = document.getElementById('contractDetailError');
+
+        if (loading) loading.classList.add('active');
+        if (content) content.classList.remove('active');
+        if (error) error.classList.remove('active');
+
+        try {
+            const data = await window.TunergiaAPI.getContractDetail(contractId);
+            this.renderContractDetail(data);
+
+            if (loading) loading.classList.remove('active');
+            if (content) content.classList.add('active');
+
+            // Show RENOVAR button
+            const renovarBtn = document.getElementById('renovarContractBtn');
+            if (renovarBtn) renovarBtn.style.display = 'inline-flex';
+
+        } catch (err) {
+            console.error('Error loading contract details:', err);
+            if (loading) loading.classList.remove('active');
+            if (error) {
+                error.classList.add('active');
+                const errorText = document.getElementById('contractDetailErrorText');
+                if (errorText) errorText.textContent = err.message;
+            }
+        }
+    },
+
+    /**
+     * Render contract detail
+     */
+    renderContractDetail(data) {
+        // Parse contract data structure
+        let contract = {};
+        if (Array.isArray(data) && data.length > 0 && data[0].datos) {
+            contract = data[0].datos;
+        } else if (data.datos) {
+            contract = data.datos;
+        } else {
+            contract = data;
+        }
+
+        // Helper to set text content
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value || '-';
+        };
+
+        // Populate personal data
+        setText('detailNombre', contract.nombre_cliente || contract.persona_contacto);
+        setText('detailTipoCliente', contract.tipo_empresa || 'Particular');
+        setText('detailCorreo', contract.email);
+        setText('detailMovil', contract.movil || contract.telefono);
+        setText('detailDNI', contract.nif || contract.persona_contacto_nif);
+        setText('detailIBAN', contract.iban_contrato);
+        setText('detailDireccion', contract.direccion);
+        setText('detailCP', contract.cp);
+        setText('detailPoblacion', contract.poblacion);
+        setText('detailProvincia', contract.provincia);
+
+        // Populate supply data
+        setText('detailCUPS', contract.cups);
+        setText('detailComercializadoraSaliente', contract.comercializadora_saliente);
+
+        // Populate contract data
+        setText('detailComercializadora', contract.comercializadora);
+        setText('detailConcepto', contract.concepto);
+        setText('detailTarifaAcceso', window.TunergiaUtils.extractTarifaAcceso(contract.concepto));
+
+        console.log('Contract detail rendered:', contract);
+    },
+
+    /**
+     * Close contract detail modal
+     */
+    closeContractDetail() {
+        const modal = document.getElementById('contractDetailModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        const renovarBtn = document.getElementById('renovarContractBtn');
+        if (renovarBtn) renovarBtn.style.display = 'none';
+    },
+
+    /**
+     * Apply filters to contracts
+     */
+    applyFilters() {
+        let filtered = window.getState('contracts');
+        const searchTerm = window.getState('searchTerm').toLowerCase();
+        const currentFilter = window.getState('currentFilter');
+
+        // Apply search
+        if (searchTerm) {
+            filtered = filtered.filter(c =>
+                (c.cliente || '').toLowerCase().includes(searchTerm) ||
+                (c.cups || '').toLowerCase().includes(searchTerm) ||
+                (c.id || '').toString().includes(searchTerm)
+            );
+        }
+
+        // Apply status filter
+        if (currentFilter !== 'all') {
+            filtered = filtered.filter(c => (c.estado || '').toLowerCase() === currentFilter.toLowerCase());
+        }
+
+        window.setState({ filteredContracts: filtered });
+        this.renderContractsTable();
+
+        // Update count
+        const countEl = document.getElementById('totalContracts');
+        if (countEl) {
+            countEl.textContent = `${window.TunergiaUtils.formatNumber(filtered.length)} Contratos`;
+        }
+    },
+
+    /**
+     * Setup all event listeners
+     */
+    setupEventListeners() {
+        // Search input
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                window.setState({ searchTerm: e.target.value });
+                this.applyFilters();
+            });
+        }
+
+        // Filter tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+
+                const filter = e.target.dataset.filter || 'all';
+                window.setState({ currentFilter: filter });
+                this.applyFilters();
+            });
+        });
+
+        // Close contract detail button
+        const closeBtn = document.getElementById('closeContractDetailBtn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => this.closeContractDetail());
+        }
+
+        // Close on overlay click
+        const overlay = document.querySelector('.contract-detail-overlay');
+        if (overlay) {
+            overlay.addEventListener('click', () => this.closeContractDetail());
+        }
+
+        console.log('✅ Event listeners setup');
+    }
+};
+
+console.log('✅ UI loaded');
