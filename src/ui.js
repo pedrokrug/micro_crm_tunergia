@@ -474,6 +474,9 @@ window.TunergiaUI = {
             if (el) el.textContent = value || '-';
         };
 
+        const formatDecimal = (val) => val ? parseFloat(val).toFixed(2) : '-';
+        const formatNumber = (val) => val ? window.TunergiaUtils.formatNumber(parseFloat(val)) : '-';
+
         // Populate personal data
         setText('detailNombre', contract.nombre_cliente || contract.persona_contacto);
         setText('detailTipoCliente', contract.tipo_empresa || 'Particular');
@@ -487,13 +490,62 @@ window.TunergiaUI = {
         setText('detailProvincia', contract.provincia);
 
         // Populate supply data
-        setText('detailCUPS', contract.cups);
+        setText('detailNombreSuministro', contract.persona_contacto);
+        setText('detailDNISuministro', contract.persona_contacto_nif);
+        setText('detailDireccionSuministro', contract.direccion_suministro);
+        setText('detailPoblacionSuministro', contract.poblacion_suministro);
+        setText('detailCPSuministro', contract.cp_suministro);
+        setText('detailProvinciaSuministro', contract.provincia_suministro);
         setText('detailComercializadoraSaliente', contract.comercializadora_saliente);
+        setText('detailCUPS', contract.cups);
 
         // Populate contract data
         setText('detailComercializadora', contract.comercializadora);
         setText('detailConcepto', contract.concepto);
-        setText('detailTarifaAcceso', window.TunergiaUtils.extractTarifaAcceso(contract.concepto));
+        setText('detailTarifa', contract.tarifa || contract.producto);
+        setText('detailTarifaAcceso', contract.tarifa_acceso || window.TunergiaUtils.extractTarifaAcceso(contract.concepto));
+        setText('detailTipoContratacion', contract.tipo_contratacion);
+        setText('detailCNAE', contract.cnae_actividad || contract.cnae);
+        setText('detailFirmaDigital', contract.firma_digital === '1' || contract.firma_digital === 'SI' ? 'Sí' : 'No');
+        setText('detailFacturaElectronica', contract.fact_electronica === 'SI' ? 'Sí' : 'No');
+        setText('detailCambioComercializadora', contract.cambio_comercializadora ? 'Sí' : 'No');
+        setText('detailAutoconsumo', contract.luz_autoconsumo === 'SI' ? 'Sí' : 'No');
+        setText('detailFuturaActivacion', contract.futura_activacion || '-');
+        setText('detailFechaActivacion', contract.fecha_activacion && !contract.fecha_activacion.startsWith('0000') ? contract.fecha_activacion : '-');
+        setText('detailFechaCancelacion', contract.fecha_cancelacion && !contract.fecha_cancelacion.startsWith('0000') ? contract.fecha_cancelacion : '-');
+        setText('detailComercial', contract.comercial);
+        setText('detailKAM', contract.kam);
+
+        // Populate consumption data (P1-P6)
+        setText('detailPotP1', formatDecimal(contract.potencia_contratada_1 || contract.potencia_p1));
+        setText('detailPotP2', formatDecimal(contract.potencia_contratada_2 || contract.potencia_p2));
+        setText('detailPotP3', formatDecimal(contract.potencia_contratada_3 || contract.potencia_p3));
+        setText('detailPotP4', formatDecimal(contract.potencia_contratada_4 || contract.potencia_p4));
+        setText('detailPotP5', formatDecimal(contract.potencia_contratada_5 || contract.potencia_p5));
+        setText('detailPotP6', formatDecimal(contract.potencia_contratada_6 || contract.potencia_p6));
+
+        setText('detailConsP1', formatDecimal(contract.consumo_1 || contract.consumo_p1));
+        setText('detailConsP2', formatDecimal(contract.consumo_2 || contract.consumo_p2));
+        setText('detailConsP3', formatDecimal(contract.consumo_3 || contract.consumo_p3));
+        setText('detailConsP4', formatDecimal(contract.consumo_4 || contract.consumo_p4));
+        setText('detailConsP5', formatDecimal(contract.consumo_5 || contract.consumo_p5));
+        setText('detailConsP6', formatDecimal(contract.consumo_6 || contract.consumo_p6));
+
+        // Calculate total consumption
+        const consumoTotal = parseFloat(contract.consumo) ||
+            (parseFloat(contract.consumo_1 || 0) + parseFloat(contract.consumo_2 || 0) +
+             parseFloat(contract.consumo_3 || 0) + parseFloat(contract.consumo_4 || 0) +
+             parseFloat(contract.consumo_5 || 0) + parseFloat(contract.consumo_6 || 0));
+        setText('detailConsumoTotal', formatNumber(consumoTotal) + ' kWh');
+
+        // Populate observaciones
+        setText('detailObservaciones', contract.observaciones || 'Sin observaciones');
+
+        // Update modal contract ID badge
+        const modalBadge = document.getElementById('modalContractId');
+        if (modalBadge) {
+            modalBadge.textContent = `ID: ${contract.id || '-'}`;
+        }
 
         console.log('Contract detail rendered:', contract);
     },
@@ -562,17 +614,23 @@ window.TunergiaUI = {
      */
     async loadComercializadoras() {
         try {
-            const query = `SELECT DISTINCT comercializadora FROM ${window.TunergiaConfig.productosTable} ORDER BY comercializadora`;
+            // IMPORTANT: Column name is COMPA____A (with underscores), not comercializadora
+            const query = `SELECT DISTINCT COMPA____A FROM ${window.TunergiaConfig.productosTable} WHERE COMPA____A IS NOT NULL ORDER BY COMPA____A`;
             const data = await window.TunergiaAPI.executeQuery(query);
 
             const select = document.getElementById('createComercializadora');
             if (select && data) {
                 select.innerHTML = '<option value="">Seleccionar...</option>' +
-                    data.map(row => `<option value="${row.comercializadora}">${row.comercializadora}</option>`).join('');
+                    data.map(row => `<option value="${row.COMPA____A}">${row.COMPA____A}</option>`).join('');
                 console.log('✅ Loaded', data.length, 'comercializadoras');
             }
         } catch (error) {
             console.error('Error loading comercializadoras:', error);
+            // Fallback: show error in select
+            const select = document.getElementById('createComercializadora');
+            if (select) {
+                select.innerHTML = '<option value="">Error al cargar - intente nuevamente</option>';
+            }
         }
     },
 
