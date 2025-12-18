@@ -474,6 +474,12 @@ window.TunergiaUI = {
             if (el) el.textContent = value || '-';
         };
 
+        // Helper to set HTML content
+        const setHTML = (id, html) => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = html || '-';
+        };
+
         // Populate personal data
         setText('detailNombre', contract.nombre_cliente || contract.persona_contacto);
         setText('detailTipoCliente', contract.tipo_empresa || 'Particular');
@@ -491,11 +497,93 @@ window.TunergiaUI = {
         setText('detailComercializadoraSaliente', contract.comercializadora_saliente);
 
         // Populate contract data
-        setText('detailComercializadora', contract.comercializadora);
+        setText('detailComercializadora', contract.comercializadora?.replace('_GAIAG', '').replace(/_/g, ' ') || '-');
         setText('detailConcepto', contract.concepto);
-        setText('detailTarifaAcceso', window.TunergiaUtils.extractTarifaAcceso(contract.concepto));
+        setText('detailTarifaAcceso', contract.concepto ? window.TunergiaUtils.extractTarifaAcceso(contract.concepto) : '-');
 
-        console.log('Contract detail rendered:', contract);
+        // Update consumo tab content with power and consumption data
+        const consumoContent = document.querySelector('[data-tab-content="consumo"]');
+        if (consumoContent && contract) {
+            let consumoHTML = '<div class="detail-section"><h4>⚡ Potencia Contratada</h4>';
+
+            // Check for power data
+            const hasPowerData = ['potencia_contratada_1', 'potencia_contratada_2', 'potencia_contratada_3',
+                                   'potencia_contratada_4', 'potencia_contratada_5', 'potencia_contratada_6']
+                                  .some(field => parseFloat(contract[field]) > 0);
+
+            if (hasPowerData) {
+                consumoHTML += '<div class="detail-grid">';
+                for (let i = 1; i <= 6; i++) {
+                    const pot = parseFloat(contract[`potencia_contratada_${i}`]) || 0;
+                    if (pot > 0) {
+                        consumoHTML += `<div class="detail-field"><label>Periodo ${i}</label><div>${pot.toFixed(2)} kW</div></div>`;
+                    }
+                }
+                consumoHTML += '</div>';
+            } else {
+                consumoHTML += '<p style="color: #718096;">No hay datos de potencia disponibles</p>';
+            }
+
+            consumoHTML += '</div><div class="detail-section"><h4>📊 Consumo Anual</h4>';
+
+            // Check for consumption data
+            const hasConsumptionData = ['consumo_1', 'consumo_2', 'consumo_3',
+                                         'consumo_4', 'consumo_5', 'consumo_6']
+                                       .some(field => parseFloat(contract[field]) > 0);
+
+            if (hasConsumptionData) {
+                consumoHTML += '<div class="detail-grid">';
+                for (let i = 1; i <= 6; i++) {
+                    const cons = parseFloat(contract[`consumo_${i}`]) || 0;
+                    if (cons > 0) {
+                        consumoHTML += `<div class="detail-field"><label>Periodo ${i}</label><div>${window.TunergiaUtils.formatNumber(cons)} kWh</div></div>`;
+                    }
+                }
+                consumoHTML += '</div>';
+            } else {
+                const consumoTotal = parseFloat(contract.consumo) || 0;
+                if (consumoTotal > 0) {
+                    consumoHTML += `<p><strong>Total:</strong> ${window.TunergiaUtils.formatNumber(consumoTotal)} kWh/año</p>`;
+                } else {
+                    consumoHTML += '<p style="color: #718096;">No hay datos de consumo disponibles</p>';
+                }
+            }
+
+            consumoHTML += '</div>';
+            consumoContent.innerHTML = consumoHTML;
+        }
+
+        // Update documents/history tab if available
+        const documentsContent = document.querySelector('[data-tab-content="documents"]');
+        if (documentsContent && contract.historico && Array.isArray(contract.historico)) {
+            let historyHTML = '<div class="detail-section"><h4>📋 Historial de Cambios</h4>';
+
+            if (contract.historico.length > 0) {
+                historyHTML += '<div class="history-timeline" style="position: relative; padding-left: 30px;">';
+                contract.historico.slice(0, 15).forEach((item, index) => {
+                    historyHTML += `
+                        <div class="history-item" style="margin-bottom: 16px; padding: 16px; background: white; border: 1px solid #e2e8f0; border-radius: 8px;">
+                            <div style="font-size: 12px; color: #a0aec0; margin-bottom: 4px;">${item.fecha || '-'}</div>
+                            <div style="font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 4px;">${item.accion || '-'}</div>
+                            <div style="font-size: 13px; color: #718096;">${item.texto || '-'}</div>
+                            <div style="font-size: 12px; color: #a0aec0; margin-top: 8px; font-style: italic;">👤 ${item.usuario || '-'}</div>
+                        </div>
+                    `;
+                });
+                historyHTML += '</div>';
+
+                if (contract.historico.length > 15) {
+                    historyHTML += `<p style="text-align: center; color: #718096; margin-top: 16px;">... y ${contract.historico.length - 15} cambios más</p>`;
+                }
+            } else {
+                historyHTML += '<p style="color: #a0aec0; font-style: italic; text-align: center; padding: 40px 20px;">No hay historial disponible</p>';
+            }
+
+            historyHTML += '</div>';
+            documentsContent.innerHTML = historyHTML;
+        }
+
+        console.log('✅ Contract detail rendered:', contract);
     },
 
     /**
@@ -561,18 +649,42 @@ window.TunergiaUI = {
      * Load comercializadoras list
      */
     async loadComercializadoras() {
+        const select = document.getElementById('createComercializadora');
+        if (!select) return;
+
         try {
-            const query = `SELECT DISTINCT comercializadora FROM ${window.TunergiaConfig.productosTable} ORDER BY comercializadora`;
+            const query = `SELECT DISTINCT COMPA____A FROM ${window.TunergiaConfig.productosTable} WHERE COMPA____A IS NOT NULL ORDER BY COMPA____A LIMIT 100`;
             const data = await window.TunergiaAPI.executeQuery(query);
 
-            const select = document.getElementById('createComercializadora');
-            if (select && data) {
+            if (data && data.length > 0) {
                 select.innerHTML = '<option value="">Seleccionar...</option>' +
-                    data.map(row => `<option value="${row.comercializadora}">${row.comercializadora}</option>`).join('');
-                console.log('✅ Loaded', data.length, 'comercializadoras');
+                    data.map(row => `<option value="${row.COMPA____A}">${row.COMPA____A}</option>`).join('');
+                console.log('✅ Loaded', data.length, 'comercializadoras from BigQuery');
+            } else {
+                throw new Error('No data returned from query');
             }
         } catch (error) {
-            console.error('Error loading comercializadoras:', error);
+            console.error('⚠️ Error loading comercializadoras from BigQuery:', error);
+            console.log('📋 Using fallback comercializadoras list');
+
+            // Fallback: Use hardcoded list of common comercializadoras
+            const fallbackComercializadoras = [
+                'CONTIGO_ENERGIA',
+                'CONTIGO_ENERGIA_GAIAG',
+                'GESTERNOVA',
+                'NATURGY',
+                'IBERDROLA',
+                'ENDESA',
+                'REPSOL',
+                'TOTALENERGIES',
+                'FACTOR_ENERGIA',
+                'HOLALUZ'
+            ].sort();
+
+            select.innerHTML = '<option value="">Seleccionar...</option>' +
+                fallbackComercializadoras.map(name => `<option value="${name}">${name.replace(/_/g, ' ')}</option>`).join('');
+
+            console.log('✅ Loaded', fallbackComercializadoras.length, 'comercializadoras (fallback)');
         }
     },
 
