@@ -265,10 +265,15 @@ window.TunergiaAPI = {
         const mappedTypes = window.TunergiaUtils.mapTipoCliente(tipoCliente);
         let typeFilter = '';
 
-        if (Array.isArray(mappedTypes)) {
+        if (mappedTypes === 'TODO') {
+            // CCPP case - allow all types
+            typeFilter = '1=1';
+        } else if (Array.isArray(mappedTypes)) {
+            // Multiple types (AUTONOMO case)
             typeFilter = mappedTypes.map(t => `TIPO_DE_CLIENTE = '${t}'`).join(' OR ');
         } else {
-            typeFilter = `TIPO_DE_CLIENTE = '${mappedTypes}'`;
+            // Single type (PARTICULAR or EMPRESA)
+            typeFilter = `(TIPO_DE_CLIENTE = '${mappedTypes}' OR TIPO_DE_CLIENTE = 'TODO')`;
         }
 
         const query = `

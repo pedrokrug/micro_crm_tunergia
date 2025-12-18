@@ -222,6 +222,22 @@ window.TunergiaUI = {
     },
 
     /**
+     * Update total contracts count display
+     */
+    updateContractCount() {
+        const countEl = document.getElementById('totalContracts');
+        if (!countEl) {
+            console.warn('⚠️ Total contracts element not found (ID: totalContracts)');
+            return;
+        }
+
+        const filteredCount = window.getState('filteredContracts').length;
+        countEl.textContent = `${window.TunergiaUtils.formatNumber(filteredCount)} Contratos`;
+
+        console.log('✅ Contract count updated:', filteredCount);
+    },
+
+    /**
      * Show/hide empty state
      */
     showEmptyState(show) {
@@ -410,6 +426,9 @@ window.TunergiaUI = {
         // Update pagination display
         this.updatePagination();
 
+        // Update total contracts count display
+        this.updateContractCount();
+
         console.log('✅ Table render complete');
     },
 
@@ -536,89 +555,140 @@ window.TunergiaUI = {
             modalContractId.textContent = `ID: ${contract.id}`;
         }
 
-        // Update consumo tab content with power and consumption data
-        const consumoContent = document.querySelector('[data-tab-content="consumo"]');
-        if (consumoContent && contract) {
-            let consumoHTML = '<div class="detail-section"><h4>⚡ Potencia Contratada</h4>';
+        // Update power and consumption section in Detalles tab (now with proper grid)
+        this.renderPowerAndConsumption(contract);
 
-            // Check for power data
-            const hasPowerData = ['potencia_contratada_1', 'potencia_contratada_2', 'potencia_contratada_3',
-                                   'potencia_contratada_4', 'potencia_contratada_5', 'potencia_contratada_6']
-                                  .some(field => parseFloat(contract[field]) > 0);
+        // Update Documentacion tab with actual documents
+        this.renderDocuments(contract);
 
-            if (hasPowerData) {
-                consumoHTML += '<div class="detail-grid">';
-                for (let i = 1; i <= 6; i++) {
-                    const pot = parseFloat(contract[`potencia_contratada_${i}`]) || 0;
-                    if (pot > 0) {
-                        consumoHTML += `<div class="detail-field"><label>Periodo ${i}</label><div>${pot.toFixed(2)} kW</div></div>`;
-                    }
-                }
-                consumoHTML += '</div>';
-            } else {
-                consumoHTML += '<p style="color: #718096;">No hay datos de potencia disponibles</p>';
-            }
-
-            consumoHTML += '</div><div class="detail-section"><h4>📊 Consumo Anual</h4>';
-
-            // Check for consumption data
-            const hasConsumptionData = ['consumo_1', 'consumo_2', 'consumo_3',
-                                         'consumo_4', 'consumo_5', 'consumo_6']
-                                       .some(field => parseFloat(contract[field]) > 0);
-
-            if (hasConsumptionData) {
-                consumoHTML += '<div class="detail-grid">';
-                for (let i = 1; i <= 6; i++) {
-                    const cons = parseFloat(contract[`consumo_${i}`]) || 0;
-                    if (cons > 0) {
-                        consumoHTML += `<div class="detail-field"><label>Periodo ${i}</label><div>${window.TunergiaUtils.formatNumber(cons)} kWh</div></div>`;
-                    }
-                }
-                consumoHTML += '</div>';
-            } else {
-                const consumoTotal = parseFloat(contract.consumo) || 0;
-                if (consumoTotal > 0) {
-                    consumoHTML += `<p><strong>Total:</strong> ${window.TunergiaUtils.formatNumber(consumoTotal)} kWh/año</p>`;
-                } else {
-                    consumoHTML += '<p style="color: #718096;">No hay datos de consumo disponibles</p>';
-                }
-            }
-
-            consumoHTML += '</div>';
-            consumoContent.innerHTML = consumoHTML;
-        }
-
-        // Update documents/history tab if available
-        const documentsContent = document.querySelector('[data-tab-content="documents"]');
-        if (documentsContent && contract.historico && Array.isArray(contract.historico)) {
-            let historyHTML = '<div class="detail-section"><h4>📋 Historial de Cambios</h4>';
-
-            if (contract.historico.length > 0) {
-                historyHTML += '<div class="history-timeline" style="position: relative; padding-left: 30px;">';
-                contract.historico.slice(0, 15).forEach((item, index) => {
-                    historyHTML += `
-                        <div class="history-item" style="margin-bottom: 16px; padding: 16px; background: white; border: 1px solid #e2e8f0; border-radius: 8px;">
-                            <div style="font-size: 12px; color: #a0aec0; margin-bottom: 4px;">${item.fecha || '-'}</div>
-                            <div style="font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 4px;">${item.accion || '-'}</div>
-                            <div style="font-size: 13px; color: #718096;">${item.texto || '-'}</div>
-                            <div style="font-size: 12px; color: #a0aec0; margin-top: 8px; font-style: italic;">👤 ${item.usuario || '-'}</div>
-                        </div>
-                    `;
-                });
-                historyHTML += '</div>';
-
-                if (contract.historico.length > 15) {
-                    historyHTML += `<p style="text-align: center; color: #718096; margin-top: 16px;">... y ${contract.historico.length - 15} cambios más</p>`;
-                }
-            } else {
-                historyHTML += '<p style="color: #a0aec0; font-style: italic; text-align: center; padding: 40px 20px;">No hay historial disponible</p>';
-            }
-
-            historyHTML += '</div>';
-            documentsContent.innerHTML = historyHTML;
-        }
+        // Update Historico tab with historical records
+        this.renderHistorico(contract);
 
         console.log('✅ Contract detail rendered:', contract);
+    },
+
+    /**
+     * Render power and consumption section in grid format
+     */
+    renderPowerAndConsumption(contract) {
+        // Find the power/consumption section in the Detalles tab
+        const powerSection = document.querySelector('[data-section="power-consumption"]');
+        if (!powerSection || !contract) return;
+
+        let html = '';
+
+        // Check for power data
+        const hasPowerData = ['potencia_contratada_1', 'potencia_contratada_2', 'potencia_contratada_3',
+                               'potencia_contratada_4', 'potencia_contratada_5', 'potencia_contratada_6']
+                              .some(field => parseFloat(contract[field]) > 0);
+
+        // Power section
+        html += '<h4>⚡ Potencia Contratada</h4>';
+        if (hasPowerData) {
+            html += '<div class="detail-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;">';
+            for (let i = 1; i <= 6; i++) {
+                const pot = parseFloat(contract[`potencia_contratada_${i}`]) || 0;
+                if (pot > 0) {
+                    html += `<div class="detail-field"><label>Periodo ${i}</label><div>${pot.toFixed(2)} kW</div></div>`;
+                }
+            }
+            html += '</div>';
+        } else {
+            html += '<p style="color: #718096; margin-bottom: 20px;">No hay datos de potencia disponibles</p>';
+        }
+
+        // Check for consumption data
+        const hasConsumptionData = ['consumo_1', 'consumo_2', 'consumo_3',
+                                     'consumo_4', 'consumo_5', 'consumo_6']
+                                   .some(field => parseFloat(contract[field]) > 0);
+
+        // Consumption section
+        html += '<h4>📊 Consumo Anual</h4>';
+        if (hasConsumptionData) {
+            html += '<div class="detail-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">';
+            for (let i = 1; i <= 6; i++) {
+                const cons = parseFloat(contract[`consumo_${i}`]) || 0;
+                if (cons > 0) {
+                    html += `<div class="detail-field"><label>Periodo ${i}</label><div>${window.TunergiaUtils.formatNumber(cons)} kWh</div></div>`;
+                }
+            }
+            html += '</div>';
+        } else {
+            const consumoTotal = parseFloat(contract.consumo) || 0;
+            if (consumoTotal > 0) {
+                html += `<p><strong>Total:</strong> ${window.TunergiaUtils.formatNumber(consumoTotal)} kWh/año</p>`;
+            } else {
+                html += '<p style="color: #718096;">No hay datos de consumo disponibles</p>';
+            }
+        }
+
+        powerSection.innerHTML = html;
+    },
+
+    /**
+     * Render documents tab
+     */
+    renderDocuments(contract) {
+        const documentsContent = document.querySelector('[data-tab-content="documentacion"]');
+        if (!documentsContent) return;
+
+        let documentsHTML = '<div class="detail-section"><h4>📄 Documentos del Contrato</h4>';
+
+        // Check if contract has documents array
+        if (contract.documentos && Array.isArray(contract.documentos) && contract.documentos.length > 0) {
+            documentsHTML += '<div class="documents-list" style="display: flex; flex-direction: column; gap: 12px;">';
+            contract.documentos.forEach(doc => {
+                documentsHTML += `
+                    <div class="document-item" style="padding: 16px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 14px; font-weight: 600; color: #2d3748;">${doc.nombre || 'Documento'}</div>
+                            <div style="font-size: 12px; color: #a0aec0; margin-top: 4px;">${doc.tipo || ''} ${doc.fecha ? '• ' + doc.fecha : ''}</div>
+                        </div>
+                        <a href="${doc.url || '#'}" target="_blank" class="action-btn" style="padding: 8px 16px;">Ver</a>
+                    </div>
+                `;
+            });
+            documentsHTML += '</div>';
+        } else {
+            documentsHTML += '<p style="color: #a0aec0; font-style: italic; text-align: center; padding: 40px 20px;">No hay documentos disponibles para este contrato</p>';
+        }
+
+        documentsHTML += '</div>';
+        documentsContent.innerHTML = documentsHTML;
+    },
+
+    /**
+     * Render historico tab
+     */
+    renderHistorico(contract) {
+        const historicoContent = document.querySelector('[data-tab-content="historico"]');
+        if (!historicoContent) return;
+
+        let historyHTML = '<div class="detail-section"><h4>📋 Historial de Cambios</h4>';
+
+        if (contract.historico && Array.isArray(contract.historico) && contract.historico.length > 0) {
+            historyHTML += '<div class="history-timeline" style="position: relative; padding-left: 30px;">';
+            contract.historico.slice(0, 15).forEach((item, index) => {
+                historyHTML += `
+                    <div class="history-item" style="margin-bottom: 16px; padding: 16px; background: white; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <div style="font-size: 12px; color: #a0aec0; margin-bottom: 4px;">${item.fecha || '-'}</div>
+                        <div style="font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 4px;">${item.accion || '-'}</div>
+                        <div style="font-size: 13px; color: #718096;">${item.texto || '-'}</div>
+                        <div style="font-size: 12px; color: #a0aec0; margin-top: 8px; font-style: italic;">👤 ${item.usuario || '-'}</div>
+                    </div>
+                `;
+            });
+            historyHTML += '</div>';
+
+            if (contract.historico.length > 15) {
+                historyHTML += `<p style="text-align: center; color: #718096; margin-top: 16px;">... y ${contract.historico.length - 15} cambios más</p>`;
+            }
+        } else {
+            historyHTML += '<p style="color: #a0aec0; font-style: italic; text-align: center; padding: 40px 20px;">No hay historial disponible</p>';
+        }
+
+        historyHTML += '</div>';
+        historicoContent.innerHTML = historyHTML;
     },
 
     /**
@@ -664,6 +734,9 @@ window.TunergiaUI = {
 
         // Load comercializadoras
         await this.loadComercializadoras();
+
+        // Setup form field listeners for cascading dropdowns
+        this.setupFormFieldListeners();
 
         console.log('✅ Create contract modal opened');
     },
@@ -724,6 +797,99 @@ window.TunergiaUI = {
     },
 
     /**
+     * Update productos dropdown based on form selections
+     */
+    async updateProductosDropdown() {
+        const tipoClienteSelect = document.getElementById('createTipoCliente');
+        const comercializadoraSelect = document.getElementById('createComercializadora');
+        const tarifaSelect = document.getElementById('createTarifaAcceso');
+        const productoSelect = document.getElementById('createProducto');
+
+        if (!tipoClienteSelect || !comercializadoraSelect || !tarifaSelect || !productoSelect) {
+            console.warn('⚠️ Form fields not found for productos update');
+            return;
+        }
+
+        const tipoCliente = tipoClienteSelect.value;
+        const comercializadora = comercializadoraSelect.value;
+        const tarifa = tarifaSelect.value;
+
+        // Disable productos dropdown if required fields are not selected
+        if (!comercializadora || !tarifa) {
+            productoSelect.disabled = true;
+            productoSelect.innerHTML = '<option value="">Selecciona comercializadora y tarifa primero...</option>';
+            console.log('⚠️ Comercializadora or tarifa not selected');
+            return;
+        }
+
+        // Show loading state
+        productoSelect.innerHTML = '<option value="">Cargando productos...</option>';
+        productoSelect.disabled = true;
+
+        try {
+            console.log('🔄 Loading products for:', { tipoCliente, comercializadora, tarifa });
+
+            // Call API to load products
+            const productos = await window.TunergiaAPI.loadProducts(tipoCliente, comercializadora, tarifa);
+
+            console.log('✅ Loaded', productos.length, 'products');
+
+            // Populate dropdown
+            if (productos.length === 0) {
+                productoSelect.innerHTML = '<option value="">No hay productos disponibles</option>';
+                productoSelect.disabled = true;
+            } else {
+                productoSelect.innerHTML = '<option value="">Seleccionar producto...</option>' +
+                    productos.map(item => `<option value="${item.PRODUCTO}">${item.PRODUCTO}</option>`).join('');
+                productoSelect.disabled = false;
+            }
+        } catch (error) {
+            console.error('❌ Error loading products:', error);
+            productoSelect.innerHTML = '<option value="">Error al cargar productos</option>';
+            productoSelect.disabled = true;
+        }
+    },
+
+    /**
+     * Setup form field change listeners for cascading dropdowns
+     */
+    setupFormFieldListeners() {
+        // Avoid setting up listeners multiple times
+        if (this._formFieldListenersSetup) {
+            console.log('⚠️ Form field listeners already set up, skipping');
+            return;
+        }
+
+        const tipoClienteSelect = document.getElementById('createTipoCliente');
+        const comercializadoraSelect = document.getElementById('createComercializadora');
+        const tarifaSelect = document.getElementById('createTarifaAcceso');
+
+        if (tipoClienteSelect) {
+            tipoClienteSelect.addEventListener('change', () => {
+                console.log('📝 Tipo de Cliente changed');
+                this.updateProductosDropdown();
+            });
+        }
+
+        if (comercializadoraSelect) {
+            comercializadoraSelect.addEventListener('change', () => {
+                console.log('📝 Comercializadora changed');
+                this.updateProductosDropdown();
+            });
+        }
+
+        if (tarifaSelect) {
+            tarifaSelect.addEventListener('change', () => {
+                console.log('📝 Tarifa de Acceso changed');
+                this.updateProductosDropdown();
+            });
+        }
+
+        this._formFieldListenersSetup = true;
+        console.log('✅ Form field listeners set up');
+    },
+
+    /**
      * Renovar contract - copy data and open create modal
      */
     async renovarContract() {
@@ -770,6 +936,9 @@ window.TunergiaUI = {
 
             // Load comercializadoras first
             await this.loadComercializadoras();
+
+            // Setup form field listeners for cascading dropdowns
+            this.setupFormFieldListeners();
 
             // Pre-fill form
             const form = document.getElementById('createContractForm');
@@ -929,12 +1098,6 @@ window.TunergiaUI = {
 
         window.setState({ filteredContracts: filtered, currentPage: 1 });
         this.renderContractsTable();
-
-        // Update count
-        const countEl = document.getElementById('totalContracts');
-        if (countEl) {
-            countEl.textContent = `${window.TunergiaUtils.formatNumber(filtered.length)} Contratos`;
-        }
     },
 
     /**
