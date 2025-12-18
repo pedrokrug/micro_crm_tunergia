@@ -7,7 +7,7 @@
     'use strict';
 
     console.log('🚀 Tunergia Interface Loading...');
-    console.log('Version: Modular 1.0.9');
+    console.log('Version: Modular 1.0.10');
 
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {

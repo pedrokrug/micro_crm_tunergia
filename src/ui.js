@@ -480,26 +480,61 @@ window.TunergiaUI = {
             if (el) el.innerHTML = html || '-';
         };
 
-        // Populate personal data
+        // Populate personal data with emojis
         setText('detailNombre', contract.nombre_cliente || contract.persona_contacto);
         setText('detailTipoCliente', contract.tipo_empresa || 'Particular');
-        setText('detailCorreo', contract.email);
-        setText('detailMovil', contract.movil || contract.telefono);
-        setText('detailDNI', contract.nif || contract.persona_contacto_nif);
-        setText('detailIBAN', contract.iban_contrato);
-        setText('detailDireccion', contract.direccion);
+        setHTML('detailCorreo', contract.email ? `📧 ${contract.email}` : '-');
+        setHTML('detailMovil', (contract.movil || contract.telefono) ? `📱 ${contract.movil || contract.telefono}` : '-');
+        setHTML('detailDNI', (contract.nif || contract.persona_contacto_nif) ? `🆔 ${contract.nif || contract.persona_contacto_nif}` : '-');
+        setHTML('detailIBAN', contract.iban_contrato ? `💳 ${contract.iban_contrato}` : '-');
+        setHTML('detailDireccion', contract.direccion ? `📍 ${contract.direccion}` : '-');
         setText('detailCP', contract.cp);
         setText('detailPoblacion', contract.poblacion);
         setText('detailProvincia', contract.provincia);
 
-        // Populate supply data
-        setText('detailCUPS', contract.cups);
+        // Populate additional fields if they exist
+        setText('detailEstado', contract.estado || '-');
+        setText('detailFechaActivacion', window.TunergiaUtils.formatDate(contract.fecha_activacion));
+        setText('detailTipoContratacion', contract.tipo_contratacion || '-');
+        setText('detailPersonaContacto', contract.persona_contacto || '-');
+        setText('detailDNIContacto', contract.persona_contacto_nif || '-');
+
+        // Populate supply data with emojis
+        setHTML('detailCUPS', contract.cups ? `<span class="cups-value">⚡ ${contract.cups}</span>` : '-');
         setText('detailComercializadoraSaliente', contract.comercializadora_saliente);
 
-        // Populate contract data
-        setText('detailComercializadora', contract.comercializadora?.replace('_GAIAG', '').replace(/_/g, ' ') || '-');
+        // Populate contract data with emojis
+        setHTML('detailComercializadora', contract.comercializadora ? `🏢 ${contract.comercializadora.replace('_GAIAG', '').replace(/_/g, ' ')}` : '-');
         setText('detailConcepto', contract.concepto);
         setText('detailTarifaAcceso', contract.concepto ? window.TunergiaUtils.extractTarifaAcceso(contract.concepto) : '-');
+
+        // Populate power and consumption summary fields
+        const potencias = [];
+        for (let i = 1; i <= 6; i++) {
+            const pot = parseFloat(contract[`potencia_contratada_${i}`]) || 0;
+            if (pot > 0) potencias.push(`P${i}: ${pot.toFixed(2)} kW`);
+        }
+        setHTML('detailPotencias', potencias.length > 0 ? `<strong>⚡ ${potencias.join(', ')}</strong>` : '-');
+
+        const consumos = [];
+        for (let i = 1; i <= 6; i++) {
+            const cons = parseFloat(contract[`consumo_${i}`]) || 0;
+            if (cons > 0) consumos.push(`P${i}: ${window.TunergiaUtils.formatNumber(cons)} kWh`);
+        }
+        const totalConsumo = parseFloat(contract.consumo) || 0;
+        if (consumos.length > 0) {
+            setHTML('detailConsumos', `<strong>📊 ${consumos.join(', ')}</strong>`);
+        } else if (totalConsumo > 0) {
+            setHTML('detailConsumos', `<strong>📊 Total: ${window.TunergiaUtils.formatNumber(totalConsumo)} kWh/año</strong>`);
+        } else {
+            setText('detailConsumos', '-');
+        }
+
+        // Update contract ID badge
+        const modalContractId = document.getElementById('modalContractId');
+        if (modalContractId && contract.id) {
+            modalContractId.textContent = `ID: ${contract.id}`;
+        }
 
         // Update consumo tab content with power and consumption data
         const consumoContent = document.querySelector('[data-tab-content="consumo"]');
