@@ -1,6 +1,7 @@
 <!--
-   TUNERGIA INTERFACE LOADER - COMPLETE VERSION
-   ============================================
+   TUNERGIA INTERFACE LOADER - GITHUB RAW VERSION
+   ==============================================
+   Uses raw.githubusercontent.com instead of jsDelivr CDN
    Paste this into your Odoo website/HTML field.
 
    Repository: pedrokrug/micro_crm_tunergia
@@ -456,34 +457,32 @@
     </div>
 </div>
 
-<!-- Load CSS from GitHub via RawGit alternative (githack.com) -->
-<link rel="stylesheet" href="https://raw.githack.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/styles.css">
+<!-- Load CSS from GitHub RAW (no CDN caching issues) -->
+<link rel="stylesheet" href="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/styles.css">
 
-<!-- Load JavaScript modules from GitHub via RawGit alternative (githack.com) -->
-<script src="https://raw.githack.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/config.js"></script>
-<script src="https://raw.githack.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/state.js"></script>
-<script src="https://raw.githack.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/utils.js"></script>
-<script src="https://raw.githack.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/api.js"></script>
-<script src="https://raw.githack.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/ui.js"></script>
-<script src="https://raw.githack.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/main.js"></script>
+<!-- Load JavaScript modules from GitHub RAW -->
+<script src="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/config.js"></script>
+<script src="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/state.js"></script>
+<script src="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/utils.js"></script>
+<script src="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/api.js"></script>
+<script src="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/ui.js"></script>
+<script src="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/main.js"></script>
 
 <!--
-   ✅ COMPLETE VERSION v1.0.9 - All functionality restored
+   ✅ GITHUB RAW VERSION v1.0.9 - Bypasses jsDelivr CDN issues
 
-   NOW USING: raw.githack.com (serves files with proper MIME types)
+   This version loads files directly from GitHub's raw content servers,
+   which bypasses the jsDelivr 403 error and loads immediately without
+   caching delays.
 
-   WHY: jsDelivr was returning 403 errors, raw.githubusercontent.com serves
-   files as text/plain (browsers won't execute). Githack.com properly serves
-   JavaScript and CSS with correct Content-Type headers.
+   PROS:
+   ✅ No CDN delays - instant updates
+   ✅ No 403 errors
+   ✅ Always loads latest version
 
-   FIXED ISSUES:
-   ✅ Contracts can now open (modal HTML added)
-   ✅ Create Contract button works
-   ✅ RENOVAR button works
-   ✅ Gmail-style select all logic works
-   ✅ Oportunidad filter logic and colors work
-   ✅ Files now load with proper MIME types
+   CONS:
+   ⚠️ No caching - loads from GitHub every time (may be slower)
+   ⚠️ No CDN optimizations
 
-   Repository: https://github.com/pedrokrug/micro_crm_tunergia
-   Branch: claude/refactor-crm-code-blocks-K3Cix
+   USE THIS VERSION TEMPORARILY until jsDelivr issue is resolved.
 -->

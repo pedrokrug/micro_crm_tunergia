@@ -1,0 +1,283 @@
+[
+  {
+    "resultado": "OK",
+    "datos": {
+      "apellido1": "",
+      "apellido2": "",
+      "cambio_comercializadora": "",
+      "cnae_actividad": "9820",
+      "comercial": "PEDRO OLIVEIRA_COMERCIAL",
+      "comercializadora": "CONTIGO_ENERGIA_GAIAG",
+      "comercializadora_saliente": "GESTERNOVA",
+      "concepto": "2.0TD - PRODUCTO FACIL. OFERTA GENERICA - PRECIO 7",
+      "consumo": "0.0000",
+      "consumo_1": "0.00",
+      "consumo_2": "0.00",
+      "consumo_3": "0.00",
+      "consumo_4": "0.00",
+      "consumo_5": "0.00",
+      "consumo_6": "0.00",
+      "coste_operativo": "0.00",
+      "cp": "14900",
+      "cp_suministro": "14900",
+      "cups": "ES0031104354317003DR",
+      "direccion": "Calle Jaime 12 j",
+      "direccion_suministro": "Calle Jaime 12 j",
+      "email": "administracion@marketingvirtual.es",
+      "estado": "ACTIVADO TACITA",
+      "fact_electronica": "",
+      "fecha_activacion": "09/10/2025",
+      "fecha_futura_activacion": "0000-00-00",
+      "fee_consumo_1": "0.00",
+      "fee_consumo_2": "0.00",
+      "fee_consumo_3": "0.00",
+      "fee_consumo_4": "0.00",
+      "fee_consumo_5": "0.00",
+      "fee_consumo_6": "0.00",
+      "fee_potencia_1": "0.00",
+      "fee_potencia_2": "0.00",
+      "fee_potencia_3": "0.00",
+      "fee_potencia_4": "0.00",
+      "fee_potencia_5": "0.00",
+      "fee_potencia_6": "0.00",
+      "firma_digital": "0",
+      "futura_activacion": "",
+      "iban_contrato": "ES8201823560620101518095",
+      "id_comercial": 1650,
+      "id_usuario_telemarketing": "1150",
+      "kam": "Tunergia",
+      "luz_autoconsumo": "",
+      "movil": "623108251",
+      "nif": "B16855991",
+      "nombre_cliente": "Grupo Marketing Virtual",
+      "observaciones": "",
+      "observaciones_internas": "",
+      "origen_entrada": "",
+      "persona_contacto": "Miguel Angel Ramirez Pineda",
+      "persona_contacto_nif": "50641948L",
+      "poblacion": "Lucena",
+      "poblacion_suministro": "Lucena",
+      "porcentaje_coste_operativo": "0.00",
+      "potencia_contratada_1": "8.50",
+      "potencia_contratada_2": "8.50",
+      "potencia_contratada_3": "0.00",
+      "potencia_contratada_4": "0.00",
+      "potencia_contratada_5": "0.00",
+      "potencia_contratada_6": "0.00",
+      "provincia": "CÓRDOBA",
+      "provincia_suministro": "Córdoba",
+      "tarifa": "",
+      "telefono": "",
+      "termino_fijo": "0.0000",
+      "termino_variable": "0.0000",
+      "tipo_contratacion": "RENOVACION",
+      "tipo_empresa": "EMPRESA",
+      "documentacion": [],
+      "historico": [
+        {
+          "fecha": "2025-12-12 08:29:08",
+          "id_usuario": 2155,
+          "usuario": "LISSET - LIQUIDACIONES",
+          "accion": "AUTOFACTURA",
+          "texto": "[12370] PRO SEM 51 - Operación insertada COMERCIAL"
+        },
+        {
+          "fecha": "2025-10-24 08:24:30",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "COMISIONES RECARGADAS",
+          "texto": "Recarga de comisiones"
+        },
+        {
+          "fecha": "2025-10-24 08:24:30",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR",
+          "texto": "Modificación de datos"
+        },
+        {
+          "fecha": "2025-10-24 08:24:30",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR OPERACION INTERNO",
+          "texto": "Id comercial: '1168' => '1650'"
+        },
+        {
+          "fecha": "2025-10-24 08:24:30",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "JERARQUIA RECARGADA",
+          "texto": "Jerarquia de usuarios recargada. Jerarquia anterior: TUNERGIA (% PRINCIPAL), Salto en jerarquia (RESIDUAL JEFE DE EQUIPO)"
+        },
+        {
+          "fecha": "2025-10-22 11:19:19",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "COMISIÓN OPERADOR",
+          "texto": "COMISIÓN OPERADOR MODIFICADA DE PENDIENTE A COBRADA"
+        },
+        {
+          "fecha": "2025-10-22 11:19:19",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR OPERACION INTERNO",
+          "texto": "Estado comision operador: 'PENDIENTE' => 'COBRADA'"
+        },
+        {
+          "fecha": "2025-10-22 11:19:13",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR CONTIGO ENERGIA",
+          "texto": "Fecha activacion sips: '0000-00-00' => '22/10/2025'"
+        },
+        {
+          "fecha": "2025-10-22 11:19:13",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "COMISIONES RECARGADAS",
+          "texto": "Recarga de comisiones"
+        },
+        {
+          "fecha": "2025-10-22 11:19:13",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "CAMBIA ESTADO",
+          "texto": "DE TRAMITADO TACITA A ACTIVADO TACITA. CON FECHA VALOR: 09/10/2025. "
+        },
+        {
+          "fecha": "2025-10-22 11:19:13",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR OPERACION INTERNO",
+          "texto": "Estado: 'TRAMITADO TACITA' => 'ACTIVADO TACITA', Fecha activacion: '0000-00-00 00:00:00' => '09/10/2025'"
+        },
+        {
+          "fecha": "2025-10-22 11:19:13",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "COMISIONES RECARGADAS",
+          "texto": "Recarga de comisiones"
+        },
+        {
+          "fecha": "2025-10-22 11:19:13",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR",
+          "texto": "Modificación de tarifa al cambiar estado. Nueva tarifa: 2.0TD - PRODUCTO FACIL. OFERTA GENERICA - PRECIO 7"
+        },
+        {
+          "fecha": "2025-10-22 11:19:06",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "COMISIÓN OPERADOR",
+          "texto": "COMISIÓN OPERADOR PENDIENTE"
+        },
+        {
+          "fecha": "2025-10-22 11:19:06",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR OPERACION INTERNO",
+          "texto": "Estado comision operador: '' => 'PENDIENTE'"
+        },
+        {
+          "fecha": "2025-10-22 11:19:06",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "COMISIONES RECARGADAS",
+          "texto": "Recarga de comisiones"
+        },
+        {
+          "fecha": "2025-10-22 11:19:06",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR OPERACION INTERNO",
+          "texto": "Comisiones cargadas: '0' => '1'"
+        },
+        {
+          "fecha": "2025-10-22 11:19:06",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "CAMBIA ESTADO",
+          "texto": "DE TEMPORAL A TRAMITADO TACITA. CON FECHA VALOR: 09/10/2025. "
+        },
+        {
+          "fecha": "2025-10-22 11:19:06",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR OPERACION INTERNO",
+          "texto": "Estado: 'TEMPORAL' => 'TRAMITADO TACITA'"
+        },
+        {
+          "fecha": "2025-10-22 11:19:06",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR",
+          "texto": "Modificación de tarifa al cambiar estado. Nueva tarifa: 2.0TD - PRODUCTO FACIL. OFERTA GENERICA - PRECIO 7"
+        },
+        {
+          "fecha": "2025-10-22 11:18:59",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR",
+          "texto": "Modificación de datos"
+        },
+        {
+          "fecha": "2025-10-22 11:18:59",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR OPERACION INTERNO",
+          "texto": "Id comercial: '1946' => '1168', Comisiones porcentaje: '0.00' => '50', Concepto 1: '' => '2.0TD - PRODUCTO FACIL. OFERTA GENERICA - PRECIO 7', Id op operacion: '0' => '26468400'"
+        },
+        {
+          "fecha": "2025-10-22 11:18:59",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR CONTIGO ENERGIA",
+          "texto": "Fee potencia 1: '' => '0.00', Fee potencia 2: '' => '0.00', Fee potencia 3: '' => '0.00', Fee potencia 4: '' => '0.00', Fee potencia 5: '' => '0.00', Fee potencia 6: '' => '0.00', Consumo 1: '' => '0.00', Consumo 2: '' => '0.00', Consumo 3: '' => '0.00', Consumo 4: '' => '0.00', Consumo 5: '' => '0.00', Consumo 6: '' => '0.00', Fee consumo 1: '' => '0.00', Fee consumo 2: '' => '0.00', Fee consumo 3: '' => '0.00', Fee consumo 4: '' => '0.00', Fee consumo 5: '' => '0.00', Fee consumo 6: '' => '0.00'"
+        },
+        {
+          "fecha": "2025-10-22 11:18:59",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "JERARQUIA RECARGADA",
+          "texto": "Jerarquia de usuarios cargada"
+        },
+        {
+          "fecha": "2025-10-22 11:18:46",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR CONTIGO ENERGIA",
+          "texto": "Cups: '' => 'ES0031104354317003DR', Consumo: '0.0000' => '', Tarifa: '' => '2.0TD', Direccion suministro: '' => 'Calle Jaime 12 j', Poblacion suministro: '' => 'Lucena', Provincia suministro: '' => 'Córdoba', Cp suministro: '' => '14900', Comercializadora saliente: '' => 'GESTERNOVA', Importe alquiler contador: '0.00' => '', Potencia contratada 1: '0' => '8.5', Potencia contratada 2: '0' => '8.5', Persona contacto: '' => 'Miguel Angel Ramirez Pineda', Persona contacto nif: '' => '50641948L', Id usuario telemarketing: '0' => '1150', Iban contrato: '' => 'ES8201823560620101518095', Cnae: '' => '9820.- Actividades de los hogares como productores de servicios para uso propio', Cnae actividad: '' => '9820'"
+        },
+        {
+          "fecha": "2025-10-22 11:18:46",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR OPERACION INTERNO",
+          "texto": "Id operacion origen: '' => '189162'"
+        },
+        {
+          "fecha": "2025-10-22 11:18:46",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "MODIFICAR CONTIGO ENERGIA",
+          "texto": "Tipo contratacion: '' => 'RENOVACION'"
+        },
+        {
+          "fecha": "2025-10-22 11:18:46",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "ASIGNAR CLIENTE",
+          "texto": "CLIENTE 255165 ASIGNADO"
+        },
+        {
+          "fecha": "2025-10-22 11:18:46",
+          "id_usuario": 1946,
+          "usuario": "ALEJANDRO PARRA - LIQUIDACIONES",
+          "accion": "NUEVO",
+          "texto": "CONTIGO ENERGIA"
+        }
+      ]
+    }
+  }
+]
