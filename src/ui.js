@@ -684,6 +684,9 @@ window.TunergiaUI = {
         // Load comercializadoras
         await this.loadComercializadoras();
 
+        // Setup form field listeners for cascading dropdowns
+        this.setupFormFieldListeners();
+
         console.log('✅ Create contract modal opened');
     },
 
@@ -743,6 +746,99 @@ window.TunergiaUI = {
     },
 
     /**
+     * Update productos dropdown based on form selections
+     */
+    async updateProductosDropdown() {
+        const tipoClienteSelect = document.getElementById('createTipoCliente');
+        const comercializadoraSelect = document.getElementById('createComercializadora');
+        const tarifaSelect = document.getElementById('createTarifaAcceso');
+        const productoSelect = document.getElementById('createProducto');
+
+        if (!tipoClienteSelect || !comercializadoraSelect || !tarifaSelect || !productoSelect) {
+            console.warn('⚠️ Form fields not found for productos update');
+            return;
+        }
+
+        const tipoCliente = tipoClienteSelect.value;
+        const comercializadora = comercializadoraSelect.value;
+        const tarifa = tarifaSelect.value;
+
+        // Disable productos dropdown if required fields are not selected
+        if (!comercializadora || !tarifa) {
+            productoSelect.disabled = true;
+            productoSelect.innerHTML = '<option value="">Selecciona comercializadora y tarifa primero...</option>';
+            console.log('⚠️ Comercializadora or tarifa not selected');
+            return;
+        }
+
+        // Show loading state
+        productoSelect.innerHTML = '<option value="">Cargando productos...</option>';
+        productoSelect.disabled = true;
+
+        try {
+            console.log('🔄 Loading products for:', { tipoCliente, comercializadora, tarifa });
+
+            // Call API to load products
+            const productos = await window.TunergiaAPI.loadProducts(tipoCliente, comercializadora, tarifa);
+
+            console.log('✅ Loaded', productos.length, 'products');
+
+            // Populate dropdown
+            if (productos.length === 0) {
+                productoSelect.innerHTML = '<option value="">No hay productos disponibles</option>';
+                productoSelect.disabled = true;
+            } else {
+                productoSelect.innerHTML = '<option value="">Seleccionar producto...</option>' +
+                    productos.map(item => `<option value="${item.PRODUCTO}">${item.PRODUCTO}</option>`).join('');
+                productoSelect.disabled = false;
+            }
+        } catch (error) {
+            console.error('❌ Error loading products:', error);
+            productoSelect.innerHTML = '<option value="">Error al cargar productos</option>';
+            productoSelect.disabled = true;
+        }
+    },
+
+    /**
+     * Setup form field change listeners for cascading dropdowns
+     */
+    setupFormFieldListeners() {
+        // Avoid setting up listeners multiple times
+        if (this._formFieldListenersSetup) {
+            console.log('⚠️ Form field listeners already set up, skipping');
+            return;
+        }
+
+        const tipoClienteSelect = document.getElementById('createTipoCliente');
+        const comercializadoraSelect = document.getElementById('createComercializadora');
+        const tarifaSelect = document.getElementById('createTarifaAcceso');
+
+        if (tipoClienteSelect) {
+            tipoClienteSelect.addEventListener('change', () => {
+                console.log('📝 Tipo de Cliente changed');
+                this.updateProductosDropdown();
+            });
+        }
+
+        if (comercializadoraSelect) {
+            comercializadoraSelect.addEventListener('change', () => {
+                console.log('📝 Comercializadora changed');
+                this.updateProductosDropdown();
+            });
+        }
+
+        if (tarifaSelect) {
+            tarifaSelect.addEventListener('change', () => {
+                console.log('📝 Tarifa de Acceso changed');
+                this.updateProductosDropdown();
+            });
+        }
+
+        this._formFieldListenersSetup = true;
+        console.log('✅ Form field listeners set up');
+    },
+
+    /**
      * Renovar contract - copy data and open create modal
      */
     async renovarContract() {
@@ -789,6 +885,9 @@ window.TunergiaUI = {
 
             // Load comercializadoras first
             await this.loadComercializadoras();
+
+            // Setup form field listeners for cascading dropdowns
+            this.setupFormFieldListeners();
 
             // Pre-fill form
             const form = document.getElementById('createContractForm');

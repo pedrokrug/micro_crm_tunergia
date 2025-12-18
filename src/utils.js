@@ -119,10 +119,10 @@ window.TunergiaUtils = {
         const typeMapping = {
             'PARTICULAR': 'Residencial',
             'AUTONOMO': ['Empresa', 'CCPP'],
-            'EMPRESA': ['Empresa', 'CCPP'],
-            'CCPP': 'CCPP'
+            'EMPRESA': 'EMPRESA',
+            'CCPP': 'TODO'
         };
-        return typeMapping[tipoEmpresa] || 'Residencial';
+        return typeMapping[tipoEmpresa] || typeMapping['PARTICULAR'];
     },
 
     /**
