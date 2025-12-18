@@ -222,6 +222,22 @@ window.TunergiaUI = {
     },
 
     /**
+     * Update total contracts count display
+     */
+    updateContractCount() {
+        const countEl = document.getElementById('totalContracts');
+        if (!countEl) {
+            console.warn('⚠️ Total contracts element not found (ID: totalContracts)');
+            return;
+        }
+
+        const filteredCount = window.getState('filteredContracts').length;
+        countEl.textContent = `${window.TunergiaUtils.formatNumber(filteredCount)} Contratos`;
+
+        console.log('✅ Contract count updated:', filteredCount);
+    },
+
+    /**
      * Show/hide empty state
      */
     showEmptyState(show) {
@@ -409,6 +425,9 @@ window.TunergiaUI = {
 
         // Update pagination display
         this.updatePagination();
+
+        // Update total contracts count display
+        this.updateContractCount();
 
         console.log('✅ Table render complete');
     },
@@ -929,12 +948,6 @@ window.TunergiaUI = {
 
         window.setState({ filteredContracts: filtered, currentPage: 1 });
         this.renderContractsTable();
-
-        // Update count
-        const countEl = document.getElementById('totalContracts');
-        if (countEl) {
-            countEl.textContent = `${window.TunergiaUtils.formatNumber(filtered.length)} Contratos`;
-        }
     },
 
     /**
