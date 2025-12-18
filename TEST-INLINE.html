@@ -1,0 +1,40 @@
+<!-- MINIMAL TEST - All code inline -->
+<div id="testContainer" style="padding: 20px; background: #f0f0f0; border: 2px solid #333; margin: 20px;">
+    <h1>🧪 Test Connection</h1>
+    <p id="status">Testing...</p>
+</div>
+
+<script>
+console.log('✅ TEST: Inline script is running!');
+console.log('✅ TEST: Version 1.0.9 INLINE');
+
+document.getElementById('status').innerHTML = '✅ SUCCESS! Inline JavaScript is working!<br>This means Odoo allows JavaScript, but might be blocking external scripts.';
+
+// Test if we can see the main container
+const container = document.getElementById('testContainer');
+if (container) {
+    console.log('✅ TEST: Can access DOM elements');
+    container.style.background = '#d4edda';
+    container.style.border = '2px solid #28a745';
+}
+
+// Test setTimeout
+setTimeout(() => {
+    console.log('✅ TEST: Async functions work');
+}, 100);
+
+// Test fetch to see if external requests work
+fetch('https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/refactor-crm-code-blocks-K3Cix/src/main.js')
+    .then(response => {
+        console.log('✅ TEST: External fetch works! Status:', response.status);
+        return response.text();
+    })
+    .then(text => {
+        console.log('✅ TEST: Successfully loaded external file, length:', text.length);
+        console.log('✅ TEST: File contains version:', text.includes('1.0.9') ? 'YES' : 'NO');
+    })
+    .catch(error => {
+        console.error('❌ TEST: External fetch FAILED:', error);
+        document.getElementById('status').innerHTML += '<br>❌ ERROR: Cannot load external files - ' + error.message;
+    });
+</script>
