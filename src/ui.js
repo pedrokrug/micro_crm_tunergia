@@ -197,13 +197,28 @@ window.TunergiaUI = {
         const totalPages = Math.ceil(window.getState('filteredContracts').length / window.TunergiaConfig.itemsPerPage);
         const currentPage = window.getState('currentPage');
 
-        document.getElementById('paginationInfo').textContent = `${currentPage} of ${totalPages || 1}`;
-        document.getElementById('prevPage').disabled = currentPage <= 1;
-        document.getElementById('nextPage').disabled = currentPage >= totalPages;
+        const paginationInfo = document.getElementById('paginationInfo');
+        const prevPage = document.getElementById('prevPage');
+        const nextPage = document.getElementById('nextPage');
+        const loadedInfo = document.getElementById('loadedInfo');
+        const pagination = document.getElementById('pagination');
+
+        if (!paginationInfo || !prevPage || !nextPage || !loadedInfo) {
+            console.error('⚠️ Pagination elements not found in DOM. Required IDs: paginationInfo, prevPage, nextPage, loadedInfo');
+            return;
+        }
+
+        paginationInfo.textContent = `${currentPage} of ${totalPages || 1}`;
+        prevPage.disabled = currentPage <= 1;
+        nextPage.disabled = currentPage >= totalPages;
 
         const startIndex = (currentPage - 1) * window.TunergiaConfig.itemsPerPage;
         const endIndex = Math.min(startIndex + window.TunergiaConfig.itemsPerPage, window.getState('filteredContracts').length);
-        document.getElementById('loadedInfo').textContent = `Mostrando ${startIndex + 1}-${endIndex} de ${window.getState('filteredContracts').length}`;
+        loadedInfo.textContent = `Mostrando ${startIndex + 1}-${endIndex} de ${window.getState('filteredContracts').length}`;
+
+        if (pagination) pagination.style.display = 'flex';
+
+        console.log('✅ Pagination updated:', { currentPage, totalPages, showing: `${startIndex + 1}-${endIndex}` });
     },
 
     /**
@@ -214,9 +229,15 @@ window.TunergiaUI = {
         const table = document.querySelector('.contracts-table');
         const pagination = document.getElementById('pagination');
 
+        if (!emptyState) {
+            console.error('⚠️ Empty state element not found. Required ID: emptyState');
+        }
+
         if (emptyState) emptyState.style.display = show ? 'block' : 'none';
         if (table) table.style.display = show ? 'none' : 'table';
         if (pagination) pagination.style.display = show ? 'none' : 'flex';
+
+        console.log('✅ Empty state:', show ? 'shown' : 'hidden');
     },
 
     /**
@@ -227,12 +248,42 @@ window.TunergiaUI = {
         const selectedCount = checkboxes.length;
         const selectionInfo = document.getElementById('selectionInfo');
         const selectedCountSpan = document.getElementById('selectedCount');
+        const selectAllBtn = document.getElementById('selectAllContracts');
+        const selectAllCount = document.getElementById('selectAllCount');
         const exportBtn = document.getElementById('exportBtn');
         const selectAllCheckbox = document.getElementById('selectAll');
 
+        if (!selectionInfo || !exportBtn) {
+            console.error('⚠️ Selection elements not found. Required IDs: selectionInfo, exportBtn');
+            return;
+        }
+
+        const selectAllMode = window.getState('selectAllMode');
+
         if (selectedCount > 0) {
             if (selectionInfo) selectionInfo.style.display = 'flex';
-            if (selectedCountSpan) selectedCountSpan.textContent = `${selectedCount} seleccionado${selectedCount > 1 ? 's' : ''}`;
+
+            // Gmail-style select all logic
+            const visibleCount = document.querySelectorAll('.row-checkbox').length;
+            const totalCount = window.getState('filteredContracts').length;
+
+            if (selectAllMode) {
+                // User selected all contracts
+                if (selectedCountSpan) selectedCountSpan.textContent = `${totalCount} seleccionados (todos)`;
+                if (selectAllBtn) selectAllBtn.style.display = 'none';
+            } else if (selectedCount === visibleCount && totalCount > visibleCount) {
+                // User selected all visible, show button to select ALL
+                if (selectedCountSpan) selectedCountSpan.textContent = `${selectedCount} seleccionado${selectedCount > 1 ? 's' : ''}`;
+                if (selectAllBtn) {
+                    selectAllBtn.style.display = 'inline-block';
+                    if (selectAllCount) selectAllCount.textContent = totalCount;
+                }
+            } else {
+                // Normal selection
+                if (selectedCountSpan) selectedCountSpan.textContent = `${selectedCount} seleccionado${selectedCount > 1 ? 's' : ''}`;
+                if (selectAllBtn) selectAllBtn.style.display = 'none';
+            }
+
             if (exportBtn) {
                 exportBtn.disabled = false;
                 exportBtn.title = 'Exportar contratos seleccionados';
@@ -243,6 +294,7 @@ window.TunergiaUI = {
                 exportBtn.disabled = true;
                 exportBtn.title = 'Selecciona contratos para exportar';
             }
+            window.setState({ selectAllMode: false });
         }
 
         const allCheckboxes = document.querySelectorAll('.row-checkbox');
@@ -250,16 +302,25 @@ window.TunergiaUI = {
             selectAllCheckbox.checked = selectedCount === allCheckboxes.length;
             selectAllCheckbox.indeterminate = selectedCount > 0 && selectedCount < allCheckboxes.length;
         }
+
+        console.log('✅ Selection updated:', { selectedCount, total: allCheckboxes.length, selectAllMode });
     },
 
     /**
      * Render contracts table
      */
     renderContractsTable() {
+        console.log('🎨 renderContractsTable called');
+
         const tbody = document.getElementById('contractsTableBody');
         const allContracts = window.getState('filteredContracts');
 
-        if (!tbody) return;
+        if (!tbody) {
+            console.error('⚠️ Table body not found. Required ID: contractsTableBody');
+            return;
+        }
+
+        console.log('📊 Contracts to render:', allContracts?.length || 0);
 
         if (!allContracts || allContracts.length === 0) {
             tbody.innerHTML = `
@@ -283,6 +344,8 @@ window.TunergiaUI = {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
         const contracts = allContracts.slice(startIndex, endIndex);
+
+        console.log('📄 Rendering page:', { currentPage, itemsPerPage, showing: contracts.length, total: allContracts.length });
 
         const escapeHtml = window.TunergiaUtils.escapeHtml;
         const getStatusClass = window.TunergiaUtils.getStatusClass;
@@ -338,12 +401,16 @@ window.TunergiaUI = {
         });
 
         // Add checkbox change handlers
-        tbody.querySelectorAll('.row-checkbox').forEach(checkbox => {
+        const checkboxes = tbody.querySelectorAll('.row-checkbox');
+        console.log('✅ Adding checkbox listeners to', checkboxes.length, 'rows');
+        checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', () => this.updateSelectionInfo());
         });
 
         // Update pagination display
         this.updatePagination();
+
+        console.log('✅ Table render complete');
     },
 
     /**
@@ -443,6 +510,157 @@ window.TunergiaUI = {
 
         const renovarBtn = document.getElementById('renovarContractBtn');
         if (renovarBtn) renovarBtn.style.display = 'none';
+
+        console.log('✅ Contract detail closed');
+    },
+
+    /**
+     * Open create contract modal
+     */
+    async openCreateContract() {
+        console.log('✨ Opening create contract modal');
+        const modal = document.getElementById('createContractModal');
+        if (!modal) {
+            console.error('⚠️ Create contract modal not found');
+            return;
+        }
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Reset form
+        const form = document.getElementById('createContractForm');
+        if (form) form.reset();
+
+        // Reset modal title
+        const modalBadge = modal.querySelector('.contract-id-badge');
+        if (modalBadge) {
+            modalBadge.innerHTML = '<span>✨</span> Nuevo Contrato';
+            modalBadge.style.background = '#38a169';
+        }
+
+        // Load comercializadoras
+        await this.loadComercializadoras();
+
+        console.log('✅ Create contract modal opened');
+    },
+
+    /**
+     * Close create contract modal
+     */
+    closeCreateContract() {
+        const modal = document.getElementById('createContractModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        console.log('✅ Create contract modal closed');
+    },
+
+    /**
+     * Load comercializadoras list
+     */
+    async loadComercializadoras() {
+        try {
+            const query = `SELECT DISTINCT comercializadora FROM ${window.TunergiaConfig.productosTable} ORDER BY comercializadora`;
+            const data = await window.TunergiaAPI.executeQuery(query);
+
+            const select = document.getElementById('createComercializadora');
+            if (select && data) {
+                select.innerHTML = '<option value="">Seleccionar...</option>' +
+                    data.map(row => `<option value="${row.comercializadora}">${row.comercializadora}</option>`).join('');
+                console.log('✅ Loaded', data.length, 'comercializadoras');
+            }
+        } catch (error) {
+            console.error('Error loading comercializadoras:', error);
+        }
+    },
+
+    /**
+     * Renovar contract - copy data and open create modal
+     */
+    async renovarContract() {
+        const contractId = window.getState('currentContractId');
+        if (!contractId) {
+            console.error('No contract ID for renovation');
+            return;
+        }
+
+        console.log('🔄 Starting contract renovation:', contractId);
+
+        try {
+            // Get contract details
+            const contractData = await window.TunergiaAPI.getContractDetail(contractId);
+
+            // Parse contract data
+            let contract = {};
+            if (Array.isArray(contractData) && contractData.length > 0 && contractData[0].datos) {
+                contract = contractData[0].datos;
+            } else if (contractData.datos) {
+                contract = contractData.datos;
+            } else {
+                contract = contractData;
+            }
+
+            console.log('Contract data loaded for renovation:', contract);
+
+            // Close detail modal
+            this.closeContractDetail();
+
+            // Open create modal
+            const modal = document.getElementById('createContractModal');
+            if (!modal) return;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Update modal title
+            const modalBadge = modal.querySelector('.contract-id-badge');
+            if (modalBadge) {
+                modalBadge.innerHTML = '<span>🔄</span> RENOVAR Contrato #' + contractId;
+                modalBadge.style.background = '#f6ad55';
+            }
+
+            // Load comercializadoras first
+            await this.loadComercializadoras();
+
+            // Pre-fill form
+            const form = document.getElementById('createContractForm');
+            if (form && contract) {
+                // Personal data
+                if (contract.nombre_cliente) form.nombre_cliente.value = contract.nombre_cliente;
+                if (contract.tipo_empresa) form.tipo_empresa.value = contract.tipo_empresa;
+                if (contract.email) form.email.value = contract.email;
+                if (contract.movil) form.movil.value = contract.movil;
+                if (contract.nif) form.nif.value = contract.nif;
+                if (contract.iban_contrato) form.iban_contrato.value = contract.iban_contrato;
+                if (contract.direccion) form.direccion.value = contract.direccion;
+                if (contract.cp) form.cp.value = contract.cp;
+                if (contract.poblacion) form.poblacion.value = contract.poblacion;
+                if (contract.provincia) form.provincia.value = contract.provincia;
+
+                // Supply data
+                if (contract.persona_contacto) form.persona_contacto.value = contract.persona_contacto;
+                if (contract.persona_contacto_nif) form.persona_contacto_nif.value = contract.persona_contacto_nif;
+                if (contract.cups) form.cups.value = contract.cups;
+                if (contract.comercializadora_saliente) form.comercializadora_saliente.value = contract.comercializadora_saliente;
+                if (contract.direccion_suministro) form.direccion_suministro.value = contract.direccion_suministro;
+                if (contract.cp_suministro) form.cp_suministro.value = contract.cp_suministro;
+                if (contract.poblacion_suministro) form.poblacion_suministro.value = contract.poblacion_suministro;
+                if (contract.provincia_suministro) form.provincia_suministro.value = contract.provincia_suministro;
+
+                // Contract data
+                if (contract.tarifa_acceso) form.tarifa_acceso.value = contract.tarifa_acceso;
+                if (contract.cnae_actividad) form.cnae_actividad.value = contract.cnae_actividad;
+                if (contract.consumo) form.consumo.value = contract.consumo;
+            }
+
+            console.log('✅ Contract renovation form pre-filled');
+
+        } catch (error) {
+            console.error('Error renovating contract:', error);
+            this.showError('Error al cargar datos para renovación');
+        }
     },
 
     /**
@@ -464,7 +682,78 @@ window.TunergiaUI = {
 
         // Apply status filter
         if (currentFilter !== 'all') {
-            filtered = filtered.filter(c => (c.estado || '').toLowerCase() === currentFilter.toLowerCase());
+            if (currentFilter === 'tramitado') {
+                // En Tramitación: contracts without activation or cancellation
+                filtered = filtered.filter(c => {
+                    const estado = (c.estado || '').toUpperCase();
+                    const hasActivacion = c.fecha_activacion && c.fecha_activacion !== '' && !c.fecha_activacion.startsWith('0000');
+                    const hasCancelacion = c.fecha_cancelacion && c.fecha_cancelacion !== '' && !c.fecha_cancelacion.startsWith('0000');
+
+                    if (hasActivacion || hasCancelacion) return false;
+
+                    return estado.includes('TEMPORAL') || estado.includes('PDTE') || estado.includes('PENDIENTE') ||
+                           estado.includes('INCIDENCIA') || estado.includes('TRAMITADO') || estado.includes('VALIDADO') ||
+                           estado.includes('FIRMA') || estado.includes('LISTO');
+                });
+            } else if (currentFilter === 'activado') {
+                // Activated: has activation date and ACTIVADO status
+                filtered = filtered.filter(c => {
+                    const estado = (c.estado || '').toUpperCase();
+                    const hasActivacion = c.fecha_activacion && c.fecha_activacion !== '' && !c.fecha_activacion.startsWith('0000');
+                    return hasActivacion && estado.includes('ACTIVADO');
+                });
+            } else if (currentFilter === 'baja') {
+                // Bajas: has cancellation date
+                filtered = filtered.filter(c => {
+                    const hasCancelacion = c.fecha_cancelacion && c.fecha_cancelacion !== '' && !c.fecha_cancelacion.startsWith('0000');
+                    return hasCancelacion;
+                });
+            } else if (currentFilter === 'oportunidad') {
+                // Oportunidad: NO RENOVADO, INTERESADO, OPORTUNIDAD status, or active contracts approaching 1 year
+                filtered = filtered.filter(c => {
+                    const estado = (c.estado || '').toUpperCase();
+
+                    // Check for specific statuses
+                    if (estado === 'NO RENOVADO' || estado === 'INTERESADO' || estado === 'LISTO GESTION' || estado.includes('OPORTUNIDAD')) {
+                        return true;
+                    }
+
+                    // Check if active contract approaching 1 year anniversary (within 3 months)
+                    const hasActivacion = c.fecha_activacion && c.fecha_activacion !== '' && !c.fecha_activacion.startsWith('0000');
+                    if (hasActivacion && estado.includes('ACTIVADO')) {
+                        try {
+                            // Parse activation date
+                            let activacionDate;
+                            if (c.fecha_activacion.includes('/')) {
+                                const parts = c.fecha_activacion.split('/');
+                                activacionDate = new Date(parts[2], parseInt(parts[1]) - 1, parts[0]);
+                            } else {
+                                activacionDate = new Date(c.fecha_activacion);
+                            }
+
+                            if (!isNaN(activacionDate)) {
+                                // Calculate 1 year anniversary
+                                const oneYearLater = new Date(activacionDate);
+                                oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+
+                                // Check if within 3 months before anniversary
+                                const threeMonthsBefore = new Date(oneYearLater);
+                                threeMonthsBefore.setMonth(threeMonthsBefore.getMonth() - 3);
+
+                                const now = new Date();
+                                return now >= threeMonthsBefore && now <= oneYearLater;
+                            }
+                        } catch (e) {
+                            // If date parsing fails, ignore this criteria
+                        }
+                    }
+
+                    return false;
+                });
+            } else {
+                // Generic filter by estado
+                filtered = filtered.filter(c => (c.estado || '').toLowerCase() === currentFilter.toLowerCase());
+            }
         }
 
         // Apply sorting
@@ -505,8 +794,12 @@ window.TunergiaUI = {
      * Setup all event listeners
      */
     setupEventListeners() {
+        console.log('🎧 Setting up event listeners...');
+
         // Date filter buttons
-        document.querySelectorAll('.filter-btn[data-days]').forEach(btn => {
+        const dateFilterBtns = document.querySelectorAll('.filter-btn[data-days]');
+        console.log('📅 Date filter buttons found:', dateFilterBtns.length);
+        dateFilterBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
                 document.querySelectorAll('.filter-btn[data-days]').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
@@ -542,17 +835,22 @@ window.TunergiaUI = {
         const prevPage = document.getElementById('prevPage');
         if (prevPage) {
             prevPage.addEventListener('click', () => {
+                console.log('⬅️ Previous page clicked');
                 const currentPage = window.getState('currentPage');
                 if (currentPage > 1) {
                     window.setState({ currentPage: currentPage - 1 });
                     this.renderContractsTable();
                 }
             });
+            console.log('✅ Previous page button listener added');
+        } else {
+            console.warn('⚠️ Previous page button not found (ID: prevPage)');
         }
 
         const nextPage = document.getElementById('nextPage');
         if (nextPage) {
             nextPage.addEventListener('click', () => {
+                console.log('➡️ Next page clicked');
                 const currentPage = window.getState('currentPage');
                 const totalPages = Math.ceil(window.getState('filteredContracts').length / window.TunergiaConfig.itemsPerPage);
                 if (currentPage < totalPages) {
@@ -560,23 +858,45 @@ window.TunergiaUI = {
                     this.renderContractsTable();
                 }
             });
+            console.log('✅ Next page button listener added');
+        } else {
+            console.warn('⚠️ Next page button not found (ID: nextPage)');
         }
 
         // Select all checkbox
         const selectAll = document.getElementById('selectAll');
         if (selectAll) {
             selectAll.addEventListener('change', (e) => {
+                console.log('☑️ Select all toggled:', e.target.checked);
+                window.setState({ selectAllMode: false });
                 document.querySelectorAll('.row-checkbox').forEach(cb => {
                     cb.checked = e.target.checked;
                 });
                 this.updateSelectionInfo();
             });
+            console.log('✅ Select all checkbox listener added');
+        } else {
+            console.warn('⚠️ Select all checkbox not found (ID: selectAll)');
+        }
+
+        // Select all contracts button (Gmail-style)
+        const selectAllContractsBtn = document.getElementById('selectAllContracts');
+        if (selectAllContractsBtn) {
+            selectAllContractsBtn.addEventListener('click', () => {
+                console.log('📋 Select all contracts clicked');
+                window.setState({ selectAllMode: true });
+                this.updateSelectionInfo();
+            });
+            console.log('✅ Select all contracts button listener added');
         }
 
         // Sortable columns
-        document.querySelectorAll('.sortable').forEach(th => {
+        const sortableHeaders = document.querySelectorAll('.sortable');
+        console.log('🔽 Sortable headers found:', sortableHeaders.length);
+        sortableHeaders.forEach(th => {
             th.addEventListener('click', () => {
                 const column = th.dataset.sort;
+                console.log('🔽 Sort clicked:', column);
                 const currentColumn = window.getState('sortColumn');
                 const currentDirection = window.getState('sortDirection');
 
@@ -596,17 +916,77 @@ window.TunergiaUI = {
             });
         });
 
-        // Close contract detail button
+        // Create Contract button
+        const createBtn = document.getElementById('createBtn');
+        if (createBtn) {
+            createBtn.addEventListener('click', () => this.openCreateContract());
+            console.log('✅ Create contract button listener added');
+        } else {
+            console.warn('⚠️ Create button not found (ID: createBtn)');
+        }
+
+        // Contract Detail Modal - Close button
         const closeBtn = document.getElementById('closeContractDetailBtn');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => this.closeContractDetail());
         }
 
-        // Close on overlay click
-        const overlay = document.querySelector('.contract-detail-overlay');
+        // Contract Detail Modal - Renovar button
+        const renovarBtn = document.getElementById('renovarContractBtn');
+        if (renovarBtn) {
+            renovarBtn.addEventListener('click', () => this.renovarContract());
+            console.log('✅ Renovar button listener added');
+        }
+
+        // Contract Detail Modal - Overlay click
+        const overlay = document.getElementById('contractDetailOverlay');
         if (overlay) {
             overlay.addEventListener('click', () => this.closeContractDetail());
         }
+
+        // Contract Detail Modal - Tab switching
+        document.querySelectorAll('.detail-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+
+                // Update tab buttons
+                document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Update tab content
+                document.querySelectorAll('.detail-tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                const targetContent = document.querySelector(`[data-tab-content="${tabId}"]`);
+                if (targetContent) targetContent.classList.add('active');
+            });
+        });
+
+        // Create Contract Modal - Back button
+        const backFromCreateBtn = document.getElementById('backFromCreateBtn');
+        if (backFromCreateBtn) {
+            backFromCreateBtn.addEventListener('click', () => this.closeCreateContract());
+        }
+
+        // Create Contract Modal - Cancel button
+        const cancelCreateBtn = document.getElementById('cancelCreateBtn');
+        if (cancelCreateBtn) {
+            cancelCreateBtn.addEventListener('click', () => this.closeCreateContract());
+        }
+
+        // Create Contract Modal - Overlay click
+        const createOverlay = document.getElementById('createContractOverlay');
+        if (createOverlay) {
+            createOverlay.addEventListener('click', () => this.closeCreateContract());
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeContractDetail();
+                this.closeCreateContract();
+            }
+        });
 
         console.log('✅ Event listeners setup');
     }
