@@ -142,12 +142,20 @@ window.TunergiaUtils = {
         if (!estado) return 'default';
         const estadoUpper = estado.toUpperCase();
 
+        // Oportunidad takes priority
+        if (estadoUpper === 'NO RENOVADO' || estadoUpper === 'INTERESADO' ||
+            estadoUpper === 'LISTO GESTION' || estadoUpper.includes('OPORTUNIDAD')) {
+            return 'oportunidad';
+        }
+
         if (estadoUpper.includes('ACTIVADO')) return 'activado';
         if (estadoUpper.includes('BAJA') || estadoUpper.includes('CANCELADO')) return 'baja';
-        if (estadoUpper.includes('OPORTUNIDAD')) return 'oportunidad';
+        if (estadoUpper.includes('INCIDENCIA')) return 'incidencia';
+        if (estadoUpper.includes('TEMPORAL')) return 'temporal';
+        if (estadoUpper.includes('PDTE') || estadoUpper.includes('FIRMA')) return 'pdte-firma';
+        if (estadoUpper.includes('KO')) return 'ko';
         if (estadoUpper.includes('TRAMITADO') || estadoUpper.includes('PENDIENTE') ||
-            estadoUpper.includes('VALIDADO') || estadoUpper.includes('TEMPORAL') ||
-            estadoUpper.includes('FIRMA') || estadoUpper.includes('LISTO')) return 'tramitado';
+            estadoUpper.includes('VALIDADO') || estadoUpper.includes('LISTO')) return 'tramitado';
 
         return 'default';
     }
