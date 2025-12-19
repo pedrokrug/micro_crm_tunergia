@@ -301,8 +301,8 @@
                 <!-- Tabs -->
                 <div class="detail-tabs" style="display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px;">
                     <button class="detail-tab active" data-tab="details">Detalles</button>
-                    <button class="detail-tab" data-tab="documentacion">Documentacion</button>
-                    <button class="detail-tab" data-tab="historico">Historico</button>
+                    <button class="detail-tab" data-tab="consumo">Consumo</button>
+                    <button class="detail-tab" data-tab="documents">Documentos</button>
                 </div>
 
                 <!-- Tab Content: Details -->
@@ -342,24 +342,28 @@
                             <div class="detail-field"><label>Tipo</label><div class="field-value" id="detailTipoContratacion">-</div></div>
                         </div>
                     </div>
-                    <div class="detail-section" data-section="power-consumption">
-                        <!-- Power and consumption data will be populated here by JavaScript -->
+                    <div class="detail-section">
+                        <h4>⚡ Potencia y Consumo</h4>
+                        <div class="detail-grid">
+                            <div class="detail-field full-width"><label>Potencia Contratada</label><div class="field-value" id="detailPotencias">-</div></div>
+                            <div class="detail-field full-width"><label>Consumo Anual</label><div class="field-value" id="detailConsumos">-</div></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tab Content: Documentacion -->
-                <div class="detail-tab-content" data-tab-content="documentacion">
+                <!-- Tab Content: Consumo -->
+                <div class="detail-tab-content" data-tab-content="consumo">
                     <div class="detail-section">
-                        <h4>📄 Documentos del Contrato</h4>
+                        <h4>Información de Consumo</h4>
+                        <p>Los datos de consumo se mostrarán aquí</p>
+                    </div>
+                </div>
+
+                <!-- Tab Content: Documents -->
+                <div class="detail-tab-content" data-tab-content="documents">
+                    <div class="detail-section">
+                        <h4>Documentos del Contrato</h4>
                         <p>Los documentos se mostrarán aquí</p>
-                    </div>
-                </div>
-
-                <!-- Tab Content: Historico -->
-                <div class="detail-tab-content" data-tab-content="historico">
-                    <div class="detail-section">
-                        <h4>📋 Historial de Cambios</h4>
-                        <p>El historial se mostrará aquí</p>
                     </div>
                 </div>
             </div>
