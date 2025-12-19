@@ -735,9 +735,6 @@ window.TunergiaUI = {
         // Load comercializadoras
         await this.loadComercializadoras();
 
-        // Setup form field listeners for cascading dropdowns
-        this.setupFormFieldListeners();
-
         console.log('✅ Create contract modal opened');
     },
 
@@ -851,45 +848,6 @@ window.TunergiaUI = {
     },
 
     /**
-     * Setup form field change listeners for cascading dropdowns
-     */
-    setupFormFieldListeners() {
-        // Avoid setting up listeners multiple times
-        if (this._formFieldListenersSetup) {
-            console.log('⚠️ Form field listeners already set up, skipping');
-            return;
-        }
-
-        const tipoClienteSelect = document.getElementById('createTipoCliente');
-        const comercializadoraSelect = document.getElementById('createComercializadora');
-        const tarifaSelect = document.getElementById('createTarifaAcceso');
-
-        if (tipoClienteSelect) {
-            tipoClienteSelect.addEventListener('change', () => {
-                console.log('📝 Tipo de Cliente changed');
-                this.updateProductosDropdown();
-            });
-        }
-
-        if (comercializadoraSelect) {
-            comercializadoraSelect.addEventListener('change', () => {
-                console.log('📝 Comercializadora changed');
-                this.updateProductosDropdown();
-            });
-        }
-
-        if (tarifaSelect) {
-            tarifaSelect.addEventListener('change', () => {
-                console.log('📝 Tarifa de Acceso changed');
-                this.updateProductosDropdown();
-            });
-        }
-
-        this._formFieldListenersSetup = true;
-        console.log('✅ Form field listeners set up');
-    },
-
-    /**
      * Renovar contract - copy data and open create modal
      */
     async renovarContract() {
@@ -936,9 +894,6 @@ window.TunergiaUI = {
 
             // Load comercializadoras first
             await this.loadComercializadoras();
-
-            // Setup form field listeners for cascading dropdowns
-            this.setupFormFieldListeners();
 
             // Pre-fill form
             const form = document.getElementById('createContractForm');
@@ -1288,6 +1243,41 @@ window.TunergiaUI = {
         const createOverlay = document.getElementById('createContractOverlay');
         if (createOverlay) {
             createOverlay.addEventListener('click', () => this.closeCreateContract());
+        }
+
+        // Product dropdown event listeners for form
+        const tipoClienteSelect = document.getElementById('createTipoCliente');
+        const comercializadoraSelect = document.getElementById('createComercializadora');
+        const tarifaSelect = document.getElementById('createTarifaAcceso');
+
+        if (tipoClienteSelect) {
+            tipoClienteSelect.addEventListener('change', () => {
+                console.log('📝 Tipo de Cliente changed');
+                if (this.updateProductosDropdown) {
+                    this.updateProductosDropdown();
+                }
+            });
+            console.log('✅ Tipo Cliente event listener added');
+        }
+
+        if (comercializadoraSelect) {
+            comercializadoraSelect.addEventListener('change', () => {
+                console.log('📝 Comercializadora changed');
+                if (this.updateProductosDropdown) {
+                    this.updateProductosDropdown();
+                }
+            });
+            console.log('✅ Comercializadora event listener added');
+        }
+
+        if (tarifaSelect) {
+            tarifaSelect.addEventListener('change', () => {
+                console.log('📝 Tarifa de Acceso changed');
+                if (this.updateProductosDropdown) {
+                    this.updateProductosDropdown();
+                }
+            });
+            console.log('✅ Tarifa de Acceso event listener added');
         }
 
         // Keyboard shortcuts

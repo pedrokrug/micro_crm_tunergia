@@ -153,6 +153,12 @@ window.TunergiaAPI = {
         const totalCount = countData[0] ? parseInt(countData[0].total) || 0 : 0;
         window.setState({ totalContracts: totalCount });
 
+        // Update total contracts display immediately
+        const totalContractsEl = document.getElementById('totalContracts');
+        if (totalContractsEl) {
+            totalContractsEl.textContent = `${window.TunergiaUtils.formatNumber(totalCount)} Contratos`;
+        }
+
         // Load contracts
         const query = `
             SELECT
