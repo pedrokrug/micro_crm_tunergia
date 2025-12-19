@@ -299,67 +299,240 @@
             </div>
             <div id="contractDetailContent" class="contract-detail-content">
                 <!-- Tabs -->
-                <div class="detail-tabs" style="display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px;">
-                    <button class="detail-tab active" data-tab="details">Detalles</button>
-                    <button class="detail-tab" data-tab="documentacion">Documentacion</button>
-                    <button class="detail-tab" data-tab="historico">Historico</button>
+                <div class="detail-tabs">
+                    <button class="detail-tab active" data-tab="cliente">Datos del Cliente</button>
+                    <button class="detail-tab" data-tab="historial">Historial</button>
                 </div>
 
-                <!-- Tab Content: Details -->
-                <div class="detail-tab-content active" data-tab-content="details">
+                <!-- Tab Content: Datos del Cliente -->
+                <div class="detail-tab-content active" id="tabCliente">
                     <div class="detail-section">
-                        <h4>👤 Datos Personales</h4>
+                        <h3>Datos del Contrato</h3>
+                        <p class="section-subtitle">Información General, Documentos y Trámite de Contratación.</p>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>Datos Personales</h4>
                         <div class="detail-grid">
-                            <div class="detail-field"><label>Nombre</label><div class="field-value" id="detailNombre">-</div></div>
-                            <div class="detail-field"><label>Tipo</label><div class="field-value" id="detailTipoCliente">-</div></div>
-                            <div class="detail-field"><label>Email</label><div class="field-value" id="detailCorreo">-</div></div>
-                            <div class="detail-field"><label>Móvil</label><div class="field-value" id="detailMovil">-</div></div>
-                            <div class="detail-field"><label>DNI/NIF</label><div class="field-value" id="detailDNI">-</div></div>
-                            <div class="detail-field"><label>IBAN</label><div class="field-value" id="detailIBAN">-</div></div>
-                            <div class="detail-field full-width"><label>Dirección</label><div class="field-value" id="detailDireccion">-</div></div>
-                            <div class="detail-field"><label>CP</label><div class="field-value" id="detailCP">-</div></div>
-                            <div class="detail-field"><label>Población</label><div class="field-value" id="detailPoblacion">-</div></div>
-                            <div class="detail-field"><label>Provincia</label><div class="field-value" id="detailProvincia">-</div></div>
+                            <div class="detail-field">
+                                <label>Nombre Completo</label>
+                                <div class="field-value" id="detailNombre">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Tipo de Cliente</label>
+                                <div class="field-value" id="detailTipoCliente">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Correo</label>
+                                <div class="field-value" id="detailCorreo">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Móvil</label>
+                                <div class="field-value" id="detailMovil">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>DNI/CIF</label>
+                                <div class="field-value" id="detailDNI">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>IBAN</label>
+                                <div class="field-value" id="detailIBAN">-</div>
+                            </div>
+                            <div class="detail-field full-width">
+                                <label>Dirección Fiscal</label>
+                                <div class="field-value" id="detailDireccion">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Código Postal</label>
+                                <div class="field-value" id="detailCP">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Población</label>
+                                <div class="field-value" id="detailPoblacion">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Provincia</label>
+                                <div class="field-value" id="detailProvincia">-</div>
+                            </div>
                         </div>
                     </div>
+
                     <div class="detail-section">
-                        <h4>🏢 Datos de Suministro</h4>
+                        <h4>Datos de Suministro</h4>
                         <div class="detail-grid">
-                            <div class="detail-field full-width"><label>CUPS</label><div class="field-value cups-value" id="detailCUPS">-</div></div>
-                            <div class="detail-field full-width"><label>Comercializadora Saliente</label><div class="field-value" id="detailComercializadoraSaliente">-</div></div>
-                            <div class="detail-field"><label>Persona Contacto</label><div class="field-value" id="detailPersonaContacto">-</div></div>
-                            <div class="detail-field"><label>DNI Contacto</label><div class="field-value" id="detailPersonaContactoNIF">-</div></div>
+                            <div class="detail-field">
+                                <label>Nombre Completo</label>
+                                <div class="field-value" id="detailNombreSuministro">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>DNI</label>
+                                <div class="field-value" id="detailDNISuministro">-</div>
+                            </div>
+                            <div class="detail-field full-width">
+                                <label>Dirección</label>
+                                <div class="field-value" id="detailDireccionSuministro">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Población</label>
+                                <div class="field-value" id="detailPoblacionSuministro">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Código Postal</label>
+                                <div class="field-value" id="detailCPSuministro">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Provincia</label>
+                                <div class="field-value" id="detailProvinciaSuministro">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Comercializadora Saliente</label>
+                                <div class="field-value" id="detailComercializadoraSaliente">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>CUPS</label>
+                                <div class="field-value cups-value" id="detailCUPS">-</div>
+                            </div>
                         </div>
                     </div>
+
                     <div class="detail-section">
-                        <h4>📋 Datos de Contratación</h4>
+                        <h4>Datos de Contratación</h4>
                         <div class="detail-grid">
-                            <div class="detail-field full-width"><label>Estado</label><div class="field-value" id="detailEstado">-</div></div>
-                            <div class="detail-field"><label>Comercializadora</label><div class="field-value" id="detailComercializadora">-</div></div>
-                            <div class="detail-field"><label>Tarifa de Acceso</label><div class="field-value" id="detailTarifaAcceso">-</div></div>
-                            <div class="detail-field full-width"><label>Producto</label><div class="field-value" id="detailConcepto">-</div></div>
-                            <div class="detail-field"><label>Fecha Activación</label><div class="field-value" id="detailFechaActivacion">-</div></div>
-                            <div class="detail-field"><label>Tipo</label><div class="field-value" id="detailTipoContratacion">-</div></div>
+                            <div class="detail-field">
+                                <label>Comercializadora Elegida</label>
+                                <div class="field-value" id="detailComercializadora">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Concepto</label>
+                                <div class="field-value" id="detailConcepto">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Seleccionar Tarifa</label>
+                                <div class="field-value" id="detailTarifa">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Tarifa de Acceso</label>
+                                <div class="field-value" id="detailTarifaAcceso">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Tipo de Contratación</label>
+                                <div class="field-value" id="detailTipoContratacion">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Código CNAE</label>
+                                <div class="field-value" id="detailCNAE">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Firma Digital</label>
+                                <div class="field-value" id="detailFirmaDigital">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Factura Electrónica</label>
+                                <div class="field-value" id="detailFacturaElectronica">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Cambio de Comercializadora</label>
+                                <div class="field-value" id="detailCambioComercializadora">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Autoconsumo</label>
+                                <div class="field-value" id="detailAutoconsumo">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Futura Activación</label>
+                                <div class="field-value" id="detailFuturaActivacion">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Fecha de Activación</label>
+                                <div class="field-value" id="detailFechaActivacion">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Fecha de Cancelación</label>
+                                <div class="field-value" id="detailFechaCancelacion">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>Comercial</label>
+                                <div class="field-value" id="detailComercial">-</div>
+                            </div>
+                            <div class="detail-field">
+                                <label>KAM</label>
+                                <div class="field-value" id="detailKAM">-</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="detail-section" data-section="power-consumption">
-                        <!-- Power and consumption data will be populated here by JavaScript -->
+
+                    <div class="detail-section">
+                        <h4>Datos de Consumo</h4>
+                        <div class="consumo-table-container">
+                            <table class="consumo-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>P1</th>
+                                        <th>P2</th>
+                                        <th>P3</th>
+                                        <th>P4</th>
+                                        <th>P5</th>
+                                        <th>P6</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="row-label">Potencia Contratada (kW)</td>
+                                        <td id="detailPotP1">-</td>
+                                        <td id="detailPotP2">-</td>
+                                        <td id="detailPotP3">-</td>
+                                        <td id="detailPotP4">-</td>
+                                        <td id="detailPotP5">-</td>
+                                        <td id="detailPotP6">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="row-label">Consumo (kWh)</td>
+                                        <td id="detailConsP1">-</td>
+                                        <td id="detailConsP2">-</td>
+                                        <td id="detailConsP3">-</td>
+                                        <td id="detailConsP4">-</td>
+                                        <td id="detailConsP5">-</td>
+                                        <td id="detailConsP6">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="consumo-summary">
+                            <div class="consumo-total">
+                                <span class="label">Consumo Total Anual:</span>
+                                <span class="value" id="detailConsumoTotal">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>Documentos</h4>
+                        <div class="documents-info">
+                            <p>Sube aquí todos los documentos <strong>obligatorios</strong> para la tramitación.</p>
+                            <div class="documents-list" id="detailDocumentos">
+                                <p class="no-docs">No hay documentos adjuntos</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h4>Observaciones</h4>
+                        <div class="observations-box" id="detailObservaciones">
+                            Sin observaciones
+                        </div>
                     </div>
                 </div>
 
-                <!-- Tab Content: Documentacion -->
-                <div class="detail-tab-content" data-tab-content="documentacion">
+                <!-- Tab Content: Historial -->
+                <div class="detail-tab-content" id="tabHistorial">
                     <div class="detail-section">
-                        <h4>📄 Documentos del Contrato</h4>
-                        <p>Los documentos se mostrarán aquí</p>
+                        <h3>Historial del Contrato</h3>
+                        <p class="section-subtitle">Registro de cambios y eventos del contrato.</p>
                     </div>
-                </div>
 
-                <!-- Tab Content: Historico -->
-                <div class="detail-tab-content" data-tab-content="historico">
-                    <div class="detail-section">
-                        <h4>📋 Historial de Cambios</h4>
-                        <p>El historial se mostrará aquí</p>
+                    <div class="history-timeline" id="historyTimeline">
+                        <p class="no-history">Cargando historial...</p>
                     </div>
                 </div>
             </div>
