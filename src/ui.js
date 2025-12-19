@@ -443,6 +443,14 @@ window.TunergiaUI = {
         document.body.style.overflow = 'hidden';
         window.setState({ currentContractId: contractId });
 
+        // Reset tabs to first tab (Datos del Cliente) by default
+        document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
+        const firstTab = document.querySelector('.detail-tab[data-tab="cliente"]');
+        const firstContent = document.getElementById('tabCliente');
+        if (firstTab) firstTab.classList.add('active');
+        if (firstContent) firstContent.classList.add('active');
+
         const loading = document.getElementById('contractDetailLoading');
         const content = document.getElementById('contractDetailContent');
         const error = document.getElementById('contractDetailError');
@@ -493,61 +501,74 @@ window.TunergiaUI = {
             if (el) el.textContent = value || '-';
         };
 
-        // Helper to set HTML content
-        const setHTML = (id, html) => {
-            const el = document.getElementById(id);
-            if (el) el.innerHTML = html || '-';
+        // Helper to format decimal values
+        const formatDecimal = (value) => {
+            if (value === null || value === undefined || value === '') return '0.00';
+            const num = parseFloat(value);
+            return isNaN(num) ? '0.00' : num.toFixed(2);
         };
 
-        // Populate personal data with emojis
-        setText('detailNombre', contract.nombre_cliente || contract.persona_contacto);
+        // Populate Datos Personales
+        setText('detailNombre', contract.nombre_cliente || contract.persona_contacto || '-');
         setText('detailTipoCliente', contract.tipo_empresa || 'Particular');
-        setHTML('detailCorreo', contract.email ? `📧 ${contract.email}` : '-');
-        setHTML('detailMovil', (contract.movil || contract.telefono) ? `📱 ${contract.movil || contract.telefono}` : '-');
-        setHTML('detailDNI', (contract.nif || contract.persona_contacto_nif) ? `🆔 ${contract.nif || contract.persona_contacto_nif}` : '-');
-        setHTML('detailIBAN', contract.iban_contrato ? `💳 ${contract.iban_contrato}` : '-');
-        setHTML('detailDireccion', contract.direccion ? `📍 ${contract.direccion}` : '-');
-        setText('detailCP', contract.cp);
-        setText('detailPoblacion', contract.poblacion);
-        setText('detailProvincia', contract.provincia);
+        setText('detailCorreo', contract.email || '-');
+        setText('detailMovil', contract.movil || contract.telefono || '-');
+        setText('detailDNI', contract.nif || contract.persona_contacto_nif || '-');
+        setText('detailIBAN', contract.iban_contrato || '-');
+        setText('detailDireccion', contract.direccion || '-');
+        setText('detailCP', contract.cp || '-');
+        setText('detailPoblacion', contract.poblacion || '-');
+        setText('detailProvincia', contract.provincia || '-');
 
-        // Populate additional fields if they exist
-        setText('detailEstado', contract.estado || '-');
-        setText('detailFechaActivacion', window.TunergiaUtils.formatDate(contract.fecha_activacion));
-        setText('detailTipoContratacion', contract.tipo_contratacion || '-');
-        setText('detailPersonaContacto', contract.persona_contacto || '-');
-        setText('detailDNIContacto', contract.persona_contacto_nif || '-');
+        // Populate Datos de Suministro
+        setText('detailNombreSuministro', contract.persona_contacto || contract.nombre_cliente || '-');
+        setText('detailDNISuministro', contract.persona_contacto_nif || contract.nif || '-');
+        setText('detailDireccionSuministro', contract.direccion_suministro || contract.direccion || '-');
+        setText('detailPoblacionSuministro', contract.poblacion_suministro || contract.poblacion || '-');
+        setText('detailCPSuministro', contract.cp_suministro || contract.cp || '-');
+        setText('detailProvinciaSuministro', contract.provincia_suministro || contract.provincia || '-');
+        setText('detailComercializadoraSaliente', contract.comercializadora_saliente || '-');
+        setText('detailCUPS', contract.cups || '-');
 
-        // Populate supply data with emojis
-        setHTML('detailCUPS', contract.cups ? `<span class="cups-value">⚡ ${contract.cups}</span>` : '-');
-        setText('detailComercializadoraSaliente', contract.comercializadora_saliente);
-
-        // Populate contract data with emojis
-        setHTML('detailComercializadora', contract.comercializadora ? `🏢 ${contract.comercializadora.replace('_GAIAG', '').replace(/_/g, ' ')}` : '-');
-        setText('detailConcepto', contract.concepto);
+        // Populate Datos de Contratación
+        setText('detailComercializadora', contract.comercializadora || '-');
+        setText('detailConcepto', contract.concepto || '-');
+        setText('detailTarifa', contract.tarifa || '-');
         setText('detailTarifaAcceso', contract.concepto ? window.TunergiaUtils.extractTarifaAcceso(contract.concepto) : '-');
+        setText('detailTipoContratacion', contract.tipo_contratacion || '-');
+        setText('detailCNAE', contract.cnae_actividad || '-');
+        setText('detailFirmaDigital', contract.firma_digital === '1' || contract.firma_digital === 1 ? 'Sí' : 'No');
+        setText('detailFacturaElectronica', contract.fact_electronica === '1' || contract.fact_electronica === 1 ? 'Sí' : 'No');
+        setText('detailCambioComercializadora', contract.cambio_comercializadora || 'Sin cambios');
+        setText('detailAutoconsumo', contract.luz_autoconsumo === '1' || contract.luz_autoconsumo === 1 ? 'Sí' : 'No');
+        setText('detailFuturaActivacion', contract.futura_activacion || 'Cuanto antes');
+        setText('detailFechaActivacion', contract.fecha_activacion || '-');
+        setText('detailFechaCancelacion', contract.fecha_cancelacion || contract.fecha_baja || '-');
+        setText('detailComercial', contract.comercial || '-');
+        setText('detailKAM', contract.kam || '-');
 
-        // Populate power and consumption summary fields
-        const potencias = [];
-        for (let i = 1; i <= 6; i++) {
-            const pot = parseFloat(contract[`potencia_contratada_${i}`]) || 0;
-            if (pot > 0) potencias.push(`P${i}: ${pot.toFixed(2)} kW`);
-        }
-        setHTML('detailPotencias', potencias.length > 0 ? `<strong>⚡ ${potencias.join(', ')}</strong>` : '-');
+        // Populate Datos de Consumo - Potencias (table cells)
+        setText('detailPotP1', formatDecimal(contract.potencia_contratada_1));
+        setText('detailPotP2', formatDecimal(contract.potencia_contratada_2));
+        setText('detailPotP3', formatDecimal(contract.potencia_contratada_3));
+        setText('detailPotP4', formatDecimal(contract.potencia_contratada_4));
+        setText('detailPotP5', formatDecimal(contract.potencia_contratada_5));
+        setText('detailPotP6', formatDecimal(contract.potencia_contratada_6));
 
-        const consumos = [];
-        for (let i = 1; i <= 6; i++) {
-            const cons = parseFloat(contract[`consumo_${i}`]) || 0;
-            if (cons > 0) consumos.push(`P${i}: ${window.TunergiaUtils.formatNumber(cons)} kWh`);
-        }
-        const totalConsumo = parseFloat(contract.consumo) || 0;
-        if (consumos.length > 0) {
-            setHTML('detailConsumos', `<strong>📊 ${consumos.join(', ')}</strong>`);
-        } else if (totalConsumo > 0) {
-            setHTML('detailConsumos', `<strong>📊 Total: ${window.TunergiaUtils.formatNumber(totalConsumo)} kWh/año</strong>`);
-        } else {
-            setText('detailConsumos', '-');
-        }
+        // Populate Datos de Consumo - Consumos (table cells)
+        setText('detailConsP1', formatDecimal(contract.consumo_1));
+        setText('detailConsP2', formatDecimal(contract.consumo_2));
+        setText('detailConsP3', formatDecimal(contract.consumo_3));
+        setText('detailConsP4', formatDecimal(contract.consumo_4));
+        setText('detailConsP5', formatDecimal(contract.consumo_5));
+        setText('detailConsP6', formatDecimal(contract.consumo_6));
+
+        // Calculate and display total consumo
+        const consumoTotal = parseFloat(contract.consumo) ||
+            (parseFloat(contract.consumo_1 || 0) + parseFloat(contract.consumo_2 || 0) +
+             parseFloat(contract.consumo_3 || 0) + parseFloat(contract.consumo_4 || 0) +
+             parseFloat(contract.consumo_5 || 0) + parseFloat(contract.consumo_6 || 0));
+        setText('detailConsumoTotal', window.TunergiaUtils.formatNumber(consumoTotal) + ' kWh');
 
         // Update contract ID badge
         const modalContractId = document.getElementById('modalContractId');
@@ -555,86 +576,59 @@ window.TunergiaUI = {
             modalContractId.textContent = `ID: ${contract.id}`;
         }
 
-        // Update consumo tab content with power and consumption data
-        const consumoContent = document.querySelector('[data-tab-content="consumo"]');
-        if (consumoContent && contract) {
-            let consumoHTML = '<div class="detail-section"><h4>⚡ Potencia Contratada</h4>';
+        // Populate Observaciones
+        const obs = contract.observaciones || contract.observaciones_internas || '';
+        const obsEl = document.getElementById('detailObservaciones');
+        if (obsEl) obsEl.textContent = obs || 'Sin observaciones';
 
-            // Check for power data
-            const hasPowerData = ['potencia_contratada_1', 'potencia_contratada_2', 'potencia_contratada_3',
-                                   'potencia_contratada_4', 'potencia_contratada_5', 'potencia_contratada_6']
-                                  .some(field => parseFloat(contract[field]) > 0);
+        // Populate Documentos
+        const docsContainer = document.getElementById('detailDocumentos');
+        const documentos = contract.documentacion || [];
 
-            if (hasPowerData) {
-                consumoHTML += '<div class="detail-grid">';
-                for (let i = 1; i <= 6; i++) {
-                    const pot = parseFloat(contract[`potencia_contratada_${i}`]) || 0;
-                    if (pot > 0) {
-                        consumoHTML += `<div class="detail-field"><label>Periodo ${i}</label><div>${pot.toFixed(2)} kW</div></div>`;
-                    }
-                }
-                consumoHTML += '</div>';
-            } else {
-                consumoHTML += '<p style="color: #718096;">No hay datos de potencia disponibles</p>';
-            }
+        if (docsContainer) {
+            if (Array.isArray(documentos) && documentos.length > 0) {
+                docsContainer.innerHTML = documentos.map((doc, index) => {
+                    const name = doc.nombre_original || doc.nombre || doc.filename || doc.name || 'Documento';
+                    const url = doc.url_descarga || '';
+                    const fecha = doc.fecha || '';
+                    const tipo = doc.tipo || '';
+                    const ext = name.split('.').pop().toUpperCase();
 
-            consumoHTML += '</div><div class="detail-section"><h4>📊 Consumo Anual</h4>';
-
-            // Check for consumption data
-            const hasConsumptionData = ['consumo_1', 'consumo_2', 'consumo_3',
-                                         'consumo_4', 'consumo_5', 'consumo_6']
-                                       .some(field => parseFloat(contract[field]) > 0);
-
-            if (hasConsumptionData) {
-                consumoHTML += '<div class="detail-grid">';
-                for (let i = 1; i <= 6; i++) {
-                    const cons = parseFloat(contract[`consumo_${i}`]) || 0;
-                    if (cons > 0) {
-                        consumoHTML += `<div class="detail-field"><label>Periodo ${i}</label><div>${window.TunergiaUtils.formatNumber(cons)} kWh</div></div>`;
-                    }
-                }
-                consumoHTML += '</div>';
-            } else {
-                const consumoTotal = parseFloat(contract.consumo) || 0;
-                if (consumoTotal > 0) {
-                    consumoHTML += `<p><strong>Total:</strong> ${window.TunergiaUtils.formatNumber(consumoTotal)} kWh/año</p>`;
-                } else {
-                    consumoHTML += '<p style="color: #718096;">No hay datos de consumo disponibles</p>';
-                }
-            }
-
-            consumoHTML += '</div>';
-            consumoContent.innerHTML = consumoHTML;
-        }
-
-        // Update documents/history tab if available
-        const documentsContent = document.querySelector('[data-tab-content="documents"]');
-        if (documentsContent && contract.historico && Array.isArray(contract.historico)) {
-            let historyHTML = '<div class="detail-section"><h4>📋 Historial de Cambios</h4>';
-
-            if (contract.historico.length > 0) {
-                historyHTML += '<div class="history-timeline" style="position: relative; padding-left: 30px;">';
-                contract.historico.slice(0, 15).forEach((item, index) => {
-                    historyHTML += `
-                        <div class="history-item" style="margin-bottom: 16px; padding: 16px; background: white; border: 1px solid #e2e8f0; border-radius: 8px;">
-                            <div style="font-size: 12px; color: #a0aec0; margin-bottom: 4px;">${item.fecha || '-'}</div>
-                            <div style="font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 4px;">${item.accion || '-'}</div>
-                            <div style="font-size: 13px; color: #718096;">${item.texto || '-'}</div>
-                            <div style="font-size: 12px; color: #a0aec0; margin-top: 8px; font-style: italic;">👤 ${item.usuario || '-'}</div>
+                    return `
+                        <div class="document-item" style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f7fafc; border-radius: 8px; margin-bottom: 8px;">
+                            <div class="document-icon" style="width: 40px; height: 40px; background: #4299e1; color: white; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-weight: 700; font-size: 11px;">${ext}</div>
+                            <div class="document-info" style="flex: 1;">
+                                <div class="document-name" style="font-weight: 600; color: #2d3748; font-size: 13px;">${name}</div>
+                                <div class="document-size" style="font-size: 11px; color: #a0aec0;">${fecha} ${tipo ? '• ' + tipo : ''}</div>
+                            </div>
+                            ${url ? `<a href="${url}" download="${name}" class="download-icon" style="color: #4299e1; text-decoration: none; font-size: 20px;" title="Descargar">⬇️</a>` : ''}
                         </div>
                     `;
-                });
-                historyHTML += '</div>';
-
-                if (contract.historico.length > 15) {
-                    historyHTML += `<p style="text-align: center; color: #718096; margin-top: 16px;">... y ${contract.historico.length - 15} cambios más</p>`;
-                }
+                }).join('');
             } else {
-                historyHTML += '<p style="color: #a0aec0; font-style: italic; text-align: center; padding: 40px 20px;">No hay historial disponible</p>';
+                docsContainer.innerHTML = '<p class="no-docs">No hay documentos adjuntos</p>';
             }
+        }
 
-            historyHTML += '</div>';
-            documentsContent.innerHTML = historyHTML;
+        // Populate Historial
+        const historyContainer = document.getElementById('historyTimeline');
+        const historial = contract.historico || [];
+
+        if (historyContainer) {
+            if (Array.isArray(historial) && historial.length > 0) {
+                historyContainer.innerHTML = historial.map(item => {
+                    return `
+                        <div class="history-item" style="margin-bottom: 20px; padding: 16px; background: white; border-left: 3px solid #4299e1; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <div class="history-date" style="font-size: 12px; color: #a0aec0; margin-bottom: 4px;">${item.fecha || ''}</div>
+                            <div class="history-action" style="font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 4px;">${item.accion || ''}</div>
+                            <div class="history-detail" style="font-size: 13px; color: #718096; margin-bottom: 8px;">${item.texto || ''}</div>
+                            <div class="history-user" style="font-size: 11px; color: #a0aec0; font-style: italic;">Por: ${item.usuario || ''}</div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                historyContainer.innerHTML = '<p class="no-history" style="text-align: center; color: #a0aec0; padding: 40px 20px;">No hay historial disponible para este contrato</p>';
+            }
         }
 
         console.log('✅ Contract detail rendered:', contract);
@@ -1167,11 +1161,12 @@ window.TunergiaUI = {
                 document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
 
-                // Update tab content
+                // Update tab content - convert tabId to element id (cliente -> tabCliente)
                 document.querySelectorAll('.detail-tab-content').forEach(content => {
                     content.classList.remove('active');
                 });
-                const targetContent = document.querySelector(`[data-tab-content="${tabId}"]`);
+                const targetId = 'tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1);
+                const targetContent = document.getElementById(targetId);
                 if (targetContent) targetContent.classList.add('active');
             });
         });
