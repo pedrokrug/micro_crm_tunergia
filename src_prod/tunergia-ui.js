@@ -383,7 +383,7 @@
 
         // Documents
         const docsContainer = document.getElementById('detailDocumentos');
-        const documentos = contract.documentos || [];
+        const documentos = contract.documentacion || [];
 
         if (documentos.length > 0) {
             docsContainer.innerHTML = documentos.map((doc, index) => {
@@ -418,7 +418,7 @@
 
     function renderHistory(contract) {
         const timeline = document.getElementById('historyTimeline');
-        const historialData = contract.historial || [];
+        const historialData = contract.historico || [];
 
         if (historialData.length === 0) {
             timeline.innerHTML = '<p class="no-history">No hay historial disponible para este contrato</p>';
@@ -429,7 +429,7 @@
             <div class="history-item">
                 <div class="history-date">${utils.formatDate(item.fecha)}</div>
                 <div class="history-action">${utils.escapeHtml(item.accion || item.action)}</div>
-                <div class="history-detail">${utils.escapeHtml(item.detalle || item.detail || '')}</div>
+                <div class="history-detail">${utils.escapeHtml(item.texto || item.detalle || '')}</div>
                 ${item.usuario ? `<div class="history-user">Por: ${utils.escapeHtml(item.usuario)}</div>` : ''}
             </div>
         `).join('');
