@@ -1,3 +1,30 @@
+<!--
+    Tunergia CRM - Production Loader v3.0.0
+
+    NEW: Unified Interface with Contratos + Comparador y Análisis
+
+    This file loads the modular CRM interface with tab navigation.
+    Paste this entire content into Odoo HTML block.
+
+    Modules included:
+    - Contratos (Contract Management)
+    - Comparador y Análisis (Comparison & Power Analysis Tool)
+
+    Files loaded:
+    - src_prod/styles.css (Main styling + tabs)
+    - src_prod/tunergia-core.js (Config, State, Utils)
+    - src_prod/tunergia-api.js (API calls)
+    - src_prod/tunergia-ui.js (UI, Events, Main for Contratos)
+    - src_prod/tunergia-tabs.js (Tab navigation logic)
+
+    Last updated: 2025-12-22
+    Version: 3.0.0
+-->
+
+<!-- CSS Styles -->
+<link rel="stylesheet" href="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/COMMIT_HASH/src_prod/styles.css">
+
+<!-- HTML Content -->
 <div class="tunergia-app">
 
     <!-- Global User Banner (shared across all views) -->
@@ -32,7 +59,7 @@
         <!-- Contratos View -->
         <div class="view-panel active" id="view-contratos">
             <div class="tunergia-dashboard" id="contractsModule">
-                <!-- Content will be loaded from contracts-content.html -->
+                <!-- Content will be loaded dynamically -->
             </div>
         </div>
 
@@ -41,8 +68,8 @@
             <!-- Mode Selector for Comparador -->
             <div class="comparador-mode-selector">
                 <div class="mode-selector-header">
-                    <h3>Modo de An\u00e1lisis</h3>
-                    <p>Selecciona el tipo de an\u00e1lisis que deseas realizar</p>
+                    <h3>Modo de Análisis</h3>
+                    <p>Selecciona el tipo de análisis que deseas realizar</p>
                 </div>
                 <div class="mode-options">
                     <label class="mode-option">
@@ -81,3 +108,9 @@
     </div>
 
 </div>
+
+<!-- JavaScript Modules (load in order) -->
+<script src="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/COMMIT_HASH/src_prod/tunergia-core.js"></script>
+<script src="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/COMMIT_HASH/src_prod/tunergia-api.js"></script>
+<script src="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/COMMIT_HASH/src_prod/tunergia-ui.js"></script>
+<script src="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/COMMIT_HASH/src_prod/tunergia-tabs.js"></script>
