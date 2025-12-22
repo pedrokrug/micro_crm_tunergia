@@ -576,6 +576,14 @@
             if (data.Pot_Cont_P5) document.querySelector('input[name="potencia_contratada_5"]').value = data.Pot_Cont_P5;
             if (data.Pot_Cont_P6) document.querySelector('input[name="potencia_contratada_6"]').value = data.Pot_Cont_P6;
 
+            // Fill location data from SIPS
+            if (data.Cod_Postal_Suministro) {
+                document.querySelector('input[name="cp_suministro"]').value = data.Cod_Postal_Suministro;
+            }
+            if (data.Provincia_Suministro) {
+                document.querySelector('input[name="provincia_suministro"]').value = data.Provincia_Suministro;
+            }
+
             alert('✅ Datos SIPS extraídos correctamente');
         } catch (error) {
             console.error('Error extracting SIPS data:', error);
