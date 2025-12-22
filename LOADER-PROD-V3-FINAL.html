@@ -21,17 +21,23 @@
 <!-- HTML Content -->
 <div class="tunergia-dashboard">
 
+    <!-- Tool Switcher Pill - Top of everything -->
+    <div style="text-align: center; padding: 16px 0 12px 0;">
+        <div class="tool-switcher-pill">
+            <button class="pill-btn active" onclick="showContratos()">📊 Contratos</button>
+            <button class="pill-btn" onclick="showComparador()">⚡ Comparador</button>
+        </div>
+    </div>
+
     <div class="loading-overlay" id="dashboardLoading">
         <div class="loading-spinner"></div>
         <p class="loading-text">Cargando datos del dashboard...</p>
     </div>
 
-
     <div class="error-banner" id="dashboardError">
         <span class="error-icon">⚠️</span>
         <span class="error-text" id="errorText">Ha ocurrido un error al cargar los datos.</span>
     </div>
-
 
     <div class="user-banner" id="userBanner">
         <div class="user-info">
@@ -44,15 +50,9 @@
         <div class="user-id-badge" id="userIdBadge">ID: ---</div>
     </div>
 
-    <!-- Tool Switcher Pill -->
-    <div style="text-align: center; padding: 12px 0; background: white; border-bottom: 1px solid #e2e8f0;">
-        <div class="tool-switcher-pill">
-            <button class="pill-btn active" onclick="showContratos()">📊 Contratos</button>
-            <button class="pill-btn" onclick="showComparador()">⚡ Comparador</button>
-        </div>
-    </div>
-
-    <div class="dashboard-header" id="contratosView">
+    <!-- CONTRATOS CONTENT -->
+    <div id="contratosView">
+    <div class="dashboard-header">
         <div class="header-left">
             <h1>Bienvenido, <span id="welcomeName">Usuario</span></h1>
             <p>Gestiona tus contratos, centraliza tu información y haz comparativas</p>
@@ -808,12 +808,43 @@
 
     <!-- Comparador View (Hidden) -->
     <div id="comparadorView" style="display: none;">
-        <div id="comparador-tunergia">
-            <div style="padding: 40px; text-align: center;">
-                <div class="loading-spinner" style="margin: 0 auto 20px;"></div>
-                <p>Cargando comparador...</p>
+
+        <!-- Mode Selection -->
+        <div style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
+            <div style="text-align: center; margin-bottom: 48px;">
+                <h2 style="font-size: 32px; font-weight: 700; color: #2d3748; margin: 0 0 12px 0;">Modo de Análisis</h2>
+                <p style="font-size: 16px; color: #718096; margin: 0;">Selecciona el tipo de análisis que deseas realizar</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 40px;">
+
+                <!-- Option 1: Comparación de Facturas -->
+                <div class="mode-option-card" onclick="startMode('comparison')">
+                    <div style="font-size: 56px; margin-bottom: 20px;">📊</div>
+                    <h3 style="font-size: 20px; font-weight: 700; color: #2d3748; margin: 0 0 12px 0;">Comparación de Facturas</h3>
+                    <p style="font-size: 14px; color: #718096; line-height: 1.6; margin: 0;">Compara ofertas de diferentes comercializadoras y encuentra el mejor precio</p>
+                </div>
+
+                <!-- Option 2: Análisis de Potencia -->
+                <div class="mode-option-card" onclick="startMode('power')">
+                    <div style="font-size: 56px; margin-bottom: 20px;">⚡</div>
+                    <h3 style="font-size: 20px; font-weight: 700; color: #2d3748; margin: 0 0 12px 0;">Análisis de Potencia</h3>
+                    <p style="font-size: 14px; color: #718096; line-height: 1.6; margin: 0;">Optimiza la potencia contratada del cliente para reducir costes</p>
+                </div>
+
+                <!-- Option 3: Análisis Completo -->
+                <div class="mode-option-card" onclick="startMode('both')">
+                    <div style="font-size: 56px; margin-bottom: 20px;">🔄</div>
+                    <h3 style="font-size: 20px; font-weight: 700; color: #2d3748; margin: 0 0 12px 0;">Análisis Completo</h3>
+                    <p style="font-size: 14px; color: #718096; line-height: 1.6; margin: 0;">Comparación de ofertas + análisis de potencia en una sola herramienta</p>
+                </div>
+
             </div>
         </div>
+
+        <!-- Comparador Tool Container (loads after mode selection) -->
+        <div id="comparador-tunergia" style="display: none;"></div>
+
     </div>
 
 </div>
@@ -839,11 +870,23 @@ function showComparador() {
     document.getElementById('comparadorView').style.display = 'block';
     document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.pill-btn')[1].classList.add('active');
+}
 
+function startMode(mode) {
+    console.log('Starting mode:', mode);
+
+    // Show comparador container, hide mode selection
+    document.querySelector('#comparadorView > div').style.display = 'none';
+    document.getElementById('comparador-tunergia').style.display = 'block';
+
+    // Load comparador script if not loaded
     if (!comparadorLoaded) {
         const script = document.createElement('script');
         script.src = 'https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/modules/comparador/comparador.js';
-        script.onload = () => { comparadorLoaded = true; console.log('✓ Comparador loaded'); };
+        script.onload = () => {
+            comparadorLoaded = true;
+            console.log('✓ Comparador loaded in mode:', mode);
+        };
         script.onerror = () => {
             document.getElementById('comparador-tunergia').innerHTML =
                 '<div style="padding: 40px; text-align: center; color: #e53e3e;"><h3>Error al cargar el comparador</h3></div>';
@@ -854,37 +897,62 @@ function showComparador() {
 
 window.showContratos = showContratos;
 window.showComparador = showComparador;
+window.startMode = startMode;
 </script>
 
 <!-- Pill Switcher Styles -->
 <style>
 .tool-switcher-pill {
     display: inline-flex;
-    background: #f1f5f9;
+    background: rgba(241, 245, 249, 0.6);
+    backdrop-filter: blur(10px);
     border-radius: 12px;
     padding: 4px;
     gap: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .pill-btn {
-    padding: 10px 24px;
+    padding: 10px 28px;
     border: none;
     background: transparent;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 600;
     color: #64748b;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pill-btn:hover {
     color: #334155;
+    background: rgba(255, 255, 255, 0.5);
 }
 
 .pill-btn.active {
     background: white;
     color: #4392CD;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(67, 146, 205, 0.15);
+}
+
+/* Mode Option Cards */
+.mode-option-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 40px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mode-option-card:hover {
+    border-color: #4392CD;
+    box-shadow: 0 8px 24px rgba(67, 146, 205, 0.15);
+    transform: translateY(-4px);
+}
+
+.mode-option-card:active {
+    transform: translateY(-2px);
 }
 </style>
