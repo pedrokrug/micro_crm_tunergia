@@ -1,0 +1,986 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "projectId": {
+          "__rl": true,
+          "value": "tunergia-1722509306765",
+          "mode": "list",
+          "cachedResultName": "Tunergia",
+          "cachedResultUrl": "https://console.cloud.google.com/bigquery?project=tunergia-1722509306765"
+        },
+        "sqlQuery": "{{ $json.body.query }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleBigQuery",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0f24af93-d1e6-4570-8123-fd34cf151c34",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "googleBigQueryOAuth2Api": {
+          "id": "HuL2sSJL5cPYwr4j",
+          "name": "Personal Pedro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "59200adf-d6df-4dd2-b319-5ab57d2e5052",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3b0e7b27-5f29-4571-bded-ad74195e153a",
+      "name": "Query for BigQuery",
+      "webhookId": "59200adf-d6df-4dd2-b319-5ab57d2e5052"
+    },
+    {
+      "parameters": {
+        "path": "documento-nodo",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        448
+      ],
+      "id": "0d8287c0-af23-4ba2-8d65-da3dbcaf4639",
+      "name": "Download Document from NODO",
+      "webhookId": "59200adf-d6df-4dd2-b319-5ab57d2e5052"
+    },
+    {
+      "parameters": {
+        "url": "=https://gaiag.nodogestion.com{{ $json.query.query }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "Documento"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        448
+      ],
+      "id": "11a4cc04-ec59-4f5e-af58-d1cd2bd79804",
+      "name": "Download Document",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "8Vg7TyHllfv2EefZ",
+          "name": "NODO - Prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "id": "f4436487-b9c3-4e78-b645-94258b034032",
+      "name": "Respond to Document from NODO",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        448,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crear-contrato-nodo",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        768
+      ],
+      "id": "9bcba667-5143-477c-9206-1217de5d1f31",
+      "name": "Crear Contrato en NODO",
+      "webhookId": "59200adf-d6df-4dd2-b319-5ab57d2e5052"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gaiag.nodogestion.com/api/operaciones/crear",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "nombre_cliente",
+              "value": "={{ $json.contract_data.titular }}"
+            },
+            {
+              "name": "nif",
+              "value": "={{ $json.contract_data.nif }}"
+            },
+            {
+              "name": "tipo_empresa",
+              "value": "={{ $json.tipo_empresa }}"
+            },
+            {
+              "name": "telefono",
+              "value": "={{ $json.telefono || '' }}"
+            },
+            {
+              "name": "direccion",
+              "value": "={{ $json.contract_data.direccion_fiscal }}"
+            },
+            {
+              "name": "cp",
+              "value": "={{ $json.contract_data.cp_fiscal }}"
+            },
+            {
+              "name": "poblacion",
+              "value": "={{ $json.contract_data.poblacion_fiscal }}"
+            },
+            {
+              "name": "provincia",
+              "value": "={{ $json.contract_data.provincia_fiscal }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.contract_data.email }}"
+            },
+            {
+              "name": "movil",
+              "value": "={{ $json.contract_data.movil }}"
+            },
+            {
+              "name": "cups",
+              "value": "={{ $json.contract_data.cups }}"
+            },
+            {
+              "name": "fecha",
+              "value": "={{ new Date().toISOString().slice(0, 19).replace('T', ' ') }}"
+            },
+            {
+              "name": "comercializadora",
+              "value": "={{ $json.comercializadora }}"
+            },
+            {
+              "name": "tarifa",
+              "value": "0 - 5.000 KWH"
+            },
+            {
+              "name": "concepto",
+              "value": "={{ $json.concepto }}"
+            },
+            {
+              "name": "comercial",
+              "value": "={{ $json.comercial }}"
+            },
+            {
+              "name": "comercializadora_saliente",
+              "value": "={{ $json.contract_data.comercializadora_actual }}"
+            },
+            {
+              "name": "cnae_actividad",
+              "value": "={{ $json.cnae || '9820' }}"
+            },
+            {
+              "name": "firma_digital",
+              "value": "={{ $json.firma_digital }}"
+            },
+            {
+              "name": "direccion_suministro",
+              "value": "={{ $json.contract_data.direccion_suministro }}"
+            },
+            {
+              "name": "poblacion_suministro",
+              "value": "={{ $json.contract_data.poblacion_suministro }}"
+            },
+            {
+              "name": "provincia_suministro",
+              "value": "={{ $json.contract_data.provincia_suministro }}"
+            },
+            {
+              "name": "cp_suministro",
+              "value": "={{ $json.contract_data.cp_suministro }}"
+            },
+            {
+              "name": "persona_contacto",
+              "value": "={{ $json.contract_data.titular }}"
+            },
+            {
+              "name": "persona_contacto_nif",
+              "value": "={{ $json.contract_data.nif }}"
+            },
+            {
+              "name": "iban_contrato",
+              "value": "={{ $json.contract_data.iban }}"
+            },
+            {
+              "name": "consumo",
+              "value": "={{ $json.contract_data.consumo_anual_kwh || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_1",
+              "value": "={{ $json.contract_data.potencia_p1 || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_2",
+              "value": "={{ $json.contract_data.potencia_p2 || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_3",
+              "value": "={{ $json.contract_data.potencia_p3 || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_4",
+              "value": "={{ $json.contract_data.potencia_p4 || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_5",
+              "value": "={{ $json.contract_data.potencia_p5 || 0 }}"
+            },
+            {
+              "name": "potencia_contratada_6",
+              "value": "={{ $json.contract_data.potencia_p6 || 0 }}"
+            },
+            {
+              "name": "consumo_1",
+              "value": "={{ $json.contract_data.consumo_p1 || 0 }}"
+            },
+            {
+              "name": "consumo_2",
+              "value": "={{ $json.contract_data.consumo_p2 || 0 }}"
+            },
+            {
+              "name": "consumo_3",
+              "value": "={{ $json.contract_data.consumo_p3 || 0 }}"
+            },
+            {
+              "name": "consumo_4",
+              "value": "={{ $json.contract_data.consumo_p4 || 0 }}"
+            },
+            {
+              "name": "consumo_5",
+              "value": "={{ $json.contract_data.consumo_p5 || 0 }}"
+            },
+            {
+              "name": "consumo_6",
+              "value": "={{ $json.contract_data.consumo_p6 || 0 }}"
+            },
+            {
+              "name": "coste_operativo",
+              "value": "0"
+            },
+            {
+              "name": "cambio_comercializadora",
+              "value": "SI"
+            },
+            {
+              "name": "tarifa_acceso",
+              "value": "={{ $json.contract_data.tarifa_acceso }}"
+            },
+            {
+              "name": "fact_electronica",
+              "value": "={{ $json.fact_electronica }}"
+            },
+            {
+              "name": "luz_autoconsumo",
+              "value": "={{ $json.luz_autoconsumo }}"
+            },
+            {
+              "name": "observaciones",
+              "value": "Contrato generado desde Tunerface"
+            },
+            {
+              "name": "futura_activacion",
+              "value": "CUANTO ANTES"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "912a36a9-4c75-45bc-8317-b205ab3dca5a",
+      "name": "NODO - Crear Contrato",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        768
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "8Vg7TyHllfv2EefZ",
+          "name": "NODO - Prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// N8N Code Node to replace DYNAMIC CONTRACT NODE\n// This node processes incoming contract data and formats it for NODO API\n\n// Get the input data from the webhook - data comes in body\nconst inputData = $input.all()[0].json.body || $input.all()[0].json;\n\n// Extract contract_data object and other fields\nconst contractData = inputData.contract_data || {};\nconst tipoEmpresa = inputData.tipo_empresa || '';\nconst telefono = inputData.telefono || '';\nconst comercializadora = inputData.comercializadora || '';\nconst concepto = inputData.concepto || '';\nconst cnae = inputData.cnae || '9820';\nconst observaciones = inputData.observaciones || 'Contrato generado desde Tunerface';\nconst tipoContratacion = inputData.tipo_contratacion || '';\nconst comercial = inputData.comercial || '1731';\nconst firmaDigital = inputData.firma_digital || '0';\nconst factElectronica = inputData.fact_electronica || 'NO';\nconst luzAutoconsumo = inputData.luz_autoconsumo || 'NO';\n\n// Helper function to safely parse numeric values (handles strings and numbers)\nfunction parseNumeric(value) {\n  if (value === null || value === undefined || value === '') return 0;\n  const parsed = parseFloat(value);\n  return isNaN(parsed) ? 0 : parsed;\n}\n\n// Prepare the formatted data object\nconst formattedData = {\n  contract_data: {\n    titular: contractData.titular || '',\n    nif: contractData.nif || '',\n    direccion_fiscal: contractData.direccion_fiscal || '',\n    cp_fiscal: contractData.cp_fiscal || '',\n    poblacion_fiscal: contractData.poblacion_fiscal || '',\n    provincia_fiscal: contractData.provincia_fiscal || '',\n    email: contractData.email || '',\n    movil: contractData.movil || '',\n    cups: contractData.cups || '',\n    comercializadora_actual: contractData.comercializadora_actual || '',\n    direccion_suministro: contractData.direccion_suministro || '',\n    poblacion_suministro: contractData.poblacion_suministro || '',\n    provincia_suministro: contractData.provincia_suministro || '',\n    cp_suministro: contractData.cp_suministro || '',\n    iban: contractData.iban || '',\n    consumo_anual_kwh: parseNumeric(contractData.consumo_anual_kwh),\n    potencia_p1: parseNumeric(contractData.potencia_p1),\n    potencia_p2: parseNumeric(contractData.potencia_p2),\n    potencia_p3: parseNumeric(contractData.potencia_p3),\n    potencia_p4: parseNumeric(contractData.potencia_p4),\n    potencia_p5: parseNumeric(contractData.potencia_p5),\n    potencia_p6: parseNumeric(contractData.potencia_p6),\n    consumo_p1: parseNumeric(contractData.consumo_p1),\n    consumo_p2: parseNumeric(contractData.consumo_p2),\n    consumo_p3: parseNumeric(contractData.consumo_p3),\n    consumo_p4: parseNumeric(contractData.consumo_p4),\n    consumo_p5: parseNumeric(contractData.consumo_p5),\n    consumo_p6: parseNumeric(contractData.consumo_p6),\n    tarifa_acceso: contractData.tarifa_acceso || ''\n  },\n  tipo_empresa: tipoEmpresa,\n  telefono: telefono,\n  comercializadora: comercializadora,\n  concepto: concepto,\n  cnae: cnae,\n  observaciones: observaciones,\n  tipo_contratacion: tipoContratacion,\n  comercial: comercial,\n  firma_digital: firmaDigital,\n  fact_electronica: factElectronica,\n  luz_autoconsumo: luzAutoconsumo\n};\n\n// Return the formatted data\nreturn [{\n  json: formattedData\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        768
+      ],
+      "id": "b8e38d20-1599-4c35-ae23-8e8ba3800616",
+      "name": "DYNAMIC CONTRACT NODE"
+    },
+    {
+      "parameters": {
+        "url": "=https://gaiag.nodogestion.com/api/operaciones/consultar/{{ $json.body.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        224
+      ],
+      "id": "a502288d-32cc-4199-b2cb-01f899334a6a",
+      "name": "Consulta NODO",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "8Vg7TyHllfv2EefZ",
+          "name": "NODO - Prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "SIPS-contrato-nodo",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        1184
+      ],
+      "id": "13d2341b-699a-4e79-815e-d93bd1d1e41a",
+      "name": "Solicitar Datos SIPS",
+      "webhookId": "59200adf-d6df-4dd2-b319-5ab57d2e5052"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://plenaenergia-tradeenergy.nemon2ib.com/api",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "57a9d001ca37849fd406e051463e0e0edf5302b9"
+            },
+            {
+              "name": "module",
+              "value": "Sips"
+            },
+            {
+              "name": "class",
+              "value": "SipsData"
+            },
+            {
+              "name": "action",
+              "value": "getData"
+            },
+            {
+              "name": "data",
+              "value": "={\"typeenergy\":\"{{ $json.energy_type }}\",\"request\":\"detail\", \"cups\":\"{{ $json.cups.replaceAll(' ', '') }}\"}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0dd98874-e302-4984-98ba-85b5eb0d4b3a",
+      "name": "Fetch SIPS - Sin Factura",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "375b5a43-d591-4369-a050-8e4dbac61962",
+              "name": "energy_type",
+              "value": "gas",
+              "type": "string"
+            },
+            {
+              "id": "0de2e4d9-b4d8-471e-82a1-6900bb995af4",
+              "name": "cups",
+              "value": "={{ $json.body.cups }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        1280
+      ],
+      "id": "fad5634b-90f0-4123-b36a-789144659e2d",
+      "name": "Gas / SIPS1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "375b5a43-d591-4369-a050-8e4dbac61962",
+              "name": "energy_type",
+              "value": "elec",
+              "type": "string"
+            },
+            {
+              "id": "0de2e4d9-b4d8-471e-82a1-6900bb995af4",
+              "name": "cups",
+              "value": "={{ $json.body.cups }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        1088
+      ],
+      "id": "6c00061d-346b-465a-b4ea-b7ed0fe9e038",
+      "name": "Luz / SIPS1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const root = items[0].json;\n\n// Step 1: Get raw payload (string or object)\nlet rawPayload = root.data ?? root.body ?? root;\n\n// Step 2: Parse if it's a string\nlet payload;\nif (typeof rawPayload === 'string') {\n  try {\n    payload = JSON.parse(rawPayload);\n  } catch (e) {\n    throw new Error('Failed to parse JSON string in data/body');\n  }\n} else {\n  payload = rawPayload;\n}\n\n// Step 3: Validate suministros\nif (!Array.isArray(payload.suministros) || payload.suministros.length === 0) {\n  throw new Error(\n    \"No 'suministros' array found after parsing. Keys: \" +\n    Object.keys(payload).join(', ')\n  );\n}\n\n// Step 4: Take first suministro\nconst s = payload.suministros[0];\n\n// Helper: number coercion\nconst num = (v) =>\n  v === null || v === undefined || v === '' ? null : Number(v);\n\n// Helper: get text before slash (for provincia)\nconst beforeSlash = (v) => {\n  if (!v) return null;\n  return v.split('/')[0].trim();\n};\n\n// Step 5: Clean output\nconst cleanJson = {\n  kWhAnual: num(s.kWhAnual),\n\n  kWhAnual_p1: num(s.kWhAnual_p1),\n  kWhAnual_p2: num(s.kWhAnual_p2),\n  kWhAnual_p3: num(s.kWhAnual_p3),\n  kWhAnual_p4: num(s.kWhAnual_p4),\n  kWhAnual_p5: num(s.kWhAnual_p5),\n  kWhAnual_p6: num(s.kWhAnual_p6),\n\n  Pot_Cont_P1: num(s.Pot_Cont_P1),\n  Pot_Cont_P2: num(s.Pot_Cont_P2),\n  Pot_Cont_P3: num(s.Pot_Cont_P3),\n  Pot_Cont_P4: num(s.Pot_Cont_P4),\n  Pot_Cont_P5: num(s.Pot_Cont_P5),\n  Pot_Cont_P6: num(s.Pot_Cont_P6),\n\n  cnae_code: s.cnae_code ?? null,\n  Tarifa: s.Tarifa ?? null,\n  \n  // Location fields (provincia cleaned to remove alternate names after /)\n  Cod_Postal_Suministro: s.Cod_Postal_Suministro ?? null,\n  Provincia_Suministro: beforeSlash(s.Provincia_Suministro)\n};\n\nreturn [{ json: cleanJson }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        1184
+      ],
+      "id": "5503a376-8716-4c6b-bd0c-59858ee230d3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "elec-check",
+                    "leftValue": "={{ $json.body.cups.toString().trim() }}",
+                    "rightValue": "^ES00[a-zA-Z0-9]{16}([a-zA-Z0-9]{2})?$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex",
+                      "name": "filter.operator.regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Electricity (Luz)"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "gas-check",
+                    "leftValue": "={{ $json.body.cups.toString().trim() }}",
+                    "rightValue": "^ES02[a-zA-Z0-9]{16}([a-zA-Z0-9]{2})?$",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex",
+                      "name": "filter.operator.regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Gas"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "Invalid / Unknown"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        224,
+        1184
+      ],
+      "id": "25dc3793-b832-45d3-affb-e6170a8a4dcd",
+      "name": "Auto-Detect CUPS Type"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract contract ID from NODO response\nconst nodoResponse = $input.item.json;\nconst contractData = $('Process Validation Result').item.json.contract_data;\n\nlet contratoId = 'N/A';\n\n// NODO API returns: { resultado: 'OK', id: ..., id_operacion: ... }\nif (nodoResponse.data && nodoResponse.data.id) {\n  contratoId = nodoResponse.data.id;\n} else if (nodoResponse.id) {\n  contratoId = nodoResponse.id;\n} else {\n  throw new Error('No se pudo obtener el ID del contrato creado');\n}\n\n// Prepare document array for loop-based upload\nconst documents = [];\n\n// Document 1: Factura PDF (if exists - only for clients with bills)\nif (contractData.factura_pdf) {\n  documents.push({\n    contrato_id: contratoId,\n    tipo: 'DOCUMENTACIÓN',\n    archivo_base64: contractData.factura_pdf,\n    nombre_archivo: 'factura.pdf'\n  });\n}\n\n// Document 2: DNI Anverso (always required)\nif (contractData.dni_anverso) {\n  const ext = contractData.dni_anverso_type?.includes('pdf') ? 'pdf' : 'jpg';\n  documents.push({\n    contrato_id: contratoId,\n    tipo: 'DOCUMENTACIÓN',\n    archivo_base64: contractData.dni_anverso,\n    nombre_archivo: `dni_frontal.${ext}`\n  });\n}\n\n// Document 3: DNI Reverso (now always required)\nif (contractData.dni_reverso) {\n  const ext = contractData.dni_reverso_type?.includes('pdf') ? 'pdf' : 'jpg';\n  documents.push({\n    contrato_id: contratoId,\n    tipo: 'DOCUMENTACIÓN',\n    archivo_base64: contractData.dni_reverso,\n    nombre_archivo: `dni_trasera.${ext}`\n  });\n} else {\n  // This should not happen since DNI reverso is mandatory, but log it just in case\n  console.log('WARNING: DNI reverso is missing but should be mandatory');\n}\n\n// Document 4: CIF or Escritura (for business clients only)\nif (contractData.cif_escritura) {\n  const ext = contractData.cif_escritura_type?.includes('pdf') ? 'pdf' : 'jpg';\n  documents.push({\n    contrato_id: contratoId,\n    tipo: 'DOCUMENTACIÓN',\n    archivo_base64: contractData.cif_escritura,\n    nombre_archivo: `cif_escritura.${ext}`\n  });\n}\n\n// Return array of documents for loop processing\nreturn documents.map(doc => ({\n  json: {\n    ...doc,\n    // Keep metadata for final response\n    _metadata: {\n      contrato_id: contratoId,\n      cups: contractData.cups,\n      email: contractData.email,\n      titular: contractData.titular,\n      clientType: contractData.clientType\n    }\n  }\n}));"
+      },
+      "id": "534cd1e9-38c1-4a3e-aa4f-0ca518c62ce0",
+      "name": "Prepare Documents Array",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gaiag.nodogestion.com/api/operaciones/documentacion/nueva",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "={{ $json.contrato_id }}"
+            },
+            {
+              "name": "tipo",
+              "value": "={{ $json.tipo }}"
+            },
+            {
+              "name": "archivo",
+              "value": "={{ $json.archivo_base64 }}"
+            },
+            {
+              "name": "nombre_archivo",
+              "value": "={{ $json.nombre_archivo }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d6228c59-f5ee-4a1a-ad48-e08837f70e0c",
+      "name": "NODO - Upload Document (Loop)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        896,
+        864
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "z40Y68JtmeUQHIop",
+          "name": "NODO - Test"
+        }
+      },
+      "notes": "This node executes once per document in the array"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "id": "75ec0715-92fb-4e70-8eca-0eefe2240ec4",
+      "name": "Respond to Document from NODO1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        672,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nodo",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        224
+      ],
+      "id": "8821a17f-95ee-43bc-a00f-b3458ab2ca8c",
+      "name": "Consult NODO with ID or CUPS1",
+      "webhookId": "59200adf-d6df-4dd2-b319-5ab57d2e5052"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ data: $input.all().map(item => item.json) }) }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        416,
+        0
+      ],
+      "id": "9d53b84e-bdb6-497d-ad67-c8a698dd8de1",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query for BigQuery": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Document from NODO": {
+      "main": [
+        [
+          {
+            "node": "Download Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Document": {
+      "main": [
+        [
+          {
+            "node": "Respond to Document from NODO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Contrato en NODO": {
+      "main": [
+        [
+          {
+            "node": "DYNAMIC CONTRACT NODE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NODO - Crear Contrato": {
+      "main": [
+        [
+          {
+            "node": "Respond to Document from NODO1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Documents Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DYNAMIC CONTRACT NODE": {
+      "main": [
+        [
+          {
+            "node": "NODO - Crear Contrato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solicitar Datos SIPS": {
+      "main": [
+        [
+          {
+            "node": "Auto-Detect CUPS Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch SIPS - Sin Factura": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gas / SIPS1": {
+      "main": [
+        [
+          {
+            "node": "Fetch SIPS - Sin Factura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Luz / SIPS1": {
+      "main": [
+        [
+          {
+            "node": "Fetch SIPS - Sin Factura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto-Detect CUPS Type": {
+      "main": [
+        [
+          {
+            "node": "Luz / SIPS1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gas / SIPS1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Documents Array": {
+      "main": [
+        [
+          {
+            "node": "NODO - Upload Document (Loop)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consult NODO with ID or CUPS1": {
+      "main": [
+        [
+          {
+            "node": "Consulta NODO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Query for BigQuery": [
+      {
+        "headers": {
+          "host": "tunuevaenergia.com",
+          "x-real-ip": "79.116.142.161",
+          "x-forwarded-for": "79.116.142.161",
+          "x-forwarded-proto": "https",
+          "connection": "upgrade",
+          "content-length": "244",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+          "content-type": "application/json",
+          "sec-ch-ua-mobile": "?0",
+          "accept": "*/*",
+          "origin": "https://tunergiav18.odoo.com",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty",
+          "referer": "https://tunergiav18.odoo.com/",
+          "accept-encoding": "gzip, deflate, br, zstd",
+          "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+          "priority": "u=1, i"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "query": "\n                SELECT COUNT(*) as total\n                FROM `tunergia-1722509306765.NODO.Contratos_Comisiones`\n                WHERE (borrado = 0 OR borrado IS NULL)\n                    AND id_comercial = '1650'\n            "
+        },
+        "webhookUrl": "https://tunuevaenergia.com/webhook/59200adf-d6df-4dd2-b319-5ab57d2e5052",
+        "executionMode": "production"
+      }
+    ],
+    "Crear Contrato en NODO": [
+      {
+        "headers": {
+          "connection": "upgrade",
+          "host": "tunuevaenergia.com",
+          "content-length": "1047",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+          "content-type": "application/json",
+          "sec-ch-ua-mobile": "?0",
+          "accept": "*/*",
+          "origin": "https://tunergiav18.odoo.com",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty",
+          "referer": "https://tunergiav18.odoo.com/",
+          "accept-encoding": "gzip, deflate, br, zstd",
+          "accept-language": "es-ES,es;q=0.9",
+          "priority": "u=1, i"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "contract_data": {
+            "titular": "Aaron Casa",
+            "nif": "26761668H",
+            "direccion_fiscal": "Virgen de la Cabeza 13",
+            "cp_fiscal": "46014",
+            "poblacion_fiscal": "Valencia",
+            "provincia_fiscal": "Valencia",
+            "email": "aaronfd1196@hotmail.es",
+            "movil": "608958897",
+            "cups": "ES0021000042344670QB1F",
+            "comercializadora_actual": "Repsol",
+            "direccion_suministro": "Virgen de la Cabeza 13",
+            "poblacion_suministro": "Valencia",
+            "provincia_suministro": "Valencia",
+            "cp_suministro": "46014",
+            "iban": "ES98 2084 6297 6163 2520 3965",
+            "consumo_anual_kwh": "884",
+            "potencia_p1": "2.5",
+            "potencia_p2": "2.5",
+            "potencia_p3": 0,
+            "potencia_p4": 0,
+            "potencia_p5": 0,
+            "potencia_p6": 0,
+            "consumo_p1": "241",
+            "consumo_p2": "223",
+            "consumo_p3": "418",
+            "consumo_p4": 0,
+            "consumo_p5": 0,
+            "consumo_p6": 0,
+            "tarifa_acceso": "2.0TD"
+          },
+          "tipo_empresa": "PARTICULAR",
+          "telefono": "608958897",
+          "comercializadora": "PLENA ENERGIA",
+          "concepto": "2.0TD - FIXED - BRISA - S42",
+          "cnae": "9820",
+          "observaciones": "Contrato generado desde Tunerface",
+          "tipo_contratacion": "CAMBIO",
+          "comercial": "1492",
+          "firma_digital": "1",
+          "fact_electronica": "SI",
+          "luz_autoconsumo": "NO"
+        },
+        "webhookUrl": "https://tunuevaenergia.com/webhook/crear-contrato-nodo",
+        "executionMode": "production"
+      }
+    ],
+    "Solicitar Datos SIPS": [
+      {
+        "headers": {
+          "host": "tunuevaenergia.com",
+          "x-real-ip": "79.116.142.161",
+          "x-forwarded-for": "79.116.142.161",
+          "x-forwarded-proto": "https",
+          "connection": "upgrade",
+          "content-length": "31",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+          "sec-ch-ua": "\"Google Chrome\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"",
+          "content-type": "application/json",
+          "sec-ch-ua-mobile": "?0",
+          "accept": "*/*",
+          "origin": "https://tunergiav18.odoo.com",
+          "sec-fetch-site": "cross-site",
+          "sec-fetch-mode": "cors",
+          "sec-fetch-dest": "empty",
+          "referer": "https://tunergiav18.odoo.com/",
+          "accept-encoding": "gzip, deflate, br, zstd",
+          "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
+          "priority": "u=1, i"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "cups": "ES0021000008926202HZ"
+        },
+        "webhookUrl": "https://tunuevaenergia.com/webhook/SIPS-contrato-nodo",
+        "executionMode": "production"
+      }
+    ]
+  },
+  "meta": {
+    "instanceId": "d9ea544fdadf26c0cb1af2a2170c8ad35272e6ce482d9566666c10e545e2572e"
+  }
+}
