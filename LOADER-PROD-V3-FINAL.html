@@ -22,7 +22,7 @@
 <div class="tunergia-dashboard">
 
     <!-- Tool Switcher Pill - Top of everything -->
-    <div style="text-align: center; padding: 16px 0 12px 0;">
+    <div style="text-align: center; padding: 8px 0 8px 0;">
         <div class="tool-switcher-pill">
             <button class="pill-btn active" onclick="showContratos()">📊 Contratos</button>
             <button class="pill-btn" onclick="showComparador()">⚡ Comparador</button>
@@ -810,7 +810,7 @@
     <div id="comparadorView" style="display: none;">
 
         <!-- Mode Selection -->
-        <div style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
+        <div id="modeSelection" style="max-width: 1200px; margin: 40px auto; padding: 0 20px;">
             <div style="text-align: center; margin-bottom: 48px;">
                 <h2 style="font-size: 32px; font-weight: 700; color: #2d3748; margin: 0 0 12px 0;">Modo de Análisis</h2>
                 <p style="font-size: 16px; color: #718096; margin: 0;">Selecciona el tipo de análisis que deseas realizar</p>
@@ -872,27 +872,97 @@ function showComparador() {
     document.querySelectorAll('.pill-btn')[1].classList.add('active');
 }
 
-function startMode(mode) {
+async function startMode(mode) {
     console.log('Starting mode:', mode);
 
-    // Show comparador container, hide mode selection
-    document.querySelector('#comparadorView > div').style.display = 'none';
-    document.getElementById('comparador-tunergia').style.display = 'block';
+    // Hide mode selection
+    document.getElementById('modeSelection').style.display = 'none';
+    const container = document.getElementById('comparador-tunergia');
+    container.style.display = 'block';
 
-    // Load comparador script if not loaded
-    if (!comparadorLoaded) {
-        const script = document.createElement('script');
-        script.src = 'https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/modules/comparador/comparador.js';
-        script.onload = () => {
-            comparadorLoaded = true;
-            console.log('✓ Comparador loaded in mode:', mode);
-        };
-        script.onerror = () => {
-            document.getElementById('comparador-tunergia').innerHTML =
-                '<div style="padding: 40px; text-align: center; color: #e53e3e;"><h3>Error al cargar el comparador</h3></div>';
-        };
-        document.body.appendChild(script);
+    if (mode === 'power') {
+        // Power-only mode: Show custom interface
+        container.innerHTML = `
+            <div style="max-width: 1000px; margin: 40px auto; padding: 0 20px;">
+                <div style="text-align: center; margin-bottom: 40px;">
+                    <button onclick="backToModeSelection()" style="position: absolute; left: 20px; padding: 8px 16px; background: #f1f5f9; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">← Volver</button>
+                    <h2 style="font-size: 28px; font-weight: 700; color: #2d3748; margin: 0 0 8px 0;">⚡ Análisis de Potencia</h2>
+                    <p style="font-size: 15px; color: #718096; margin: 0;">Optimiza la potencia contratada del cliente</p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px;">
+
+                    <!-- Option 1: Upload Bill -->
+                    <div class="power-mode-card" onclick="showPowerUploadMode()">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📄</div>
+                        <h3 style="font-size: 18px; font-weight: 700; color: #2d3748; margin: 0 0 8px 0;">Subir Factura</h3>
+                        <p style="font-size: 14px; color: #718096; line-height: 1.5; margin: 0;">Analiza la factura del cliente y recibe recomendaciones de potencia optimizada</p>
+                    </div>
+
+                    <!-- Option 2: Manual Input -->
+                    <div class="power-mode-card" onclick="showPowerManualMode()">
+                        <div style="font-size: 48px; margin-bottom: 16px;">⚙️</div>
+                        <h3 style="font-size: 18px; font-weight: 700; color: #2d3748; margin: 0 0 8px 0;">Entrada Manual</h3>
+                        <p style="font-size: 14px; color: #718096; line-height: 1.5; margin: 0;">Introduce el CUPS y configura manualmente los valores de potencia</p>
+                    </div>
+
+                </div>
+            </div>
+        `;
+    } else {
+        // Comparison or Both mode: Load full comparador
+        container.innerHTML = '<div style="padding: 60px 20px; text-align: center;"><div class="loading-spinner"></div><p>Cargando comparador...</p></div>';
+
+        try {
+            // Fetch comparador.html
+            const response = await fetch('https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/modules/comparador/comparador.html');
+            if (!response.ok) throw new Error('Failed to load comparador');
+
+            const html = await response.text();
+            container.innerHTML = html;
+
+            // Load comparador script if not loaded
+            if (!comparadorLoaded) {
+                const script = document.createElement('script');
+                script.src = 'https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/modules/comparador/comparador.js';
+                script.onload = () => {
+                    comparadorLoaded = true;
+                    console.log('✓ Comparador loaded in mode:', mode);
+
+                    // Auto-enable power analysis for 'both' mode
+                    if (mode === 'both') {
+                        setTimeout(() => {
+                            const powerCheckbox = document.getElementById('power-analysis-checkbox');
+                            if (powerCheckbox && !powerCheckbox.checked) {
+                                powerCheckbox.click();
+                            }
+                        }, 500);
+                    }
+                };
+                script.onerror = () => {
+                    container.innerHTML = '<div style="padding: 40px; text-align: center; color: #e53e3e;"><h3>Error al cargar el comparador</h3></div>';
+                };
+                document.body.appendChild(script);
+            } else {
+                console.log('✓ Comparador already loaded, reusing instance');
+            }
+        } catch (error) {
+            container.innerHTML = '<div style="padding: 40px; text-align: center; color: #e53e3e;"><h3>Error al cargar el comparador</h3><p>' + error.message + '</p></div>';
+        }
     }
+}
+
+function backToModeSelection() {
+    document.getElementById('modeSelection').style.display = 'block';
+    document.getElementById('comparador-tunergia').style.display = 'none';
+}
+
+function showPowerUploadMode() {
+    alert('Power Upload Mode - To be implemented: Show upload interface for bill analysis');
+}
+
+function showPowerManualMode() {
+    alert('Power Manual Mode - To be implemented: Show manual CUPS/power input interface');
 }
 
 window.showContratos = showContratos;
@@ -954,5 +1024,26 @@ window.startMode = startMode;
 
 .mode-option-card:active {
     transform: translateY(-2px);
+}
+
+/* Power Mode Cards */
+.power-mode-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.power-mode-card:hover {
+    border-color: #4392CD;
+    box-shadow: 0 6px 20px rgba(67, 146, 205, 0.15);
+    transform: translateY(-3px);
+}
+
+.power-mode-card:active {
+    transform: translateY(-1px);
 }
 </style>
