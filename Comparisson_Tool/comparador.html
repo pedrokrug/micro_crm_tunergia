@@ -1,0 +1,319 @@
+<div class="comparador-layout">
+    
+    
+    <aside class="history-sidebar" id="historySidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-header-content">
+          <div class="sidebar-title">
+            <span>📊</span>
+            <span>Historial</span>
+          </div>
+          <div class="sidebar-user-info" id="sidebarUserInfo">
+            <span>👤</span>
+            <span id="sidebarUserName">Cargando...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-filters">
+        <div class="filter-group">
+          <label class="filter-label">🔍 Buscar CUPS</label>
+          <input type="text" class="filter-input" id="filterCups" placeholder="Ej: ES0021000...">
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">⚡ Tipo Suministro</label>
+          <select class="filter-select" id="filterTipo">
+            <option value="">Todos</option>
+            <option value="luz">⚡ Luz</option>
+            <option value="gas">🔥 Gas</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">📋 Tarifa</label>
+          <select class="filter-select" id="filterTarifa">
+            <option value="">Todas</option>
+            <option value="2.0TD">2.0TD</option>
+            <option value="3.0TD">3.0TD</option>
+            <option value="6.1TD">6.1TD</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="history-list" id="historyList">
+        <div class="history-loading">
+          <div class="history-spinner"></div>
+          <div>Cargando historial...</div>
+        </div>
+      </div>
+    </aside>
+
+    
+    <button class="mobile-sidebar-toggle" id="mobileSidebarToggle" onclick="toggleSidebar()">
+      📊
+    </button>
+
+    
+    <main class="main-content" id="mainContent">
+      
+      
+      <div class="page-header">
+        <h1 class="page-title">⚡ Comparador de Facturas Eléctricas</h1>
+        <p class="page-subtitle">Analiza facturas de clientes y encuentra oportunidades de ahorro</p>
+      </div>
+
+      
+      <div class="user-info-bar" id="userInfo">
+        <span>👤</span>
+        <span id="userInfoText">Cargando usuario...</span>
+      </div>
+
+      <div id="upload-section">
+        
+        <div class="horizontal-sections">
+          <div class="config-section">
+            <div class="section-title">Tipo de comparación:</div>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" id="product-all" name="product-type" value="all" checked="">
+                <label for="product-all" class="radio-label">
+                  <div class="radio-label-title">Todos los productos</div>
+                  <div class="radio-label-desc">Compara con todas las ofertas</div>
+                </label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" id="product-24h" name="product-type" value="24h">
+                <label for="product-24h" class="radio-label">
+                  <div class="radio-label-title">Productos 24h</div>
+                  <div class="radio-label-desc">Precio único todo el día</div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="config-section">
+            <div class="section-title">📈 Método de Comparación:</div>
+            <div class="radio-group">
+              <div class="radio-option">
+                <input type="radio" id="method-factura" name="comparison-method" value="factura" checked="">
+                <label for="method-factura" class="radio-label">
+                  <div class="radio-label-title">📄 Consumo en Factura</div>
+                  <div class="radio-label-desc">Usa el consumo de la factura</div>
+                </label>
+              </div>
+              <div class="radio-option">
+                <input type="radio" id="method-anual" name="comparison-method" value="anual">
+                <label for="method-anual" class="radio-label">
+                  <div class="radio-label-title">📅 Consumo Anual</div>
+                  <div class="radio-label-desc">Usa datos anuales de SIPS</div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="company-selector" id="companySelector">
+          <div class="section-title">Comercializadoras Disponibles:</div>
+          <div class="company-dropdown">
+            <button class="company-dropdown-button" id="companyDropdownButton" type="button">
+              <span id="companySelectionText">Seleccionar comercializadoras...</span>
+              <span class="dropdown-arrow">▼</span>
+            </button>
+            <div class="company-dropdown-menu" id="companyDropdownMenu">
+              <div class="company-loading">Cargando comercializadoras...</div>
+            </div>
+          </div>
+          <div class="company-error" id="companyError">
+            Debes seleccionar al menos 3 comercializadoras
+          </div>
+        </div>
+
+        
+        
+        <div class="power-analysis-section" id="powerAnalysisSection">
+          <div class="power-analysis-header" id="powerAnalysisHeader">
+            <input type="checkbox" id="power-analysis-checkbox" class="power-analysis-checkbox">
+            <label for="power-analysis-checkbox" class="power-switch-pill" id="powerSwitchLabel">
+              <div class="power-switch-knob"></div>
+            </label>
+            <div class="power-analysis-title-wrapper">
+              <div class="power-analysis-title">⚡ Análisis de Potencia</div>
+              <div class="power-analysis-subtitle">Optimiza la potencia contratada con datos de la factura</div>
+              <div class="power-analysis-disabled-note" id="powerAnalysisDisabledNote" style="display: none;">
+                ⚠️ No disponible para tarifas 2.0TD residenciales
+              </div>
+            </div>
+          </div>
+        </div>
+
+        
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">Arrastra la factura del cliente aquí o haz clic para seleccionar</div>
+          <div class="upload-subtext">Solo archivos PDF (máx. 5 MB)</div>
+        </div>
+
+        <input type="file" id="fileInput" class="file-input" accept=".pdf">
+
+        <div class="selected-file" id="selectedFile">
+          <div class="file-icon">📄</div>
+          <div class="file-info">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+          </div>
+          <button class="remove-file" id="removeFile">✕</button>
+        </div>
+
+        <button class="analyze-button" id="analyzeButton" disabled="">
+          🔍 Analizar Factura
+        </button>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Analizando factura del cliente...</div>
+        <div class="loading-progress" id="loadingProgress"></div>
+      </div>
+
+      <div class="error-message" id="errorMessage"></div>
+
+      <div class="results" id="results"></div>
+    </main>
+
+  </div>
+
+  
+  
+  
+  <div class="turbo-tun-overlay" id="turboTunOverlay">
+    <div class="turbo-tun-container">
+      <div class="turbo-tun-header">
+        <div class="turbo-tun-title">
+          <span>🚀</span>
+          <span>Turbo Tun Mode - Cálculo Personalizado</span>
+        </div>
+        <button class="turbo-tun-close" onclick="closeTurboTun()">✕</button>
+      </div>
+      
+      <div class="turbo-tun-body">
+        
+        <div class="turbo-tun-section">
+          <div class="turbo-tun-section-title">
+            <span>🔌</span>
+            <span>CUPS: <span id="turboTunCups">N/A</span></span>
+            <span style="margin-left: auto; font-size: 14px; font-weight: 600; color: #667eea;">Tarifa: <span id="turboTunTarifa">N/A</span></span>
+          </div>
+        </div>
+        
+        
+        <div class="turbo-tun-section">
+          <div class="turbo-tun-section-title">
+            <span>📊</span>
+            <span>Consumos (kWh)</span>
+          </div>
+          <div class="turbo-tun-grid" id="consumptionFields"></div>
+        </div>
+        
+        
+        <div class="turbo-tun-section">
+          <div class="turbo-tun-section-title">
+            <span>⚡</span>
+            <span>Potencias Contratadas (kW)</span>
+          </div>
+          <div class="turbo-tun-grid" id="powerFields"></div>
+        </div>
+        
+        
+        <div class="turbo-tun-section">
+          <div class="turbo-tun-section-title">
+            <span>💰</span>
+            <span>Precios Energía (€/kWh)</span>
+          </div>
+          <div class="turbo-tun-grid" id="energyPriceFields"></div>
+        </div>
+        
+        
+        <div class="turbo-tun-section">
+          <div class="turbo-tun-section-title">
+            <span>💵</span>
+            <span>Precios Potencia (€/kW/día)</span>
+          </div>
+          <div class="turbo-tun-grid" id="powerPriceFields"></div>
+        </div>
+        
+        
+        <div class="turbo-tun-section">
+          <div class="turbo-tun-section-title">
+            <span>🏢</span>
+            <span>Producto para Cálculo</span>
+          </div>
+          <select class="turbo-tun-product-selector" id="turboTunProductSelect">
+            <option value="">Selecciona un producto...</option>
+          </select>
+        </div>
+        
+        
+        <div class="turbo-tun-result" id="turboTunResult">
+          <h4 style="font-size: 16px; font-weight: 700; color: #2d3748; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <span>📊</span>
+            <span>Resultado de la Comparación</span>
+          </h4>
+          <div class="turbo-tun-result-grid">
+            
+            <div class="turbo-tun-result-card current">
+              <div class="turbo-tun-result-card-header">
+                <span>📊</span>
+                <span>Factura Actual</span>
+              </div>
+              <div class="turbo-tun-result-card-value" id="turboTunCurrentTotal">0.00 €</div>
+            </div>
+            
+            
+            <div class="turbo-tun-result-card scenario">
+              <div class="turbo-tun-result-card-header">
+                <span>🧮</span>
+                <span>Escenario Personalizado</span>
+              </div>
+              <div class="turbo-tun-result-card-value" id="turboTunScenarioTotal">0.00 €</div>
+              <div class="turbo-tun-result-breakdown">
+                <div class="turbo-tun-result-breakdown-row">
+                  <span>💡 Energía:</span>
+                  <span id="turboTunEnergyCost">0.00 €</span>
+                </div>
+                <div class="turbo-tun-result-breakdown-row">
+                  <span>⚡ Potencia:</span>
+                  <span id="turboTunPowerCost">0.00 €</span>
+                </div>
+                <div class="turbo-tun-result-breakdown-row">
+                  <span>📋 Otros:</span>
+                  <span id="turboTunOtherCosts">0.00 €</span>
+                </div>
+              </div>
+            </div>
+            
+            
+            <div class="turbo-tun-result-card savings" id="turboTunSavingsCard">
+              <div class="turbo-tun-result-card-header">
+                <span>💰</span>
+                <span>Ahorro</span>
+              </div>
+              <div class="turbo-tun-result-card-value" id="turboTunSavingsValue">+0.00 €</div>
+              <div class="turbo-tun-result-annual" id="turboTunSavingsAnnual">0.00 €/año (0.0%)</div>
+            </div>
+          </div>
+        </div>
+        
+        
+        <div class="turbo-tun-actions">
+          <button class="turbo-tun-button turbo-tun-button-reset" onclick="resetTurboTunFields()">
+            🔄 Restablecer Valores
+          </button>
+          <button class="turbo-tun-button turbo-tun-button-calculate" id="turboTunCalculateBtn" onclick="calculateCustomScenario()">
+            🧮 Calcular Escenario
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
