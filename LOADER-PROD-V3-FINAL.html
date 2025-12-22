@@ -915,7 +915,7 @@ async function startMode(mode) {
 
         try {
             // Fetch comparador.html
-            const response = await fetch('https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/modules/comparador/comparador.html');
+            const response = await fetch('https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/30ef2bc/src_prod/modules/comparador/comparador.html');
             if (!response.ok) throw new Error('Failed to load comparador');
 
             const html = await response.text();
@@ -924,7 +924,7 @@ async function startMode(mode) {
             // Load comparador script if not loaded
             if (!comparadorLoaded) {
                 const script = document.createElement('script');
-                script.src = 'https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/modules/comparador/comparador.js';
+                script.src = 'https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/30ef2bc/src_prod/modules/comparador/comparador.js';
                 script.onload = () => {
                     comparadorLoaded = true;
                     console.log('✓ Comparador loaded in mode:', mode);
