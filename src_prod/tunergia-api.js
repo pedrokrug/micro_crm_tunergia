@@ -404,8 +404,17 @@
                 })
             });
 
-            const result = await response.json();
-            const comercializadoras = result.data || [];
+            // Handle empty responses gracefully
+            const text = await response.text();
+            let comercializadoras = [];
+            if (text && text.trim()) {
+                try {
+                    const result = JSON.parse(text);
+                    comercializadoras = result.data || [];
+                } catch (e) {
+                    console.warn('Could not parse comercializadoras response:', e);
+                }
+            }
 
             select.innerHTML = '<option value="">Seleccionar...</option>';
             comercializadoras.forEach(item => {
@@ -472,8 +481,17 @@
                 body: JSON.stringify({ query })
             });
 
-            const result = await response.json();
-            const productos = result.data || [];
+            // Handle empty responses gracefully
+            const text = await response.text();
+            let productos = [];
+            if (text && text.trim()) {
+                try {
+                    const result = JSON.parse(text);
+                    productos = result.data || [];
+                } catch (e) {
+                    console.warn('Could not parse products response:', e);
+                }
+            }
 
             productoSelect.innerHTML = '<option value="">Seleccionar producto...</option>';
 
