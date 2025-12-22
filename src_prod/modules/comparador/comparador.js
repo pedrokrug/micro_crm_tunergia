@@ -1,4 +1,3 @@
-<script>
     (function() {
       // Configuration
       const WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/comparador_tunergia';
