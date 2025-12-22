@@ -39,11 +39,19 @@
             console.log('Found result.data array with', result.data.length, 'items');
             data = result.data;
         }
-        // Case 2: Direct array of results
+        // Case 2: Direct array of results (n8n format)
         else if (Array.isArray(result)) {
             console.log('Direct array response with', result.length, 'items');
             if (result.length > 0 && result[0] && result[0].json) {
-                data = result.map(item => item.json);
+                // n8n wraps each item in {json: ...}
+                const extracted = result.map(item => item.json);
+                // Check if the extracted data is [{data: [...]}] format
+                if (extracted.length === 1 && extracted[0] && extracted[0].data && Array.isArray(extracted[0].data)) {
+                    console.log('Unwrapping nested data array with', extracted[0].data.length, 'items');
+                    data = extracted[0].data;
+                } else {
+                    data = extracted;
+                }
             } else {
                 data = result;
             }

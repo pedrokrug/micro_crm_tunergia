@@ -529,6 +529,10 @@
     background: white;
 }
 
+.tunergia-dashboard .contracts-table thead .action-cell {
+    background: #f7fafc;
+}
+
 .tunergia-dashboard .contracts-table tbody tr:hover .action-cell {
     background: #f7fafc;
 }
