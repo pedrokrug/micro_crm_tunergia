@@ -39,11 +39,19 @@
             console.log('Found result.data array with', result.data.length, 'items');
             data = result.data;
         }
-        // Case 2: Direct array of results
+        // Case 2: Direct array of results (n8n format)
         else if (Array.isArray(result)) {
             console.log('Direct array response with', result.length, 'items');
             if (result.length > 0 && result[0] && result[0].json) {
-                data = result.map(item => item.json);
+                // n8n wraps each item in {json: ...}
+                const extracted = result.map(item => item.json);
+                // Check if the extracted data is [{data: [...]}] format
+                if (extracted.length === 1 && extracted[0] && extracted[0].data && Array.isArray(extracted[0].data)) {
+                    console.log('Unwrapping nested data array with', extracted[0].data.length, 'items');
+                    data = extracted[0].data;
+                } else {
+                    data = extracted;
+                }
             } else {
                 data = result;
             }
@@ -396,8 +404,17 @@
                 })
             });
 
-            const result = await response.json();
-            const comercializadoras = result.data || [];
+            // Handle empty responses gracefully
+            const text = await response.text();
+            let comercializadoras = [];
+            if (text && text.trim()) {
+                try {
+                    const result = JSON.parse(text);
+                    comercializadoras = result.data || [];
+                } catch (e) {
+                    console.warn('Could not parse comercializadoras response:', e);
+                }
+            }
 
             select.innerHTML = '<option value="">Seleccionar...</option>';
             comercializadoras.forEach(item => {
@@ -464,8 +481,17 @@
                 body: JSON.stringify({ query })
             });
 
-            const result = await response.json();
-            const productos = result.data || [];
+            // Handle empty responses gracefully
+            const text = await response.text();
+            let productos = [];
+            if (text && text.trim()) {
+                try {
+                    const result = JSON.parse(text);
+                    productos = result.data || [];
+                } catch (e) {
+                    console.warn('Could not parse products response:', e);
+                }
+            }
 
             productoSelect.innerHTML = '<option value="">Seleccionar producto...</option>';
 
@@ -549,6 +575,14 @@
             if (data.Pot_Cont_P4) document.querySelector('input[name="potencia_contratada_4"]').value = data.Pot_Cont_P4;
             if (data.Pot_Cont_P5) document.querySelector('input[name="potencia_contratada_5"]').value = data.Pot_Cont_P5;
             if (data.Pot_Cont_P6) document.querySelector('input[name="potencia_contratada_6"]').value = data.Pot_Cont_P6;
+
+            // Fill location data from SIPS
+            if (data.Cod_Postal_Suministro) {
+                document.querySelector('input[name="cp_suministro"]').value = data.Cod_Postal_Suministro;
+            }
+            if (data.Provincia_Suministro) {
+                document.querySelector('input[name="provincia_suministro"]').value = data.Provincia_Suministro;
+            }
 
             alert('✅ Datos SIPS extraídos correctamente');
         } catch (error) {
