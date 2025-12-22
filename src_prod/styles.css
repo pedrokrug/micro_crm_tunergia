@@ -453,7 +453,7 @@
 }
 
 .tunergia-dashboard .contracts-table td {
-    padding: 14px 16px;
+    padding: 12px 10px;
     font-size: 14px;
     color: #2d3748;
     border-bottom: 1px solid #e2e8f0;
@@ -509,12 +509,12 @@
 }
 
 .tunergia-dashboard .contracts-table .consumo-cell {
-    width: 70px;
+    width: 55px;
     text-align: right;
 }
 
 .tunergia-dashboard .contracts-table .cups-cell {
-    width: 130px;
+    width: 110px;
     overflow: hidden;
 }
 
