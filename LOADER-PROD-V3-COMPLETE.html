@@ -1,0 +1,175 @@
+<!--
+    Tunergia CRM - Production Loader v3.0.1 (COMPLETE)
+    
+    Unified Interface - All content inline
+    Ready to paste into Odoo HTML block
+    
+    Last updated: 2025-12-22
+    Version: 3.0.1
+-->
+
+<!-- CSS Styles -->
+<link rel="stylesheet" href="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/7afbbbe/src_prod/styles.css">
+<link rel="stylesheet" href="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/7afbbbe/src_prod/modules/comparador/comparador.css">
+
+<!-- HTML Content -->
+<div class="tunergia-app" id="tunergiaApp">
+
+    <!-- Global User Banner -->
+    <div class="user-banner" id="userBanner">
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">--</div>
+            <div class="user-details">
+                <h3 id="userName">Cargando...</h3>
+                <p id="userEmail">Cargando información del usuario...</p>
+            </div>
+        </div>
+        <div class="user-id-badge" id="userIdBadge">ID: ---</div>
+    </div>
+
+    <!-- Main Navigation Tabs -->
+    <div class="main-tabs-container">
+        <div class="main-tabs">
+            <button class="main-tab active" data-view="contratos" id="tabContratos">
+                <span class="tab-icon">📊</span>
+                <span class="tab-label">Contratos</span>
+            </button>
+            <button class="main-tab" data-view="comparador" id="tabComparador">
+                <span class="tab-icon">⚡</span>
+                <span class="tab-label">Comparador y Análisis</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- View Container -->
+    <div class="views-container">
+
+        <!-- Contratos View -->
+        <div class="view-panel active" id="view-contratos">
+            <div class="tunergia-dashboard">
+                <div class="loading-overlay" id="dashboardLoading">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text">Cargando datos del dashboard...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparador View -->
+        <div class="view-panel" id="view-comparador" style="display: none;">
+            <!-- Mode Selector -->
+            <div class="comparador-mode-selector">
+                <div class="mode-selector-header">
+                    <h3>Modo de Análisis</h3>
+                    <p>Selecciona el tipo de análisis que deseas realizar</p>
+                </div>
+                <div class="mode-options">
+                    <label class="mode-option">
+                        <input type="radio" name="comparador-mode" value="comparison" checked>
+                        <div class="mode-card">
+                            <div class="mode-icon">📊</div>
+                            <div class="mode-title">Comparación de Facturas</div>
+                            <div class="mode-description">Compara ofertas de diferentes comercializadoras</div>
+                        </div>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="comparador-mode" value="power-only">
+                        <div class="mode-card">
+                            <div class="mode-icon">⚡</div>
+                            <div class="mode-title">Solo Análisis de Potencia</div>
+                            <div class="mode-description">Optimiza la potencia contratada del cliente</div>
+                        </div>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="comparador-mode" value="both">
+                        <div class="mode-card">
+                            <div class="mode-icon">🔄</div>
+                            <div class="mode-title">Análisis Completo</div>
+                            <div class="mode-description">Comparación de ofertas + análisis de potencia</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Comparador Content -->
+            <div id="comparador-tunergia"></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- JavaScript Modules -->
+<script src="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/7afbbbe/src_prod/tunergia-core.js"></script>
+<script src="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/7afbbbe/src_prod/tunergia-api.js"></script>
+<script src="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/7afbbbe/src_prod/tunergia-ui.js"></script>
+
+<!-- Tab Switching Script -->
+<script>
+(function() {
+    'use strict';
+
+    let currentView = 'contratos';
+    let comparadorLoaded = false;
+
+    function switchView(viewName) {
+        if (currentView === viewName) return;
+        currentView = viewName;
+
+        const contratosView = document.getElementById('view-contratos');
+        const comparadorView = document.getElementById('view-comparador');
+        const tabContratos = document.getElementById('tabContratos');
+        const tabComparador = document.getElementById('tabComparador');
+
+        if (viewName === 'contratos') {
+            contratosView.style.display = 'block';
+            contratosView.classList.add('active');
+            comparadorView.style.display = 'none';
+            comparadorView.classList.remove('active');
+            tabContratos.classList.add('active');
+            tabComparador.classList.remove('active');
+        } else if (viewName === 'comparador') {
+            contratosView.style.display = 'none';
+            contratosView.classList.remove('active');
+            comparadorView.style.display = 'block';
+            comparadorView.classList.add('active');
+            tabContratos.classList.remove('active');
+            tabComparador.classList.add('active');
+
+            if (!comparadorLoaded) {
+                loadComparador();
+            }
+        }
+
+        localStorage.setItem('tunergia_current_view', viewName);
+    }
+
+    function loadComparador() {
+        const script = document.createElement('script');
+        script.src = 'https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/7afbbbe/src_prod/modules/comparador/comparador.js';
+        script.onload = function() {
+            comparadorLoaded = true;
+            console.log('✓ Comparador loaded');
+        };
+        script.onerror = function() {
+            console.error('✗ Failed to load comparador');
+            document.getElementById('comparador-tunergia').innerHTML = 
+                '<div style="padding: 40px; text-align: center; color: #e53e3e;">Error al cargar el comparador. Por favor, recarga la página.</div>';
+        };
+        document.body.appendChild(script);
+    }
+
+    // Add click listeners
+    document.getElementById('tabContratos').addEventListener('click', () => switchView('contratos'));
+    document.getElementById('tabComparador').addEventListener('click', () => switchView('comparador'));
+
+    // Restore saved view
+    const savedView = localStorage.getItem('tunergia_current_view');
+    if (savedView === 'comparador') {
+        setTimeout(() => switchView('comparador'), 500);
+    }
+
+    // Export for global access
+    window.TunergiaTabs = { switchView };
+
+    console.log('✓ Tunergia Tabs initialized (v3.0.1)');
+})();
+</script>
