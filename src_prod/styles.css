@@ -1,0 +1,1515 @@
+.tunergia-dashboard {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.tunergia-dashboard * {
+    box-sizing: border-box;
+}
+
+.tunergia-dashboard h1,
+.tunergia-dashboard h2,
+.tunergia-dashboard h3,
+.tunergia-dashboard h4,
+.tunergia-dashboard p {
+    text-indent: 0;
+    padding-left: 0;
+}
+
+/* Header Section */
+.tunergia-dashboard .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.tunergia-dashboard .header-left h1 {
+    margin: 0 0 8px 0;
+    padding: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a202c;
+    text-indent: 0;
+}
+
+.tunergia-dashboard .header-left p {
+    margin: 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+.tunergia-dashboard .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tunergia-dashboard .alert-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fffaf0;
+    border: 1px solid #f6ad55;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #c05621;
+}
+
+.tunergia-dashboard .alert-badge .alert-icon {
+    font-size: 16px;
+}
+
+.tunergia-dashboard .notification-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .notification-btn:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+}
+
+/* Date Filter Section */
+.tunergia-dashboard .date-filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.tunergia-dashboard .filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tunergia-dashboard .filter-btn {
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .filter-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tunergia-dashboard .filter-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.tunergia-dashboard .date-picker-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .date-picker-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+/* Stats Cards */
+.tunergia-dashboard .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.tunergia-dashboard .stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.tunergia-dashboard .stat-card .stat-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #718096;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tunergia-dashboard .stat-card .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tunergia-dashboard .stat-card .stat-chart {
+    width: 80px;
+    height: 40px;
+}
+
+.tunergia-dashboard .stat-card .stat-change {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tunergia-dashboard .stat-card .stat-change.positive {
+    color: #38a169;
+}
+
+.tunergia-dashboard .stat-card .stat-change.negative {
+    color: #e53e3e;
+}
+
+.tunergia-dashboard .stat-card .stat-change.neutral {
+    color: #718096;
+}
+
+.tunergia-dashboard .stat-card .stat-change .change-icon {
+    font-size: 12px;
+}
+
+.tunergia-dashboard .stat-card.centered {
+    text-align: center;
+}
+
+.tunergia-dashboard .stat-card .stat-value-centered {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 12px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tunergia-dashboard .stat-card.centered .stat-change {
+    justify-content: center;
+}
+
+/* Contracts Section */
+.tunergia-dashboard .contracts-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+}
+
+.tunergia-dashboard .contracts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.tunergia-dashboard .contracts-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tunergia-dashboard .contracts-title h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.tunergia-dashboard .contracts-count {
+    background: #edf2f7;
+    color: #4a5568;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tunergia-dashboard .contracts-title p {
+    margin: 4px 0 0 0;
+    color: #718096;
+    font-size: 13px;
+}
+
+.tunergia-dashboard .contracts-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.tunergia-dashboard .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .action-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tunergia-dashboard .action-btn.primary {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.tunergia-dashboard .action-btn.primary:hover {
+    background: #5a67d8;
+    border-color: #5a67d8;
+}
+
+.tunergia-dashboard .action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Tabs and Search */
+.tunergia-dashboard .contracts-filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 16px;
+}
+
+.tunergia-dashboard .tab-buttons {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.tunergia-dashboard .tab-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #718096;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .tab-btn:hover {
+    background: #f7fafc;
+    color: #4a5568;
+}
+
+.tunergia-dashboard .tab-btn.active {
+    background: #edf2f7;
+    color: #1a202c;
+    font-weight: 600;
+}
+
+.tunergia-dashboard .search-filters {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.tunergia-dashboard .search-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    min-width: 200px;
+}
+
+.tunergia-dashboard .search-input input {
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: #1a202c;
+    width: 100%;
+    background: transparent;
+}
+
+.tunergia-dashboard .search-input input::placeholder {
+    color: #a0aec0;
+}
+
+.tunergia-dashboard .search-input .search-icon {
+    color: #a0aec0;
+    font-size: 14px;
+}
+
+.tunergia-dashboard .filters-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .filters-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+/* Table */
+.tunergia-dashboard .contracts-table-container {
+    overflow-x: auto;
+}
+
+.tunergia-dashboard .contracts-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.tunergia-dashboard .contracts-table thead {
+    background: #f7fafc;
+}
+
+.tunergia-dashboard .contracts-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: #4a5568;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+}
+
+.tunergia-dashboard .contracts-table th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+.tunergia-dashboard .contracts-table th.sortable:hover {
+    color: #667eea;
+}
+
+.tunergia-dashboard .contracts-table th .sort-icon {
+    margin-left: 4px;
+    font-size: 10px;
+}
+
+.tunergia-dashboard .contracts-table td {
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #2d3748;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+
+.tunergia-dashboard .contracts-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.tunergia-dashboard .contracts-table tbody tr:hover {
+    background: #f7fafc;
+}
+
+.tunergia-dashboard .contracts-table .checkbox-cell {
+    width: 40px;
+}
+
+.tunergia-dashboard .contracts-table input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+/* Table column widths */
+.tunergia-dashboard .contracts-table {
+    table-layout: fixed;
+}
+
+.tunergia-dashboard .contracts-table .id-cell {
+    width: 60px;
+}
+
+.tunergia-dashboard .contracts-table .name-cell {
+    width: 140px;
+    overflow: hidden;
+}
+
+.tunergia-dashboard .contracts-table .status-cell {
+    width: 100px;
+}
+
+.tunergia-dashboard .contracts-table .comercializadora-cell {
+    width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tunergia-dashboard .contracts-table .tarifa-cell {
+    width: 60px;
+}
+
+.tunergia-dashboard .contracts-table .consumo-cell {
+    width: 70px;
+    text-align: right;
+}
+
+.tunergia-dashboard .contracts-table .cups-cell {
+    width: 130px;
+    overflow: hidden;
+}
+
+.tunergia-dashboard .contracts-table .fecha-cell {
+    width: 85px;
+}
+
+.tunergia-dashboard .contracts-table .action-cell {
+    width: 45px;
+    position: sticky;
+    right: 0;
+    background: white;
+}
+
+.tunergia-dashboard .contracts-table tbody tr:hover .action-cell {
+    background: #f7fafc;
+}
+
+.tunergia-dashboard .client-info .client-name {
+    font-weight: 600;
+    color: #1a202c;
+    margin-bottom: 2px;
+}
+
+.tunergia-dashboard .client-info .client-email {
+    font-size: 12px;
+    color: #718096;
+}
+
+.tunergia-dashboard .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.tunergia-dashboard .status-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.tunergia-dashboard .status-badge.activado {
+    background: #c6f6d5;
+    color: #22543d;
+}
+.tunergia-dashboard .status-badge.activado::before {
+    background: #38a169;
+}
+
+.tunergia-dashboard .status-badge.tramitado {
+    background: #bee3f8;
+    color: #2a4365;
+}
+.tunergia-dashboard .status-badge.tramitado::before {
+    background: #3182ce;
+}
+
+.tunergia-dashboard .status-badge.baja {
+    background: #fed7d7;
+    color: #742a2a;
+}
+.tunergia-dashboard .status-badge.baja::before {
+    background: #e53e3e;
+}
+
+.tunergia-dashboard .status-badge.incidencia {
+    background: #feebc8;
+    color: #744210;
+}
+.tunergia-dashboard .status-badge.incidencia::before {
+    background: #dd6b20;
+}
+
+.tunergia-dashboard .status-badge.temporal {
+    background: #e9d8fd;
+    color: #553c9a;
+}
+.tunergia-dashboard .status-badge.temporal::before {
+    background: #805ad5;
+}
+
+.tunergia-dashboard .status-badge.pdte-firma {
+    background: #faf089;
+    color: #744210;
+}
+.tunergia-dashboard .status-badge.pdte-firma::before {
+    background: #d69e2e;
+}
+
+.tunergia-dashboard .status-badge.ko {
+    background: #feb2b2;
+    color: #742a2a;
+}
+.tunergia-dashboard .status-badge.ko::before {
+    background: #c53030;
+}
+
+.tunergia-dashboard .status-badge.no-renovado {
+    background: #fed7aa;
+    color: #9a3412;
+}
+.tunergia-dashboard .status-badge.no-renovado::before {
+    background: #ea580c;
+}
+
+.tunergia-dashboard .status-badge.oportunidad {
+    background: #fef3c7;
+    color: #92400e;
+}
+.tunergia-dashboard .status-badge.oportunidad::before {
+    background: #f59e0b;
+}
+
+.tunergia-dashboard .status-badge.default {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+.tunergia-dashboard .status-badge.default::before {
+    background: #718096;
+}
+
+.tunergia-dashboard .cups-code {
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    color: #4a5568;
+    background: #f7fafc;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.tunergia-dashboard .tarifa-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: #553c9a;
+    background: #e9d8fd;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.tunergia-dashboard .action-cell {
+    width: 50px;
+    text-align: center;
+}
+
+.tunergia-dashboard .view-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #718096;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 18px;
+}
+
+.tunergia-dashboard .view-btn:hover {
+    background: #edf2f7;
+    color: #667eea;
+}
+
+.tunergia-dashboard .edit-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #718096;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .edit-btn:hover {
+    background: #edf2f7;
+    color: #667eea;
+}
+
+/* Pagination */
+.tunergia-dashboard .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.tunergia-dashboard .pagination-info {
+    font-size: 13px;
+    color: #718096;
+}
+
+.tunergia-dashboard .pagination-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.tunergia-dashboard .pagination-btn {
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+    color: #4a5568;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .pagination-btn:hover:not(:disabled) {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tunergia-dashboard .pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Loading State */
+.tunergia-dashboard .loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.9);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.tunergia-dashboard .loading-overlay.active {
+    display: flex;
+}
+
+.tunergia-dashboard .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: dashboard-spin 0.8s linear infinite;
+}
+
+@keyframes dashboard-spin {
+    to { transform: rotate(360deg); }
+}
+
+.tunergia-dashboard .loading-text {
+    margin-top: 16px;
+    font-size: 14px;
+    color: #4a5568;
+}
+
+/* User Info Banner */
+.tunergia-dashboard .user-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tunergia-dashboard .user-banner .user-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.tunergia-dashboard .user-banner .user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.tunergia-dashboard .user-banner .user-details h3 {
+    margin: 0 0 4px 0;
+    padding: 0;
+    font-size: 16px;
+    font-weight: 600;
+    text-indent: 0;
+}
+
+.tunergia-dashboard .user-banner .user-details p {
+    margin: 0;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.tunergia-dashboard .user-banner .user-id-badge {
+    background: rgba(255,255,255,0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Empty State */
+.tunergia-dashboard .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #718096;
+}
+
+.tunergia-dashboard .empty-state .empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.tunergia-dashboard .empty-state h3 {
+    margin: 0 0 8px 0;
+    color: #4a5568;
+    font-size: 18px;
+}
+
+.tunergia-dashboard .empty-state p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Error State */
+.tunergia-dashboard .error-banner {
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-left: 4px solid #e53e3e;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: none;
+}
+
+.tunergia-dashboard .error-banner.active {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tunergia-dashboard .error-banner .error-icon {
+    font-size: 20px;
+}
+
+.tunergia-dashboard .error-banner .error-text {
+    color: #c53030;
+    font-size: 14px;
+}
+
+/* Mini chart SVG */
+.tunergia-dashboard .mini-chart {
+    width: 80px;
+    height: 40px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tunergia-dashboard {
+        padding: 12px;
+    }
+    
+    .tunergia-dashboard .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .tunergia-dashboard .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .tunergia-dashboard .stat-card .stat-value {
+        font-size: 24px;
+    }
+    
+    .tunergia-dashboard .contracts-filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .tunergia-dashboard .search-filters {
+        width: 100%;
+    }
+    
+    .tunergia-dashboard .search-input {
+        flex: 1;
+    }
+    
+    .tunergia-dashboard .user-banner {
+        flex-direction: column;
+        gap: 12px;
+        text-align: center;
+    }
+    
+    .tunergia-dashboard .user-banner .user-info {
+        flex-direction: column;
+    }
+    
+    .tunergia-dashboard .list-date-filter {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    .tunergia-dashboard .list-date-filter > div {
+        width: 100%;
+    }
+}
+
+/* Date inputs styling */
+.tunergia-dashboard input[type="date"] {
+    font-family: inherit;
+    color: #2d3748;
+    background: white;
+    cursor: pointer;
+}
+
+.tunergia-dashboard input[type="date"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tunergia-dashboard select {
+    font-family: inherit;
+    color: #2d3748;
+    background: white;
+    cursor: pointer;
+}
+
+.tunergia-dashboard select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Contract Detail Modal */
+.tunergia-dashboard .contract-detail-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+}
+
+.tunergia-dashboard .contract-detail-modal.active {
+    display: block;
+}
+
+.tunergia-dashboard .contract-detail-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.tunergia-dashboard .contract-detail-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 900px;
+    height: 100%;
+    background: #f8fafc;
+    overflow-y: auto;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.tunergia-dashboard .contract-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.tunergia-dashboard .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    color: #4a5568;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .back-btn:hover {
+    background: #f7fafc;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.tunergia-dashboard .contract-id-badge {
+    background: #667eea;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.tunergia-dashboard .contract-detail-loading,
+.tunergia-dashboard .contract-detail-error {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.tunergia-dashboard .contract-detail-loading.active,
+.tunergia-dashboard .contract-detail-error.active {
+    display: flex;
+}
+
+.tunergia-dashboard .contract-detail-error {
+    color: #c53030;
+    gap: 12px;
+}
+
+.tunergia-dashboard .contract-detail-content {
+    display: none;
+    padding: 24px;
+}
+
+.tunergia-dashboard .contract-detail-content.active {
+    display: block;
+}
+
+/* Detail Tabs */
+.tunergia-dashboard .detail-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: #e2e8f0;
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.tunergia-dashboard .detail-tab {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #718096;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .detail-tab:hover {
+    color: #4a5568;
+}
+
+.tunergia-dashboard .detail-tab.active {
+    background: white;
+    color: #1a202c;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tunergia-dashboard .detail-tab-content {
+    display: none;
+}
+
+.tunergia-dashboard .detail-tab-content.active {
+    display: block;
+}
+
+/* Detail Sections */
+.tunergia-dashboard .detail-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.tunergia-dashboard .detail-section h3 {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a202c;
+}
+
+.tunergia-dashboard .detail-section h4 {
+    margin: 0 0 16px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #667eea;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tunergia-dashboard .section-subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: #718096;
+}
+
+.tunergia-dashboard .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.tunergia-dashboard .detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tunergia-dashboard .detail-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.tunergia-dashboard .detail-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+}
+
+.tunergia-dashboard .field-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #2d3748;
+    min-height: 20px;
+}
+
+.tunergia-dashboard .field-icon {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.tunergia-dashboard .cups-value {
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    background: #edf2f7;
+}
+
+/* Consumo Table */
+.tunergia-dashboard .consumo-table-container {
+    overflow-x: auto;
+}
+
+.tunergia-dashboard .consumo-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+}
+
+.tunergia-dashboard .consumo-table th,
+.tunergia-dashboard .consumo-table td {
+    padding: 12px 16px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+}
+
+.tunergia-dashboard .consumo-table th {
+    background: #667eea;
+    color: white;
+    font-weight: 600;
+}
+
+.tunergia-dashboard .consumo-table th:first-child {
+    background: #f7fafc;
+    color: #4a5568;
+}
+
+.tunergia-dashboard .consumo-table .row-label {
+    text-align: left;
+    font-weight: 600;
+    color: #4a5568;
+    background: #f7fafc;
+}
+
+.tunergia-dashboard .consumo-summary {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.tunergia-dashboard .consumo-total {
+    background: #667eea;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.tunergia-dashboard .consumo-total .label {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.tunergia-dashboard .consumo-total .value {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Documents */
+.tunergia-dashboard .documents-info p {
+    margin: 0 0 16px 0;
+    color: #718096;
+    font-size: 14px;
+}
+
+.tunergia-dashboard .documents-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tunergia-dashboard .document-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.tunergia-dashboard .document-icon {
+    width: 40px;
+    height: 40px;
+    background: #e53e3e;
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.tunergia-dashboard .document-icon.jpg {
+    background: #38a169;
+}
+
+.tunergia-dashboard .document-info {
+    flex: 1;
+}
+
+.tunergia-dashboard .document-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.tunergia-dashboard .document-size {
+    font-size: 12px;
+    color: #a0aec0;
+}
+
+.tunergia-dashboard .no-docs {
+    color: #a0aec0;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Observations */
+.tunergia-dashboard .observations-box {
+    padding: 16px;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #4a5568;
+    line-height: 1.6;
+    min-height: 80px;
+}
+
+/* History Timeline */
+.tunergia-dashboard .history-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.tunergia-dashboard .history-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e2e8f0;
+}
+
+.tunergia-dashboard .history-item {
+    position: relative;
+    padding: 16px 20px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.tunergia-dashboard .history-item::before {
+    content: '';
+    position: absolute;
+    left: -25px;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    background: #667eea;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px #667eea;
+}
+
+.tunergia-dashboard .history-date {
+    font-size: 12px;
+    color: #a0aec0;
+    margin-bottom: 4px;
+}
+
+.tunergia-dashboard .history-action {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 4px;
+}
+
+.tunergia-dashboard .history-detail {
+    font-size: 13px;
+    color: #718096;
+}
+
+.tunergia-dashboard .history-user {
+    font-size: 12px;
+    color: #a0aec0;
+    margin-top: 8px;
+    font-style: italic;
+}
+
+.tunergia-dashboard .no-history {
+    color: #a0aec0;
+    font-style: italic;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+/* Form inputs for create contract */
+.tunergia-dashboard .form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.tunergia-dashboard .form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tunergia-dashboard .form-input.small {
+    padding: 6px 8px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.tunergia-dashboard .form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.tunergia-dashboard .form-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.tunergia-dashboard .upload-area {
+    border: 2px dashed #e2e8f0;
+    border-radius: 8px;
+    padding: 32px 20px;
+    text-align: center;
+    background: #f7fafc;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .upload-area:hover {
+    border-color: #667eea;
+    background: #ebf4ff;
+}
+
+.tunergia-dashboard .upload-area .upload-icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+}
+
+.tunergia-dashboard .consumo-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tunergia-dashboard .consumo-table th,
+.tunergia-dashboard .consumo-table td {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+
+.tunergia-dashboard .consumo-table th {
+    background: #667eea;
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.tunergia-dashboard .consumo-table td:first-child {
+    text-align: left;
+    background: #f7fafc;
+}
+
+/* Document download styling */
+.tunergia-dashboard .document-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tunergia-dashboard .document-item:hover {
+    background: #ebf8ff;
+    transform: translateX(4px);
+}
+
+.tunergia-dashboard .document-item .download-icon {
+    margin-left: auto;
+    color: #667eea;
+    font-size: 16px;
+}
