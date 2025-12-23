@@ -2194,10 +2194,6 @@
       function hideError() {
         errorMessage.classList.remove('active');
       }
-      
-      console.log('✓ Comparador initialized with Turbo Tun Mode (v13)');
-    })();
-  </script>
 
       // ============================================
       // CREATE CONTRACT FROM COMPARISON
@@ -2339,3 +2335,6 @@
           console.error('Error pre-filling contract form:', error);
         }
       }
+
+      console.log('✓ Comparador initialized with Turbo Tun Mode (v13)');
+    })();
