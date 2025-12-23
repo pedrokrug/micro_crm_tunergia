@@ -54,13 +54,16 @@
       const powerAnalysisSection = document.getElementById('powerAnalysisSection');
       const powerAnalysisDisabledNote = document.getElementById('powerAnalysisDisabledNote');
       
-      // History elements
+      // History elements (made optional since sidebar was removed)
       const historySidebar = document.getElementById('historySidebar');
       const historyList = document.getElementById('historyList');
       const sidebarUserName = document.getElementById('sidebarUserName');
       const filterCups = document.getElementById('filterCups');
       const filterTipo = document.getElementById('filterTipo');
       const filterTarifa = document.getElementById('filterTarifa');
+
+      console.log('📍 Comparador.js initializing...');
+      console.log('📍 History elements:', { historyList, filterCups, filterTipo, filterTarifa });
 
       // ============================================
       // POWER VALIDATION RULES
@@ -89,11 +92,15 @@
       // ============================================
       // POWER ANALYSIS TOGGLE HANDLER (SIMPLIFIED)
       // ============================================
-      
-      powerAnalysisCheckbox.addEventListener('change', (e) => {
-        powerAnalysisEnabled = e.target.checked;
-        console.log('Power Analysis Enabled:', powerAnalysisEnabled);
-      });
+
+      if (powerAnalysisCheckbox) {
+        powerAnalysisCheckbox.addEventListener('change', (e) => {
+          powerAnalysisEnabled = e.target.checked;
+          console.log('Power Analysis Enabled:', powerAnalysisEnabled);
+        });
+      } else {
+        console.log('⚠️  Power analysis checkbox not found');
+      }
 
       // ============================================
       // POWER VALIDATION FUNCTIONS
@@ -608,7 +615,11 @@
       // ============================================
 
       window.toggleSidebar = function() {
-        historySidebar.classList.toggle('mobile-hidden');
+        if (historySidebar) {
+          historySidebar.classList.toggle('mobile-hidden');
+        } else {
+          console.log('Sidebar not available (removed in new design)');
+        }
       };
 
       window.switchTab = function(tab) {
