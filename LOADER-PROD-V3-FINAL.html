@@ -16,7 +16,7 @@
 
 <!-- CSS Styles -->
 <link rel="stylesheet" href="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/5457bf6/src_prod/styles.css">
-<link rel="stylesheet" href="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/30ef2bc/src_prod/modules/comparador/comparador.css">
+<link rel="stylesheet" href="https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/0a3126f/src_prod/modules/comparador/comparador.css">
 
 <!-- HTML Content -->
 <div class="tunergia-dashboard">
@@ -915,7 +915,7 @@ async function startMode(mode) {
 
         try {
             // Fetch comparador.html
-            const response = await fetch('https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/30ef2bc/src_prod/modules/comparador/comparador.html');
+            const response = await fetch('https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/0a3126f/src_prod/modules/comparador/comparador.html');
             if (!response.ok) throw new Error('Failed to load comparador HTML');
 
             const html = await response.text();
@@ -927,7 +927,7 @@ async function startMode(mode) {
             // Load comparador script if not loaded
             if (!comparadorLoaded) {
                 const script = document.createElement('script');
-                script.src = 'https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/30ef2bc/src_prod/modules/comparador/comparador.js';
+                script.src = 'https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/0a3126f/src_prod/modules/comparador/comparador.js';
                 script.onload = () => {
                     comparadorLoaded = true;
                     console.log('✓ Comparador loaded in mode:', mode);
