@@ -924,7 +924,7 @@ async function startMode(mode) {
             if (!comparadorLoaded) {
                 await new Promise((resolve, reject) => {
                     const script = document.createElement('script');
-                    script.src = 'https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/cdf829f/src_prod/modules/comparador/comparador.js';
+                    script.src = 'https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/b77cd10/src_prod/modules/comparador/comparador.js';
                     script.onload = () => {
                         comparadorLoaded = true;
                         console.log('✓ Comparador script loaded successfully');
@@ -940,7 +940,7 @@ async function startMode(mode) {
             }
 
             // Then fetch and insert HTML
-            const response = await fetch('https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/cdf829f/src_prod/modules/comparador/comparador.html');
+            const response = await fetch('https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/b77cd10/src_prod/modules/comparador/comparador.html');
             if (!response.ok) throw new Error('Failed to load comparador HTML');
 
             const html = await response.text();
