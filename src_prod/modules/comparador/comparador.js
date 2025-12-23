@@ -1,4 +1,5 @@
     (function() {
+      // Comparador v2.0.1 - Syntax Error Fixed
       // Configuration - Updated: 2025-12-23
       const WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/comparador_tunergia';
       const COMPANIES_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/get_companies';
