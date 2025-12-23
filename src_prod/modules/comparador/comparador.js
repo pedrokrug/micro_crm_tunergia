@@ -611,6 +611,34 @@
         historySidebar.classList.toggle('mobile-hidden');
       };
 
+      window.switchTab = function(tab) {
+        // Toggle tab active states
+        const nuevaTab = document.getElementById('nuevaTab');
+        const historicoTab = document.getElementById('historicoTab');
+        const uploadSection = document.getElementById('upload-section');
+        const historySection = document.getElementById('history-section');
+        const resultsSection = document.getElementById('results');
+
+        if (tab === 'nueva') {
+          // Activate Nueva Comparativa tab
+          nuevaTab.classList.add('active');
+          historicoTab.classList.remove('active');
+          uploadSection.style.display = 'block';
+          historySection.style.display = 'none';
+          if (resultsSection) resultsSection.style.display = 'block';
+        } else if (tab === 'historico') {
+          // Activate Historico tab
+          nuevaTab.classList.remove('active');
+          historicoTab.classList.add('active');
+          uploadSection.style.display = 'none';
+          historySection.style.display = 'block';
+          if (resultsSection) resultsSection.style.display = 'none';
+
+          // Load history when switching to historico tab
+          loadHistory();
+        }
+      };
+
       async function loadHistory() {
         if (!currentUser) {
           console.log('No user available for history');
