@@ -1,5 +1,5 @@
     (function() {
-      // Comparador v2.0.1 - Syntax Error Fixed
+      // Comparador v2.0.2 - User initialization fixed with null checks for removed sidebar elements
       // Configuration - Updated: 2025-12-23
       const WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/comparador_tunergia';
       const COMPANIES_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/get_companies';
@@ -657,6 +657,11 @@
           return;
         }
 
+        if (!historyList) {
+          console.log('History list element not found');
+          return;
+        }
+
         try {
           historyList.innerHTML = `
             <div class="history-loading">
@@ -669,9 +674,9 @@
             limit: 20
           };
 
-          const cupsValue = filterCups.value.trim();
-          const tipoValue = filterTipo.value;
-          const tarifaValue = filterTarifa.value;
+          const cupsValue = filterCups ? filterCups.value.trim() : '';
+          const tipoValue = filterTipo ? filterTipo.value : '';
+          const tarifaValue = filterTarifa ? filterTarifa.value : '';
 
           if (cupsValue) filters.cups = cupsValue;
           if (tipoValue) filters.tipo_suministro = tipoValue;
@@ -800,13 +805,13 @@
 
         if (window.innerWidth <= 768) {
           window.scrollTo({ top: 0, behavior: 'smooth' });
-          historySidebar.classList.add('mobile-hidden');
+          if (historySidebar) historySidebar.classList.add('mobile-hidden');
         }
       };
 
-      filterCups.addEventListener('input', debounce(() => loadHistory(), 500));
-      filterTipo.addEventListener('change', () => loadHistory());
-      filterTarifa.addEventListener('change', () => loadHistory());
+      if (filterCups) filterCups.addEventListener('input', debounce(() => loadHistory(), 500));
+      if (filterTipo) filterTipo.addEventListener('change', () => loadHistory());
+      if (filterTarifa) filterTarifa.addEventListener('change', () => loadHistory());
 
       function debounce(func, wait) {
         let timeout;
@@ -931,25 +936,25 @@
       async function initializeUser() {
         try {
           currentUser = await getCurrentUserFromSession();
-          
+
           if (currentUser) {
-            userInfoText.textContent = `Sesión: ${currentUser.name} (${currentUser.email})`;
-            userInfo.classList.add('active');
-            sidebarUserName.textContent = currentUser.name;
+            if (userInfoText) userInfoText.textContent = `Sesión: ${currentUser.name} (${currentUser.email})`;
+            if (userInfo) userInfo.classList.add('active');
+            if (sidebarUserName) sidebarUserName.textContent = currentUser.name;
             console.log('✓ User detected:', currentUser);
-            
+
             loadHistory();
           } else {
-            userInfoText.textContent = '⚠️ No se pudo detectar el usuario';
-            userInfo.classList.add('active');
-            sidebarUserName.textContent = 'Usuario desconocido';
+            if (userInfoText) userInfoText.textContent = '⚠️ No se pudo detectar el usuario';
+            if (userInfo) userInfo.classList.add('active');
+            if (sidebarUserName) sidebarUserName.textContent = 'Usuario desconocido';
             console.warn('⚠️ Could not detect user');
           }
         } catch (error) {
           console.error('Error initializing user:', error);
-          userInfoText.textContent = '⚠️ Error al detectar usuario';
-          userInfo.classList.add('active');
-          sidebarUserName.textContent = 'Error';
+          if (userInfoText) userInfoText.textContent = '⚠️ Error al detectar usuario';
+          if (userInfo) userInfo.classList.add('active');
+          if (sidebarUserName) sidebarUserName.textContent = 'Error';
         }
       }
 
