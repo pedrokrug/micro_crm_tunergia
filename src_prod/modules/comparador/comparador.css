@@ -18,8 +18,8 @@
       display: flex;
       justify-content: center;
       gap: 8px;
-      padding: 20px 20px 0 20px;
-      background: #f5f7fa;
+      padding: 8px 20px 24px 20px;
+      background: transparent;
     }
 
     .nav-tab {
