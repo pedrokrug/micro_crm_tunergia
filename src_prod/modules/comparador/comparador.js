@@ -1,6 +1,6 @@
     (function() {
-      // Comparador v2.0.4 - Debug logging for user initialization
-      // Configuration - Updated: 2025-12-23 18:00
+      // Comparador v2.0.5 - Fix null reference errors in event listeners
+      // Configuration - Updated: 2025-12-23 18:10
       const WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/comparador_tunergia';
       const COMPANIES_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/get_companies';
       const PDF_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/generate-pdf-comparador';
@@ -975,53 +975,65 @@
       // FILE UPLOAD & ANALYSIS
       // ============================================
 
-      uploadArea.addEventListener('click', () => fileInput.click());
+      if (uploadArea && fileInput) {
+        uploadArea.addEventListener('click', () => fileInput.click());
 
-      uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-      });
+        uploadArea.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          uploadArea.classList.add('dragover');
+        });
 
-      uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-      });
+        uploadArea.addEventListener('dragleave', () => {
+          uploadArea.classList.remove('dragover');
+        });
 
-      uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-          handleFileSelect(files[0]);
-        }
-      });
+        uploadArea.addEventListener('drop', (e) => {
+          e.preventDefault();
+          uploadArea.classList.remove('dragover');
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            handleFileSelect(files[0]);
+          }
+        });
 
-      fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length > 0) {
-          handleFileSelect(e.target.files[0]);
-        }
-      });
+        fileInput.addEventListener('change', (e) => {
+          if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+          }
+        });
+      }
 
-      removeFileBtn.addEventListener('click', () => {
-        selectedFile = null;
-        fileInput.value = '';
-        selectedFileDiv.classList.remove('active');
-        analyzeButton.disabled = true;
-      });
+      if (removeFileBtn) {
+        removeFileBtn.addEventListener('click', () => {
+          selectedFile = null;
+          if (fileInput) fileInput.value = '';
+          if (selectedFileDiv) selectedFileDiv.classList.remove('active');
+          if (analyzeButton) analyzeButton.disabled = true;
+        });
+      }
 
-      analyzeButton.addEventListener('click', analyzeInvoice);
+      if (analyzeButton) {
+        analyzeButton.addEventListener('click', analyzeInvoice);
+      }
 
       const productTypeRadios = document.getElementsByName('product-type');
-      productTypeRadios.forEach(radio => {
-        radio.addEventListener('change', handleProductTypeChange);
-      });
+      if (productTypeRadios) {
+        productTypeRadios.forEach(radio => {
+          radio.addEventListener('change', handleProductTypeChange);
+        });
+      }
 
-      companyDropdownButton.addEventListener('click', toggleCompanyDropdown);
-      
-      document.addEventListener('click', (e) => {
-        if (!companySelector.contains(e.target)) {
-          closeCompanyDropdown();
-        }
-      });
+      if (companyDropdownButton) {
+        companyDropdownButton.addEventListener('click', toggleCompanyDropdown);
+      }
+
+      if (companySelector) {
+        document.addEventListener('click', (e) => {
+          if (!companySelector.contains(e.target)) {
+            closeCompanyDropdown();
+          }
+        });
+      }
 
       handleProductTypeChange();
       initializeUser();
