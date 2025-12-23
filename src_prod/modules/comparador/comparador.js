@@ -1,4 +1,5 @@
     (function() {
+      // Comparador v2.0.1 - Syntax Error Fixed
       // Configuration - Updated: 2025-12-23
       const WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/comparador_tunergia';
       const COMPANIES_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/get_companies';
@@ -2194,10 +2195,6 @@
       function hideError() {
         errorMessage.classList.remove('active');
       }
-      
-      console.log('✓ Comparador initialized with Turbo Tun Mode (v13)');
-    })();
-  </script>
 
       // ============================================
       // CREATE CONTRACT FROM COMPARISON
@@ -2339,3 +2336,6 @@
           console.error('Error pre-filling contract form:', error);
         }
       }
+
+      console.log('✓ Comparador initialized with Turbo Tun Mode (v13)');
+    })();
