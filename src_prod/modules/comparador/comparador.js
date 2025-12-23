@@ -1,6 +1,6 @@
     (function() {
-      // Comparador v2.0.2 - User initialization fixed with null checks for removed sidebar elements
-      // Configuration - Updated: 2025-12-23
+      // Comparador v2.0.3 - Force CDN refresh (user initialization with null checks)
+      // Configuration - Updated: 2025-12-23 17:45
       const WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/comparador_tunergia';
       const COMPANIES_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/get_companies';
       const PDF_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/generate-pdf-comparador';
