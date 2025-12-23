@@ -1,63 +1,13 @@
 <div class="comparador-layout">
-    
-    
-    <aside class="history-sidebar" id="historySidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-header-content">
-          <div class="sidebar-title">
-            <span>📊</span>
-            <span>Historial</span>
-          </div>
-          <div class="sidebar-user-info" id="sidebarUserInfo">
-            <span>👤</span>
-            <span id="sidebarUserName">Cargando...</span>
-          </div>
-        </div>
-      </div>
 
-      <div class="sidebar-filters">
-        <div class="filter-group">
-          <label class="filter-label">🔍 Buscar CUPS</label>
-          <input type="text" class="filter-input" id="filterCups" placeholder="Ej: ES0021000...">
-        </div>
-
-        <div class="filter-group">
-          <label class="filter-label">⚡ Tipo Suministro</label>
-          <select class="filter-select" id="filterTipo">
-            <option value="">Todos</option>
-            <option value="luz">⚡ Luz</option>
-            <option value="gas">🔥 Gas</option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label class="filter-label">📋 Tarifa</label>
-          <select class="filter-select" id="filterTarifa">
-            <option value="">Todas</option>
-            <option value="2.0TD">2.0TD</option>
-            <option value="3.0TD">3.0TD</option>
-            <option value="6.1TD">6.1TD</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="history-list" id="historyList">
-        <div class="history-loading">
-          <div class="history-spinner"></div>
-          <div>Cargando historial...</div>
-        </div>
-      </div>
-    </aside>
-
-    
-    <button class="mobile-sidebar-toggle" id="mobileSidebarToggle" onclick="toggleSidebar()">
-      📊
-    </button>
-
-    
     <main class="main-content" id="mainContent">
-      
-      
+
+      <!-- Navigation Tabs -->
+      <div class="comparador-nav-tabs">
+        <button class="nav-tab active" id="nuevaTab" onclick="switchTab('nueva')">Nueva Comparativa</button>
+        <button class="nav-tab" id="historicoTab" onclick="switchTab('historico')">Historico</button>
+      </div>
+
       <div class="page-header">
         <h1 class="page-title">⚡ Comparador de Facturas Eléctricas</h1>
         <p class="page-subtitle">Analiza facturas de clientes y encuentra oportunidades de ahorro</p>
