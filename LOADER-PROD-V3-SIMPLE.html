@@ -1,0 +1,149 @@
+<!--
+    Tunergia CRM - Production Loader v3.1.0
+
+    Original Contratos view + Simple Comparador switch
+    Based on working v2.0.1 loader
+
+    Last updated: 2025-12-22
+    Version: 3.1.0
+-->
+
+<!-- CSS Styles -->
+<link rel="stylesheet" href="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/styles.css">
+<link rel="stylesheet" href="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/modules/comparador/comparador.css">
+
+<!-- Main Container -->
+<div id="tunergiaApp">
+
+    <!-- CONTRATOS VIEW (Default - Original) -->
+    <div class="tunergia-dashboard" id="contratosView">
+
+        <div class="loading-overlay" id="dashboardLoading">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Cargando datos del dashboard...</p>
+        </div>
+
+        <div class="error-banner" id="dashboardError">
+            <span class="error-icon">⚠️</span>
+            <span class="error-text" id="errorText">Ha ocurrido un error al cargar los datos.</span>
+        </div>
+
+        <div class="user-banner" id="userBanner">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">--</div>
+                <div class="user-details">
+                    <h3 id="userName">Cargando...</h3>
+                    <p id="userEmail">Cargando información del usuario...</p>
+                </div>
+            </div>
+            <div class="user-id-badge" id="userIdBadge">ID: ---</div>
+        </div>
+
+        <div class="dashboard-header">
+            <div class="header-left">
+                <h1>Bienvenido, <span id="welcomeName">Usuario</span></h1>
+                <p>Gestiona tus contratos, centraliza tu información y haz comparativas</p>
+            </div>
+            <div class="header-right">
+                <div class="alert-badge">
+                    <span class="alert-icon">⚡</span>
+                    <span>¡Atención! Nuevas actualizaciones de precio disponibles</span>
+                </div>
+                <button class="notification-btn" title="Notificaciones">🔔</button>
+                <!-- NEW: Tool Switcher -->
+                <button class="tool-switcher-btn" id="toolSwitcher" onclick="switchToComparador()" title="Cambiar a Comparador">
+                    ⚡ Comparador
+                </button>
+            </div>
+        </div>
+
+        <!-- Rest of contracts content continues... -->
+        <!-- This will be populated by tunergia-ui.js as normal -->
+
+    </div>
+
+    <!-- COMPARADOR VIEW (Hidden by default) -->
+    <div id="comparadorView" style="display: none;">
+
+        <!-- Header with back button -->
+        <div style="background: white; padding: 20px; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 style="margin: 0; font-size: 28px; color: #2d3748;">⚡ Comparador y Análisis</h1>
+                <p style="margin: 8px 0 0 0; color: #718096;">Analiza facturas y optimiza la potencia contratada</p>
+            </div>
+            <button onclick="switchToContratos()" style="background: #4392CD; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                📊 Volver a Contratos
+            </button>
+        </div>
+
+        <!-- Comparador content container -->
+        <div id="comparador-tunergia">
+            <div style="padding: 40px; text-align: center;">
+                <div class="loading-spinner" style="margin: 0 auto 20px;"></div>
+                <p>Cargando comparador...</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- JavaScript Modules (Original) -->
+<script src="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/tunergia-core.js"></script>
+<script src="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/tunergia-api.js"></script>
+<script src="https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/tunergia-ui.js"></script>
+
+<!-- Simple View Switcher Script -->
+<script>
+let comparadorLoaded = false;
+
+function switchToComparador() {
+    document.getElementById('contratosView').style.display = 'none';
+    document.getElementById('comparadorView').style.display = 'block';
+
+    // Load comparador script only once
+    if (!comparadorLoaded) {
+        const script = document.createElement('script');
+        script.src = 'https://raw.githubusercontent.com/pedrokrug/micro_crm_tunergia/claude/add-new-features-v0AiO/src_prod/modules/comparador/comparador.js';
+        script.onload = () => {
+            comparadorLoaded = true;
+            console.log('✓ Comparador loaded');
+        };
+        script.onerror = () => {
+            document.getElementById('comparador-tunergia').innerHTML =
+                '<div style="padding: 40px; text-align: center; color: #e53e3e;"><h3>Error al cargar el comparador</h3><p>Por favor, recarga la página</p></div>';
+        };
+        document.body.appendChild(script);
+    }
+}
+
+function switchToContratos() {
+    document.getElementById('contratosView').style.display = 'block';
+    document.getElementById('comparadorView').style.display = 'none';
+}
+
+// Make functions globally available
+window.switchToComparador = switchToComparador;
+window.switchToContratos = switchToContratos;
+</script>
+
+<style>
+/* Tool Switcher Button */
+.tool-switcher-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 12px;
+}
+
+.tool-switcher-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+</style>
