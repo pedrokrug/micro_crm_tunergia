@@ -1,6 +1,6 @@
     (function() {
-      // Comparador v2.0.3 - Force CDN refresh (user initialization with null checks)
-      // Configuration - Updated: 2025-12-23 17:45
+      // Comparador v2.0.4 - Debug logging for user initialization
+      // Configuration - Updated: 2025-12-23 18:00
       const WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/comparador_tunergia';
       const COMPANIES_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/get_companies';
       const PDF_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/generate-pdf-comparador';
@@ -652,15 +652,18 @@
       };
 
       async function loadHistory() {
+        console.log('📋 loadHistory() called, currentUser:', currentUser);
         if (!currentUser) {
-          console.log('No user available for history');
+          console.warn('❌ No user available for history - user initialization may not have completed yet');
           return;
         }
 
         if (!historyList) {
-          console.log('History list element not found');
+          console.warn('❌ History list element not found in DOM');
           return;
         }
+
+        console.log('✓ Loading history for user:', currentUser.name);
 
         try {
           historyList.innerHTML = `
@@ -830,6 +833,7 @@
       // ============================================
 
       async function getCurrentUserFromSession() {
+        console.log('🔍 Attempting to fetch user from session...');
         try {
           const sessionResponse = await fetch('/web/session/get_session_info', {
             method: 'POST',
@@ -842,12 +846,17 @@
               params: {}
             })
           });
-          
+
+          console.log('📡 Session response received:', sessionResponse.status);
           const sessionData = await sessionResponse.json();
-          
+          console.log('📦 Session data:', sessionData);
+
           if (!sessionData.result || !sessionData.result.uid) {
+            console.error('❌ No session data or UID found');
             throw new Error('No session data available');
           }
+
+          console.log('✓ Session UID found:', sessionData.result.uid);
           
           const basicUserInfo = {
             user_id: sessionData.result.uid,
@@ -934,6 +943,7 @@
       }
 
       async function initializeUser() {
+        console.log('🚀 Starting user initialization...');
         try {
           currentUser = await getCurrentUserFromSession();
 
@@ -941,17 +951,20 @@
             if (userInfoText) userInfoText.textContent = `Sesión: ${currentUser.name} (${currentUser.email})`;
             if (userInfo) userInfo.classList.add('active');
             if (sidebarUserName) sidebarUserName.textContent = currentUser.name;
-            console.log('✓ User detected:', currentUser);
+            console.log('✅ User successfully initialized:', currentUser);
+            console.log('✅ currentUser is now set globally');
 
             loadHistory();
           } else {
+            console.warn('⚠️ getCurrentUserFromSession returned null/undefined');
             if (userInfoText) userInfoText.textContent = '⚠️ No se pudo detectar el usuario';
             if (userInfo) userInfo.classList.add('active');
             if (sidebarUserName) sidebarUserName.textContent = 'Usuario desconocido';
             console.warn('⚠️ Could not detect user');
           }
         } catch (error) {
-          console.error('Error initializing user:', error);
+          console.error('❌ Error initializing user:', error);
+          console.error('❌ Error stack:', error.stack);
           if (userInfoText) userInfoText.textContent = '⚠️ Error al detectar usuario';
           if (userInfo) userInfo.classList.add('active');
           if (sidebarUserName) sidebarUserName.textContent = 'Error';
