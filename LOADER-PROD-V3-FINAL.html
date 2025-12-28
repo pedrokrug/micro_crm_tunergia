@@ -1,5 +1,5 @@
 <!--
-    Tunergia CRM - Production Loader v3.1.0
+    Tunergia CRM - Production Loader v3.2.0
 
     Original loader + Comparador pill switch
 
@@ -10,8 +10,8 @@
     - src_prod/tunergia-ui.js (UI, Events, Main)
     - modules/comparador/* (on demand)
 
-    Last updated: 2025-12-22
-    Version: 3.1.0
+    Last updated: 2025-12-28
+    Version: 3.2.0 - Fixed loading order (HTML before JS)
 -->
 
 <!-- CSS Styles -->
@@ -920,14 +920,25 @@ async function startMode(mode) {
         container.innerHTML = '<div style="padding: 60px 20px; text-align: center;"><div class="loading-spinner"></div><p>Cargando comparador...</p></div>';
 
         try {
-            // Load comparador script FIRST if not already loaded
+            // STEP 1: Load HTML FIRST (v3.2.0 fix - HTML must exist before JS runs)
+            const response = await fetch('https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/3eba72f/src_prod/modules/comparador/comparador.html');
+            if (!response.ok) throw new Error('Failed to load comparador HTML');
+
+            const html = await response.text();
+            container.innerHTML = html;
+
+            // Wait for DOM to be fully rendered
+            await new Promise(resolve => setTimeout(resolve, 100));
+            console.log('✓ Comparador HTML loaded');
+
+            // STEP 2: Load comparador script AFTER HTML is in DOM
             if (!comparadorLoaded) {
                 await new Promise((resolve, reject) => {
                     const script = document.createElement('script');
-                    script.src = 'https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/cdf829f/src_prod/modules/comparador/comparador.js';
+                    script.src = 'https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/3eba72f/src_prod/modules/comparador/comparador.js';
                     script.onload = () => {
                         comparadorLoaded = true;
-                        console.log('✓ Comparador script loaded successfully');
+                        console.log('✓ Comparador script loaded successfully (v2.0.5)');
                         console.log('✓ switchTab function available:', typeof window.switchTab === 'function');
                         resolve();
                     };
@@ -938,16 +949,6 @@ async function startMode(mode) {
                     document.body.appendChild(script);
                 });
             }
-
-            // Then fetch and insert HTML
-            const response = await fetch('https://rawcdn.githack.com/pedrokrug/micro_crm_tunergia/cdf829f/src_prod/modules/comparador/comparador.html');
-            if (!response.ok) throw new Error('Failed to load comparador HTML');
-
-            const html = await response.text();
-            container.innerHTML = html;
-
-            // Wait for DOM to be fully rendered
-            await new Promise(resolve => setTimeout(resolve, 150));
 
             console.log('✓ Comparador loaded in mode:', mode);
 
