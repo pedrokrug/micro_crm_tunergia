@@ -1,6 +1,6 @@
     (function() {
-      // Comparador v2.0.4 - Debug logging for user initialization
-      // Configuration - Updated: 2025-12-23 18:00
+      // Comparador v2.0.5 - Use shared Tunergia state for user initialization
+      // Configuration - Updated: 2025-12-28 12:00
       const WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/comparador_tunergia';
       const COMPANIES_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/get_companies';
       const PDF_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/generate-pdf-comparador';
@@ -647,15 +647,58 @@
           if (resultsSection) resultsSection.style.display = 'none';
 
           // Load history when switching to historico tab
-          loadHistory();
+          // Pass waitForUser=true to allow waiting if user not initialized yet
+          loadHistory(true);
         }
       };
 
-      async function loadHistory() {
+      async function loadHistory(waitForUser = false) {
         console.log('📋 loadHistory() called, currentUser:', currentUser);
-        if (!currentUser) {
-          console.warn('❌ No user available for history - user initialization may not have completed yet');
+
+        // If user not available and this is from tab switch, wait a moment and retry
+        if (!currentUser && waitForUser) {
+          console.log('⏳ User not ready, waiting 1 second before retrying...');
+          if (historyList) {
+            historyList.innerHTML = `
+              <div class="history-loading">
+                <div class="history-spinner"></div>
+                <div>Esperando usuario...</div>
+              </div>
+            `;
+          }
+          setTimeout(() => loadHistory(false), 1000);
           return;
+        }
+
+        if (!currentUser) {
+          console.warn('❌ No user available for history');
+          // Try to get user from Tunergia state as a fallback
+          if (window.Tunergia && window.Tunergia.state && window.Tunergia.state.currentUser) {
+            const tunergiaUser = window.Tunergia.state.currentUser;
+            currentUser = {
+              user_id: tunergiaUser.uid,
+              name: tunergiaUser.name || 'Usuario',
+              email: tunergiaUser.email || '',
+              login: tunergiaUser.email || '',
+              phone: '',
+              x_studio_persona_de_contacto: window.Tunergia.state.idComercial || null
+            };
+            console.log('✅ Recovered user from Tunergia state:', currentUser);
+          } else {
+            console.warn('❌ User initialization not completed and no fallback available');
+            if (historyList) {
+              historyList.innerHTML = `
+                <div class="history-empty">
+                  <div class="history-empty-icon">👤</div>
+                  <div>Esperando usuario...</div>
+                  <button onclick="loadHistory()" style="margin-top: 12px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    🔄 Reintentar
+                  </button>
+                </div>
+              `;
+            }
+            return;
+          }
         }
 
         if (!historyList) {
@@ -685,6 +728,9 @@
           if (tipoValue) filters.tipo_suministro = tipoValue;
           if (tarifaValue) filters.tarifa = tarifaValue;
 
+          console.log(`📡 Calling: ${HISTORY_WEBHOOK_URL}`);
+          console.log('📦 Request payload:', { user_name: currentUser.name, filters });
+
           const response = await fetch(HISTORY_WEBHOOK_URL, {
             method: 'POST',
             headers: {
@@ -696,29 +742,42 @@
             })
           });
 
+          console.log(`📡 History response status: ${response.status}`);
+
           if (!response.ok) {
-            throw new Error('Error al cargar historial');
+            throw new Error(`HTTP ${response.status}: Error al cargar historial`);
           }
 
           const data = await response.json();
-          
+          console.log('📦 History response:', data);
+
           if (!data.success) {
             throw new Error(data.error || 'Error al cargar historial');
           }
 
           historyData = data.history || [];
+          console.log(`✅ Loaded ${historyData.length} history items`);
           renderHistory();
 
         } catch (error) {
-          console.error('Error loading history:', error);
+          console.error('❌ Error loading history:', error);
           historyList.innerHTML = `
             <div class="history-empty">
               <div class="history-empty-icon">⚠️</div>
               <div>Error al cargar el historial</div>
+              <div style="font-size: 12px; color: #a0aec0; margin-top: 4px;">${error.message}</div>
+              <button onclick="loadHistory()" style="margin-top: 12px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                🔄 Reintentar
+              </button>
             </div>
           `;
         }
       }
+
+      // Expose for retry button
+      window.loadHistory = function() {
+        loadHistory(false);
+      };
 
       function renderHistory() {
         if (historyData.length === 0) {
@@ -945,7 +1004,26 @@
       async function initializeUser() {
         console.log('🚀 Starting user initialization...');
         try {
-          currentUser = await getCurrentUserFromSession();
+          // STEP 1: First check if main Tunergia app already has user loaded
+          if (window.Tunergia && window.Tunergia.state && window.Tunergia.state.currentUser) {
+            const tunergiaUser = window.Tunergia.state.currentUser;
+            console.log('✅ Found user from main Tunergia app:', tunergiaUser);
+
+            currentUser = {
+              user_id: tunergiaUser.uid,
+              name: tunergiaUser.name || 'Usuario',
+              email: tunergiaUser.email || '',
+              login: tunergiaUser.email || '',
+              phone: '',
+              x_studio_persona_de_contacto: window.Tunergia.state.idComercial || null
+            };
+
+            console.log('✅ Using shared user from Tunergia state:', currentUser);
+          } else {
+            // STEP 2: Fallback - fetch from Odoo session directly
+            console.log('⏳ Tunergia state not available, fetching from Odoo session...');
+            currentUser = await getCurrentUserFromSession();
+          }
 
           if (currentUser) {
             if (userInfoText) userInfoText.textContent = `Sesión: ${currentUser.name} (${currentUser.email})`;
@@ -1072,28 +1150,71 @@
         }
       }
 
-      async function fetchAvailableCompanies() {
+      async function fetchAvailableCompanies(retryCount = 0) {
+        const MAX_RETRIES = 2;
+        console.log(`📋 Fetching comercializadoras... (attempt ${retryCount + 1}/${MAX_RETRIES + 1})`);
+
         try {
           companyDropdownMenu.innerHTML = '<div class="select-all-option">Cargando comercializadoras...</div>';
-          
-          const response = await fetch(COMPANIES_WEBHOOK_URL);
-          
+
+          console.log(`📡 Calling: ${COMPANIES_WEBHOOK_URL}`);
+          const response = await fetch(COMPANIES_WEBHOOK_URL, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log(`📡 Response status: ${response.status}`);
+
           if (!response.ok) {
-            throw new Error('Error al obtener las comercializadoras');
+            throw new Error(`HTTP ${response.status}: Error al obtener las comercializadoras`);
           }
-          
+
           const data = await response.json();
-          availableCompanies = data.companies || [];
+          console.log('📦 Companies response:', data);
+
+          // Handle different response formats
+          if (data.companies && Array.isArray(data.companies)) {
+            availableCompanies = data.companies;
+          } else if (Array.isArray(data)) {
+            availableCompanies = data;
+          } else if (data.data && Array.isArray(data.data)) {
+            availableCompanies = data.data;
+          } else {
+            console.warn('⚠️ Unexpected response format:', data);
+            availableCompanies = [];
+          }
+
+          console.log(`✅ Loaded ${availableCompanies.length} comercializadoras`);
           selectedCompanies = [...availableCompanies];
-          
+
           renderCompanyOptions();
           updateCompanySelectionText();
-          
+
         } catch (error) {
-          console.error('Error fetching companies:', error);
-          companyDropdownMenu.innerHTML = '<div class="select-all-option" style="color: #e53e3e;">Error al cargar comercializadoras</div>';
+          console.error('❌ Error fetching companies:', error);
+
+          if (retryCount < MAX_RETRIES) {
+            console.log(`🔄 Retrying in 2 seconds...`);
+            setTimeout(() => fetchAvailableCompanies(retryCount + 1), 2000);
+          } else {
+            companyDropdownMenu.innerHTML = `
+              <div class="select-all-option" style="color: #e53e3e; flex-direction: column; align-items: flex-start;">
+                <span>❌ Error al cargar comercializadoras</span>
+                <button onclick="fetchAvailableCompanies(0)" style="margin-top: 8px; padding: 4px 12px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                  🔄 Reintentar
+                </button>
+              </div>
+            `;
+          }
         }
       }
+
+      // Expose retry function globally for the retry button
+      window.fetchAvailableCompanies = function() {
+        fetchAvailableCompanies(0);
+      };
 
       function renderCompanyOptions() {
         let html = `
