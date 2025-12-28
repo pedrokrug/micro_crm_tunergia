@@ -1,6 +1,6 @@
     (function() {
-      // Comparador v2.0.5 - Use shared Tunergia state for user initialization
-      // Configuration - Updated: 2025-12-28 12:00
+      // Comparador v2.0.6 - History results view in Historico tab
+      // Configuration - Updated: 2025-12-28 14:00
       const WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/comparador_tunergia';
       const COMPANIES_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/get_companies';
       const PDF_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/generate-pdf-comparador';
@@ -838,7 +838,7 @@
       window.loadHistoryComparison = function(historyId) {
         const searchId = String(historyId);
         const item = historyData.find(h => String(h.id) === searchId);
-        
+
         if (!item) {
           console.error('History item not found:', {
             searchId: searchId,
@@ -862,12 +862,41 @@
         adjustedPowerValues = null;
         isUsingAdjustedPower = false;
 
-        displayResults(item.comparison_data);
-        uploadSection.style.display = 'none';
+        // Show results in the history section (not the main results div)
+        const historyListView = document.getElementById('history-list-view');
+        const historyResultsView = document.getElementById('history-results-view');
+        const historyResultsContainer = document.getElementById('history-results-container');
 
-        if (window.innerWidth <= 768) {
+        if (historyListView && historyResultsView && historyResultsContainer) {
+          // Hide history list, show results view
+          historyListView.style.display = 'none';
+          historyResultsView.style.display = 'block';
+
+          // Display results in the history container
+          displayResults(item.comparison_data, historyResultsContainer);
+
+          // Scroll to top of results
           window.scrollTo({ top: 0, behavior: 'smooth' });
-          if (historySidebar) historySidebar.classList.add('mobile-hidden');
+
+          console.log('✓ History comparison loaded in Historico tab:', historyId);
+        } else {
+          // Fallback to old behavior if new elements don't exist
+          console.warn('History results elements not found, using fallback');
+          displayResults(item.comparison_data);
+          uploadSection.style.display = 'none';
+        }
+      };
+
+      // Back to history list from results view
+      window.backToHistoryList = function() {
+        const historyListView = document.getElementById('history-list-view');
+        const historyResultsView = document.getElementById('history-results-view');
+
+        if (historyListView && historyResultsView) {
+          historyResultsView.style.display = 'none';
+          historyListView.style.display = 'block';
+          activeHistoryId = null;
+          renderHistory();
         }
       };
 
@@ -1667,8 +1696,9 @@
         }
       };
 
-      function displayResults(data) {
+      function displayResults(data, targetContainer = null) {
         console.log('=== displayResults CALLED ===');
+        const targetElement = targetContainer || results;
         
         let hasPowerAnalysis = false;
         let powerAnalysisData = null;
@@ -2318,8 +2348,8 @@
           </div>
         `;
 
-        results.innerHTML = html;
-        results.classList.add('active');
+        targetElement.innerHTML = html;
+        targetElement.classList.add('active');
       }
 
       function showError(message) {

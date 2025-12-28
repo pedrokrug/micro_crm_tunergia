@@ -21,39 +21,50 @@
 
       <!-- History Section (for Historico tab) -->
       <div id="history-section" style="display: none;">
-        <div class="history-container">
-          <div class="history-filters">
-            <div class="filter-group">
-              <label class="filter-label">🔍 Buscar CUPS</label>
-              <input type="text" class="filter-input" id="filterCups" placeholder="Ej: ES0021000...">
+        <!-- History List View -->
+        <div id="history-list-view">
+          <div class="history-container">
+            <div class="history-filters">
+              <div class="filter-group">
+                <label class="filter-label">🔍 Buscar CUPS</label>
+                <input type="text" class="filter-input" id="filterCups" placeholder="Ej: ES0021000...">
+              </div>
+
+              <div class="filter-group">
+                <label class="filter-label">⚡ Tipo Suministro</label>
+                <select class="filter-select" id="filterTipo">
+                  <option value="">Todos</option>
+                  <option value="luz">⚡ Luz</option>
+                  <option value="gas">🔥 Gas</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <label class="filter-label">📋 Tarifa</label>
+                <select class="filter-select" id="filterTarifa">
+                  <option value="">Todas</option>
+                  <option value="2.0TD">2.0TD</option>
+                  <option value="3.0TD">3.0TD</option>
+                  <option value="6.1TD">6.1TD</option>
+                </select>
+              </div>
             </div>
 
-            <div class="filter-group">
-              <label class="filter-label">⚡ Tipo Suministro</label>
-              <select class="filter-select" id="filterTipo">
-                <option value="">Todos</option>
-                <option value="luz">⚡ Luz</option>
-                <option value="gas">🔥 Gas</option>
-              </select>
-            </div>
-
-            <div class="filter-group">
-              <label class="filter-label">📋 Tarifa</label>
-              <select class="filter-select" id="filterTarifa">
-                <option value="">Todas</option>
-                <option value="2.0TD">2.0TD</option>
-                <option value="3.0TD">3.0TD</option>
-                <option value="6.1TD">6.1TD</option>
-              </select>
+            <div class="history-list" id="historyList">
+              <div class="history-loading">
+                <div class="history-spinner"></div>
+                <div>Cargando historial...</div>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div class="history-list" id="historyList">
-            <div class="history-loading">
-              <div class="history-spinner"></div>
-              <div>Cargando historial...</div>
-            </div>
-          </div>
+        <!-- History Results View (shown when viewing a history item) -->
+        <div id="history-results-view" style="display: none;">
+          <button class="back-to-history-btn" id="backToHistoryBtn" onclick="backToHistoryList()">
+            ← Volver al Historial
+          </button>
+          <div id="history-results-container"></div>
         </div>
       </div>
 
