@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análisis de Potencia - Tunergia</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/web/static/img/favicon.ico">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* Reset and Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f7fa;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Import Power Analysis CSS inline for standalone use */
+  </style>
+
+  <!-- Power Analysis CSS -->
+  <link rel="stylesheet" href="power-analysis.css">
+</head>
+<body>
+
+  <!-- Power Analysis UI -->
+  <div id="power-analysis-container"></div>
+
+  <!-- Load Power Analysis HTML -->
+  <script>
+    // Load the power-analysis.html content
+    fetch('power-analysis.html')
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('power-analysis-container').innerHTML = html;
+        // After HTML is loaded, load the JS
+        const script = document.createElement('script');
+        script.src = 'power-analysis.js';
+        document.body.appendChild(script);
+      })
+      .catch(error => {
+        console.error('Error loading power analysis:', error);
+        document.getElementById('power-analysis-container').innerHTML = `
+          <div style="padding: 40px; text-align: center; color: #e53e3e;">
+            <h2>Error al cargar el Análisis de Potencia</h2>
+            <p>Por favor, recarga la página o contacta con soporte.</p>
+          </div>
+        `;
+      });
+  </script>
+
+</body>
+</html>

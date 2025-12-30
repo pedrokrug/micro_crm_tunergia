@@ -1,0 +1,153 @@
+<div class="power-analysis-layout">
+
+    <!-- Main Content -->
+    <main class="main-content power-analysis-main">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">⚡ Análisis de Potencia</h1>
+        <p class="page-subtitle">Optimiza la potencia contratada y detecta penalizaciones</p>
+      </div>
+
+      <!-- User Info Bar -->
+      <div class="user-info-bar" id="userInfo">
+        <span>👤</span>
+        <span id="userInfoText">Cargando usuario...</span>
+      </div>
+
+      <div id="power-analysis-section">
+
+        <!-- Bill Question Section -->
+        <div class="config-section bill-question-section">
+          <div class="section-title">📄 ¿Tienes una factura a mano?</div>
+          <div class="radio-group horizontal">
+            <div class="radio-option">
+              <input type="radio" id="has-bill-yes" name="has-bill" value="yes">
+              <label for="has-bill-yes" class="radio-label">
+                <div class="radio-label-title">✅ Sí, tengo factura</div>
+                <div class="radio-label-desc">Subiré un PDF para extraer datos</div>
+              </label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="has-bill-no" name="has-bill" value="no" checked>
+              <label for="has-bill-no" class="radio-label">
+                <div class="radio-label-title">❌ No tengo factura</div>
+                <div class="radio-label-desc">Ingresaré el CUPS manualmente</div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- PATH A: Manual Input (No Bill) -->
+        <div class="manual-input-section" id="manualInputSection">
+
+          <!-- CUPS Input -->
+          <div class="config-section cups-input-section">
+            <div class="section-title">🔌 CUPS del Suministro</div>
+            <div class="cups-input-wrapper">
+              <input type="text"
+                     id="cupsInput"
+                     class="cups-input"
+                     placeholder="Ej: ES0021000008926202HZ0F"
+                     maxlength="22"
+                     pattern="ES[0-9]{16}[A-Z]{2}[0-9A-Z]{0,2}">
+              <div class="cups-input-hint">El CUPS debe comenzar con "ES" y tener 20-22 caracteres</div>
+            </div>
+          </div>
+
+          <!-- Power Prices Section -->
+          <div class="config-section power-prices-section">
+            <div class="section-title-with-info">
+              <div class="section-title">💰 Precio Término Potencia por Periodo (€/kW·día)</div>
+              <div class="info-badge" title="Precios según BOE para Tarifa 3.0TD">ℹ️ BOE 3.0TD</div>
+            </div>
+
+            <div class="power-prices-note">
+              <span class="note-icon">📋</span>
+              <span>Precios por defecto según BOE (Tarifa 3.0TD). Puedes modificarlos según tu contrato.</span>
+            </div>
+
+            <div class="power-prices-grid">
+              <div class="power-price-field">
+                <label for="precio_p1">P1</label>
+                <input type="number" id="precio_p1" class="price-input" value="0.053858904" step="0.000000001" min="0">
+              </div>
+              <div class="power-price-field">
+                <label for="precio_p2">P2</label>
+                <input type="number" id="precio_p2" class="price-input" value="0.028086712" step="0.000000001" min="0">
+              </div>
+              <div class="power-price-field">
+                <label for="precio_p3">P3</label>
+                <input type="number" id="precio_p3" class="price-input" value="0.011678192" step="0.000000001" min="0">
+              </div>
+              <div class="power-price-field">
+                <label for="precio_p4">P4</label>
+                <input type="number" id="precio_p4" class="price-input" value="0.010086438" step="0.000000001" min="0">
+              </div>
+              <div class="power-price-field">
+                <label for="precio_p5">P5</label>
+                <input type="number" id="precio_p5" class="price-input" value="0.006378548" step="0.000000001" min="0">
+              </div>
+              <div class="power-price-field">
+                <label for="precio_p6">P6</label>
+                <input type="number" id="precio_p6" class="price-input" value="0.003716137" step="0.000000001" min="0">
+              </div>
+            </div>
+
+            <button class="reset-prices-button" id="resetPricesButton" type="button">
+              🔄 Restablecer precios BOE
+            </button>
+          </div>
+
+        </div>
+
+        <!-- PATH B: File Upload (Has Bill) -->
+        <div class="file-upload-section" id="fileUploadSection" style="display: none;">
+
+          <div class="config-section">
+            <div class="section-title">📤 Subir Factura</div>
+            <div class="section-subtitle">Extraeremos automáticamente el CUPS y los precios de potencia</div>
+
+            <div class="upload-area" id="uploadArea">
+              <div class="upload-icon">📄</div>
+              <div class="upload-text">Arrastra la factura aquí o haz clic para seleccionar</div>
+              <div class="upload-subtext">Solo archivos PDF (máx. 5 MB)</div>
+            </div>
+
+            <input type="file" id="fileInput" class="file-input" accept=".pdf">
+
+            <div class="selected-file" id="selectedFile">
+              <div class="file-icon">📄</div>
+              <div class="file-info">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+              </div>
+              <button class="remove-file" id="removeFile" type="button">✕</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Analyze Button -->
+        <button class="analyze-button" id="analyzeButton">
+          ⚡ Analizar Potencia
+        </button>
+
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Analizando potencia del suministro...</div>
+        <div class="loading-progress" id="loadingProgress"></div>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message" id="errorMessage"></div>
+
+      <!-- Results Section -->
+      <div class="results" id="results"></div>
+
+    </main>
+
+</div>
