@@ -170,6 +170,163 @@
         </button>
       </div>
 
+      <!-- Power Analysis Only Section -->
+      <div id="power-analysis-only-section" style="display: none;">
+        <div class="page-header">
+          <h1 class="page-title">⚡ Análisis de Potencia</h1>
+          <p class="page-subtitle">Optimiza la potencia contratada del cliente</p>
+        </div>
+
+        <!-- Input Method Selector -->
+        <div class="power-input-method-selector">
+          <div class="section-title">📋 Método de Entrada:</div>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="power-method-bill" name="power-input-method" value="bill" checked>
+              <label for="power-method-bill" class="radio-label">
+                <div class="radio-label-title">📄 Subir Factura</div>
+                <div class="radio-label-desc">Extrae CUPS y precios automáticamente</div>
+              </label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="power-method-manual" name="power-input-method" value="manual">
+              <label for="power-method-manual" class="radio-label">
+                <div class="radio-label-title">⌨️ Entrada Manual</div>
+                <div class="radio-label-desc">Introduce CUPS y precios manualmente</div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bill Upload Form -->
+        <div id="power-bill-form" class="power-input-form">
+          <div class="section-title">📄 Subir Factura:</div>
+
+          <div class="upload-area" id="powerUploadArea">
+            <div class="upload-icon">📄</div>
+            <div class="upload-text">Arrastra la factura del cliente aquí o haz clic para seleccionar</div>
+            <div class="upload-subtext">Solo archivos PDF (máx. 5 MB)</div>
+          </div>
+
+          <input type="file" id="powerFileInput" class="file-input" accept=".pdf">
+
+          <div class="selected-file" id="powerSelectedFile" style="display: none;">
+            <div class="file-icon">📄</div>
+            <div class="file-info">
+              <div class="file-name" id="powerFileName"></div>
+              <div class="file-size" id="powerFileSize"></div>
+            </div>
+            <button class="remove-file" id="powerRemoveFile">✕</button>
+          </div>
+
+          <!-- User Info for Bill -->
+          <div class="power-user-info">
+            <div class="section-title">👤 Información del Cliente:</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="powerBillUserName">Nombre:</label>
+                <input type="text" id="powerBillUserName" placeholder="Nombre del cliente" value="Tunet">
+              </div>
+              <div class="form-group">
+                <label for="powerBillUserEmail">Email:</label>
+                <input type="email" id="powerBillUserEmail" placeholder="email@ejemplo.com" value="info@tunergia.es">
+              </div>
+              <div class="form-group">
+                <label for="powerBillUserPhone">Teléfono (opcional):</label>
+                <input type="tel" id="powerBillUserPhone" placeholder="+34 600 000 000">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manual Input Form -->
+        <div id="power-manual-form" class="power-input-form" style="display: none;">
+          <div class="section-title">⌨️ Datos Manuales:</div>
+
+          <!-- CUPS and Tariff -->
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="powerManualCups">CUPS: *</label>
+              <input type="text" id="powerManualCups" placeholder="ES0021000..." required>
+            </div>
+            <div class="form-group">
+              <label for="powerManualTariff">Tarifa: *</label>
+              <select id="powerManualTariff" required>
+                <option value="3.0TD" selected>3.0TD</option>
+                <option value="2.0TD">2.0TD</option>
+                <option value="6.1TD">6.1TD</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- User Info for Manual -->
+          <div class="power-user-info">
+            <div class="section-title">👤 Información del Cliente:</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="powerManualUserName">Nombre:</label>
+                <input type="text" id="powerManualUserName" placeholder="Nombre del cliente" value="Tunet">
+              </div>
+              <div class="form-group">
+                <label for="powerManualUserEmail">Email:</label>
+                <input type="email" id="powerManualUserEmail" placeholder="email@ejemplo.com" value="info@tunergia.es">
+              </div>
+              <div class="form-group">
+                <label for="powerManualUserPhone">Teléfono (opcional):</label>
+                <input type="tel" id="powerManualUserPhone" placeholder="+34 600 000 000">
+              </div>
+            </div>
+          </div>
+
+          <!-- Optional Price Inputs -->
+          <div class="power-prices-section">
+            <div class="power-prices-header">
+              <div class="section-title">💰 Precios de Potencia (Opcional):</div>
+              <div class="power-prices-note">
+                Si no se especifican, se usarán los precios BOE por defecto
+              </div>
+            </div>
+
+            <div class="power-prices-toggle">
+              <input type="checkbox" id="powerCustomPricesToggle">
+              <label for="powerCustomPricesToggle">Especificar precios personalizados</label>
+            </div>
+
+            <div id="powerCustomPricesFields" class="power-prices-grid" style="display: none;">
+              <div class="form-group">
+                <label for="powerPriceP1">P1 (€/kW·día):</label>
+                <input type="number" id="powerPriceP1" step="0.000001" placeholder="0.053858904">
+              </div>
+              <div class="form-group">
+                <label for="powerPriceP2">P2 (€/kW·día):</label>
+                <input type="number" id="powerPriceP2" step="0.000001" placeholder="0.028086712">
+              </div>
+              <div class="form-group">
+                <label for="powerPriceP3">P3 (€/kW·día):</label>
+                <input type="number" id="powerPriceP3" step="0.000001" placeholder="0.011678192">
+              </div>
+              <div class="form-group">
+                <label for="powerPriceP4">P4 (€/kW·día):</label>
+                <input type="number" id="powerPriceP4" step="0.000001" placeholder="0.010086438">
+              </div>
+              <div class="form-group">
+                <label for="powerPriceP5">P5 (€/kW·día):</label>
+                <input type="number" id="powerPriceP5" step="0.000001" placeholder="0.006378548">
+              </div>
+              <div class="form-group">
+                <label for="powerPriceP6">P6 (€/kW·día):</label>
+                <input type="number" id="powerPriceP6" step="0.000001" placeholder="0.003716137">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button class="analyze-button" id="analyzePowerButton" disabled>
+          ⚡ Analizar Potencia
+        </button>
+      </div>
+
       <div class="loading" id="loading">
         <div class="spinner"></div>
         <div class="loading-text">Analizando factura del cliente...</div>
