@@ -1,0 +1,456 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// PREPARE POWER ANALYSIS DATA - INLINE VERSION\n// ============================================\n\nconst billData = $input.first().json;\nconst convertData = $('Convert to PDF').first().json;\n\n// Extract power prices from bill\nlet preciosPotencia = {};\n\nif (convertData.precios_potencia_manual) {\n  preciosPotencia = {\n    P1: convertData.precios_potencia_manual.precio_p1,\n    P2: convertData.precios_potencia_manual.precio_p2,\n    P3: convertData.precios_potencia_manual.precio_p3,\n    P4: convertData.precios_potencia_manual.precio_p4,\n    P5: convertData.precios_potencia_manual.precio_p5,\n    P6: convertData.precios_potencia_manual.precio_p6\n  };\n  console.log('Using MANUAL power prices:', preciosPotencia);\n} else {\n  preciosPotencia = {\n    P1: billData.power_price_p1 || 0,\n    P2: billData.power_price_p2 || 0,\n    P3: billData.power_price_p3 || 0,\n    P4: billData.power_price_p4 || 0,\n    P5: billData.power_price_p5 || 0,\n    P6: billData.power_price_p6 || 0\n  };\n  console.log('Using IN-BILL power prices:', preciosPotencia);\n}\n\nconst webhookData = $('Webhook Comparador1').first().json.body;\n\nconst analysisData = {\n  cups: billData.cups,\n  tarifa: billData.tarifa_acceso,\n  precios_potencia: preciosPotencia,\n  user_name: webhookData.user_name || 'Tunet',\n  user_email: webhookData.user_email || 'info@tunergia.es',\n  user_phone: webhookData.user_phone || ''\n};\n\nconsole.log('Power Analysis Data Prepared:', {\n  cups: analysisData.cups,\n  tarifa: analysisData.tarifa,\n  prices_source: convertData.precios_potencia_manual ? 'MANUAL' : 'IN-BILL'\n});\n\nreturn { json: analysisData };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        -772
+      ],
+      "id": "6ee078f7-5ad6-4bd4-82fc-bfe083d6ccac",
+      "name": "Prepare Power Analysis Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://plenaenergia-tradeenergy.nemon2ib.com/api",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "57a9d001ca37849fd406e051463e0e0edf5302b9"
+            },
+            {
+              "name": "module",
+              "value": "Sips"
+            },
+            {
+              "name": "class",
+              "value": "SipsData"
+            },
+            {
+              "name": "action",
+              "value": "getData"
+            },
+            {
+              "name": "data",
+              "value": "={\"typeenergy\":\"elec\",\"request\":\"detail\", \"cups\":\"{{ $json.cups }}\"}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1216,
+        -772
+      ],
+      "id": "82f2bd05-1444-487d-a001-82df5a1cf9f1",
+      "name": "Fetch SIPS Data for Power"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================================\n// BOE 2025 EXCESS POWER PRICES (€/kW·día)\n// ============================================================================\nconst EXCESS_POWER_PRICES = {\n    '2.0TD': {\n        P1: 2.953979, P2: 0.056891,\n        P3: 0, P4: 0, P5: 0, P6: 0\n    },\n    '3.0TD': {\n        P1: 3.361213, P2: 1.776545, P3: 0.563477,\n        P4: 0.430844, P5: 0.121880, P6: 0.121880\n    },\n    '6.1TD': {\n        P1: 3.332942, P2: 1.762138, P3: 0.661311,\n        P4: 0.465989, P5: 0.009852, P6: 0.008771\n    },\n    '6.2TD': {\n        P1: 3.292963, P2: 1.867567, P3: 0.491658,\n        P4: 0.299575, P5: 0.011745, P6: 0.010432\n    },\n    '6.3TD': {\n        P1: 3.099043, P2: 1.867297, P3: 0.608334,\n        P4: 0.396461, P5: 0.013018, P6: 0.011460\n    },\n    '6.4TD': {\n        P1: 2.732620, P2: 1.633705, P3: 0.396742,\n        P4: 0.275775, P5: 0.008201, P6: 0.005465\n    }\n};\n\nfunction getLast12MonthsPeriod(lecturas) {\n    if (!lecturas || lecturas.length === 0) {\n        return null;\n    }\n    \n    let mostRecent = null;\n    for (const lectura of lecturas) {\n        const fechaStr = lectura.FLectM1 || '';\n        if (fechaStr) {\n            try {\n                const fecha = new Date(fechaStr.replace('Z', ''));\n                if (mostRecent === null || fecha > mostRecent) {\n                    mostRecent = fecha;\n                }\n            } catch (e) {\n                continue;\n            }\n        }\n    }\n    \n    if (!mostRecent) {\n        return null;\n    }\n    \n    let startYear = mostRecent.getFullYear();\n    let startMonth = mostRecent.getMonth() - 10; // JS months are 0-indexed\n    \n    if (startMonth < 0) {\n        startMonth += 12;\n        startYear -= 1;\n    }\n    \n    const startDate = new Date(startYear, startMonth, 1);\n    \n    const monthNames = [\n        'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',\n        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'\n    ];\n    \n    return {\n        startDate: startDate,\n        endDate: mostRecent,\n        periodText: `${monthNames[startDate.getMonth()]} ${startDate.getFullYear()} - ${monthNames[mostRecent.getMonth()]} ${mostRecent.getFullYear()}`\n    };\n}\n\nfunction aggregateReadingsByMonth(lecturas) {\n    const monthlyReadings = {};\n    \n    for (const lectura of lecturas) {\n        const fechaStr = lectura.FLectM1 || '';\n        if (!fechaStr) continue;\n        \n        try {\n            const fecha = new Date(fechaStr.replace('Z', ''));\n            const year = fecha.getFullYear();\n            const month = String(fecha.getMonth() + 1).padStart(2, '0');\n            const monthKey = `${year}-${month}`;\n            \n            if (!monthlyReadings[monthKey]) {\n                monthlyReadings[monthKey] = {\n                    CUPS: lectura.CUPS || '',\n                    FLectM1: fechaStr,\n                    Tarifa: lectura.Tarifa || '',\n                    CPotP1M1: 0, CPotP2M1: 0, CPotP3M1: 0,\n                    CPotP4M1: 0, CPotP5M1: 0, CPotP6M1: 0\n                };\n            }\n            \n            for (const period of ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']) {\n                const key = `CPot${period}M1`;\n                monthlyReadings[monthKey][key] = Math.max(\n                    monthlyReadings[monthKey][key],\n                    lectura[key] || 0\n                );\n            }\n        } catch (e) {\n            continue;\n        }\n    }\n    \n    return Object.keys(monthlyReadings)\n        .sort()\n        .reverse()\n        .map(k => monthlyReadings[k]);\n}\n\nfunction getActivePeriods(tarifa) {\n    if (tarifa === '2.0TD') {\n        return ['P1', 'P2'];\n    } else {\n        return ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'];\n    }\n}\n\nfunction determineMeasurementPointType(potContratadaDict) {\n    const maxContractedPower = Math.max(...Object.values(potContratadaDict));\n    \n    if (maxContractedPower <= 15) {\n        return 5;\n    } else if (maxContractedPower <= 50) {\n        return 4;\n    } else if (maxContractedPower <= 450) {\n        return 3;\n    } else if (maxContractedPower <= 50000) {\n        return 2;\n    } else {\n        return 1;\n    }\n}\n\nfunction calculatePenaltyBoe2025(potenciaRegistrada, potenciaContratada, tarifa, periodo, \n                                  measurementType, daysInMonth = 30) {\n    if (potenciaRegistrada <= potenciaContratada) {\n        return { hasPenalty: false, penaltyEuros: 0.0, notes: \"Dentro de lo contratado\" };\n    }\n    \n    const excessPrices = EXCESS_POWER_PRICES[tarifa] || {};\n    const tep = excessPrices[periodo] || 0;\n    \n    if (tep === 0) {\n        return { hasPenalty: false, penaltyEuros: 0.0, notes: \"No hay precio de exceso definido\" };\n    }\n    \n    const excesoKw = potenciaRegistrada - potenciaContratada;\n    \n    // TYPE 4 & 5 CALCULATION (≤50 kW) - 105% RULE\n    if (measurementType === 4 || measurementType === 5) {\n        const threshold105 = 1.05 * potenciaContratada;\n        \n        if (potenciaRegistrada <= threshold105) {\n            return { \n                hasPenalty: false, \n                penaltyEuros: 0.0, \n                notes: `Dentro del margen del 105% (${threshold105.toFixed(2)} kW)` \n            };\n        }\n        \n        // Apply formula: PF = PR + 2×(PR - 1.05×PC)\n        const excessOver105 = potenciaRegistrada - threshold105;\n        const potenciaFacturada = potenciaRegistrada + 2 * excessOver105;\n        \n        // Penalty is the difference between billed power and contracted power\n        const excessToBill = potenciaFacturada - potenciaContratada;\n        const penaltyEuros = excessToBill * tep * daysInMonth;\n        \n        const notes = `Exceso > 105%. Penalización: ${excessToBill.toFixed(2)} kW × ${tep.toFixed(6)} €/kW·día × ${daysInMonth} días`;\n        return { hasPenalty: true, penaltyEuros, notes };\n    }\n    \n    // TYPE 1, 2 & 3 CALCULATION (>50 kW) - QUADRATIC\n    else {\n        const penaltyEuros = tep * (excesoKw ** 2);\n        const notes = `Penalización cuadrática: (${excesoKw.toFixed(2)} kW)² × ${tep.toFixed(6)} €/kW`;\n        return { hasPenalty: true, penaltyEuros, notes };\n    }\n}\n\nfunction enforceAscendingPower(potSugeridaDict, activePeriods, tarifa = '') {\n    const adjusted = {};\n    let previousValue = null;\n    \n    for (const periodo of activePeriods) {\n        const currentValue = potSugeridaDict[periodo] || 0;\n        \n        if (previousValue === null) {\n            adjusted[periodo] = currentValue;\n        } else {\n            adjusted[periodo] = Math.max(currentValue, previousValue);\n        }\n        \n        previousValue = adjusted[periodo];\n    }\n    \n    // Special rule for 3.0TD: P6 must be at least 15.10 kW\n    if (tarifa === '3.0TD' && adjusted.P6 !== undefined) {\n        if (adjusted.P6 < 15.10) {\n            adjusted.P6 = 15.10;\n            // Propagate backwards\n            for (let i = activePeriods.length - 2; i >= 0; i--) {\n                const periodo = activePeriods[i];\n                const nextPeriodo = activePeriods[i + 1];\n                if (adjusted[periodo] > adjusted[nextPeriodo]) {\n                    adjusted[periodo] = adjusted[nextPeriodo];\n                }\n            }\n        }\n    }\n    \n    // Special rule for 2.0TD: Maximum 15 kW cap\n    if (tarifa === '2.0TD') {\n        for (const periodo of activePeriods) {\n            if (adjusted[periodo] > 15.0) {\n                adjusted[periodo] = 15.0;\n            }\n        }\n    }\n    \n    return adjusted;\n}\n\nfunction getMonthName(monthStr) {\n    const months = {\n        '01': 'Enero', '02': 'Febrero', '03': 'Marzo', '04': 'Abril',\n        '05': 'Mayo', '06': 'Junio', '07': 'Julio', '08': 'Agosto',\n        '09': 'Septiembre', '10': 'Octubre', '11': 'Noviembre', '12': 'Diciembre'\n    };\n    try {\n        return months[monthStr.split('-')[1]];\n    } catch (e) {\n        return monthStr;\n    }\n}\n\nfunction analyzeCupsPower(apiResponse, preciosTerminoPotencia) {\n    const results = [];\n    const parsedData = apiResponse.parsedData || apiResponse;\n    const suministros = parsedData.suministros || [];\n    const lecturas = parsedData.lecturas || [];\n    \n    for (const suministro of suministros) {\n        const cups = suministro.CUPS || '';\n        const tarifa = suministro.Tarifa || '';\n        \n        const activePeriods = getActivePeriods(tarifa);\n        const cupsLecturas = lecturas.filter(l => l.CUPS === cups);\n        \n        const analysisPeriod = getLast12MonthsPeriod(cupsLecturas);\n        if (analysisPeriod === null) {\n            continue;\n        }\n        \n        const { startDate, endDate, periodText: analysisPeriodText } = analysisPeriod;\n        \n        // Filter by date range\n        const yearLecturas = [];\n        for (const lectura of cupsLecturas) {\n            const fechaStr = lectura.FLectM1 || '';\n            if (fechaStr) {\n                try {\n                    const fecha = new Date(fechaStr.replace('Z', ''));\n                    if (fecha >= startDate && fecha <= endDate) {\n                        yearLecturas.push(lectura);\n                    }\n                } catch (e) {\n                    continue;\n                }\n            }\n        }\n        \n        if (yearLecturas.length === 0) {\n            continue;\n        }\n        \n        let aggregatedLecturas = aggregateReadingsByMonth(yearLecturas);\n        if (aggregatedLecturas.length > 12) {\n            aggregatedLecturas = aggregatedLecturas.slice(0, 12);\n        }\n        \n        const potContratada = {\n            P1: suministro.Pot_Cont_P1 || 0,\n            P2: suministro.Pot_Cont_P2 || 0,\n            P3: suministro.Pot_Cont_P3 || 0,\n            P4: suministro.Pot_Cont_P4 || 0,\n            P5: suministro.Pot_Cont_P5 || 0,\n            P6: suministro.Pot_Cont_P6 || 0,\n        };\n        \n        const measurementType = determineMeasurementPointType(potContratada);\n        const maxContracted = Math.max(...Object.values(potContratada));\n        \n        // Calculate average demand for suggested power\n        const potSumaGlobal = {};\n        const potCountGlobal = {};\n        \n        for (const periodo of activePeriods) {\n            let suma = 0;\n            let count = 0;\n            for (const lectura of aggregatedLecturas) {\n                const demand = lectura[`CPot${periodo}M1`] || 0;\n                if (demand > 0) {\n                    suma += demand;\n                    count += 1;\n                }\n            }\n            potSumaGlobal[periodo] = suma;\n            potCountGlobal[periodo] = count;\n        }\n        \n        const potSugeridaInicial = {};\n        for (const periodo of activePeriods) {\n            const count = potCountGlobal[periodo] || 0;\n            if (count > 0) {\n                const promedio = potSumaGlobal[periodo] / count;\n                potSugeridaInicial[periodo] = Math.round((promedio + 0.01) * 100) / 100;\n            } else {\n                potSugeridaInicial[periodo] = 0;\n            }\n        }\n        \n        const potSugeridaFinal = enforceAscendingPower(potSugeridaInicial, activePeriods, tarifa);\n        \n        // Calculate maximum demand for each period\n        const potMaximaGlobal = {};\n        for (const periodo of activePeriods) {\n            let maxDemand = 0;\n            for (const lectura of aggregatedLecturas) {\n                const demand = lectura[`CPot${periodo}M1`] || 0;\n                maxDemand = Math.max(maxDemand, demand);\n            }\n            potMaximaGlobal[periodo] = maxDemand;\n        }\n        \n        // ====================================================================\n        // CURRENT SITUATION ANALYSIS\n        // ====================================================================\n        const monthlyResults = [];\n        let totalPenaltyAnnualCurrent = 0;\n        let costePotenciaFijaActualAnual = 0;\n        \n        for (const lectura of aggregatedLecturas) {\n            const fechaLectura = lectura.FLectM1 || '';\n            const monthKey = fechaLectura.substring(0, 7);\n            const monthName = getMonthName(monthKey);\n            \n            const potMaximaMes = {\n                P1: lectura.CPotP1M1 || 0,\n                P2: lectura.CPotP2M1 || 0,\n                P3: lectura.CPotP3M1 || 0,\n                P4: lectura.CPotP4M1 || 0,\n                P5: lectura.CPotP5M1 || 0,\n                P6: lectura.CPotP6M1 || 0,\n            };\n            \n            const monthData = {\n                Mes: monthName,\n                Fecha: monthKey,\n            };\n            \n            let costeMesPenalizacion = 0;\n            let costeMesPotenciaFija = 0;\n            \n            for (const periodo of ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']) {\n                const contratada = potContratada[periodo] || 0;\n                const maximaMes = potMaximaMes[periodo] || 0;\n                const precio = preciosTerminoPotencia[periodo] || 0.053858904;\n                \n                const isActive = activePeriods.includes(periodo);\n                \n                if (!isActive) {\n                    monthData[`${periodo}_Activo`] = 'NO';\n                    monthData[`${periodo}_Contratada`] = 0;\n                    monthData[`${periodo}_Maxima`] = 0;\n                    monthData[`${periodo}_Exceso`] = 0;\n                    monthData[`${periodo}_Tiene_Penalizacion`] = 'NO';\n                    monthData[`${periodo}_Penalizacion_Euros`] = 0;\n                    continue;\n                }\n                \n                monthData[`${periodo}_Activo`] = 'SI';\n                monthData[`${periodo}_Contratada`] = Math.round(contratada * 1000) / 1000;\n                monthData[`${periodo}_Maxima`] = Math.round(maximaMes * 1000) / 1000;\n                \n                // Calculate penalty\n                const { hasPenalty, penaltyEuros, notes: penaltyNotes } = calculatePenaltyBoe2025(\n                    maximaMes, contratada, tarifa, periodo, measurementType, 30\n                );\n                \n                const exceso = Math.max(0, maximaMes - contratada);\n                \n                monthData[`${periodo}_Exceso`] = Math.round(exceso * 1000) / 1000;\n                monthData[`${periodo}_Tiene_Penalizacion`] = hasPenalty ? 'SI' : 'NO';\n                monthData[`${periodo}_Penalizacion_Euros`] = Math.round(penaltyEuros * 100) / 100;\n                monthData[`${periodo}_Notas_Penalizacion`] = penaltyNotes;\n                \n                // Fixed power cost\n                const costePotenciaPeriodo = contratada * precio * 30;\n                costeMesPotenciaFija += costePotenciaPeriodo;\n                \n                if (hasPenalty) {\n                    costeMesPenalizacion += penaltyEuros;\n                }\n            }\n            \n            monthData.Coste_Mes_Potencia_Fija = Math.round(costeMesPotenciaFija * 100) / 100;\n            monthData.Coste_Mes_Penalizacion = Math.round(costeMesPenalizacion * 100) / 100;\n            \n            totalPenaltyAnnualCurrent += costeMesPenalizacion;\n            costePotenciaFijaActualAnual += costeMesPotenciaFija;\n            \n            monthlyResults.push(monthData);\n        }\n        \n        // ====================================================================\n        // PROPOSED SITUATION ANALYSIS\n        // ====================================================================\n        let totalPenaltyAnnualSuggested = 0;\n        let costePotenciaFijaSugeridaAnual = 0;\n        \n        for (const lectura of aggregatedLecturas) {\n            const potMaximaMes = {\n                P1: lectura.CPotP1M1 || 0,\n                P2: lectura.CPotP2M1 || 0,\n                P3: lectura.CPotP3M1 || 0,\n                P4: lectura.CPotP4M1 || 0,\n                P5: lectura.CPotP5M1 || 0,\n                P6: lectura.CPotP6M1 || 0,\n            };\n            \n            for (const periodo of activePeriods) {\n                const sugerida = potSugeridaFinal[periodo] || 0;\n                const maximaMes = potMaximaMes[periodo] || 0;\n                const precio = preciosTerminoPotencia[periodo] || 0.053858904;\n                \n                // Fixed power cost with suggested power\n                const costePotenciaSuggested = sugerida * precio * 30;\n                costePotenciaFijaSugeridaAnual += costePotenciaSuggested;\n                \n                // Calculate penalty with suggested power\n                const { hasPenalty: hasPenaltySuggested, penaltyEuros: penaltyEurosSuggested } = \n                    calculatePenaltyBoe2025(maximaMes, sugerida, tarifa, periodo, measurementType, 30);\n                \n                if (hasPenaltySuggested) {\n                    totalPenaltyAnnualSuggested += penaltyEurosSuggested;\n                }\n            }\n        }\n        \n        // ====================================================================\n        // CREATE SUMMARY RESULT\n        // ====================================================================\n        const costeActualTotalAnual = costePotenciaFijaActualAnual + totalPenaltyAnnualCurrent;\n        const costeSugeridoTotalAnual = costePotenciaFijaSugeridaAnual + totalPenaltyAnnualSuggested;\n        const ahorroAnual = costeActualTotalAnual - costeSugeridoTotalAnual;\n        \n        const summaryData = {\n            CUPS: cups,\n            Periodo_Analisis: analysisPeriodText,\n            Tarifa: tarifa,\n            Tipo_Medida: measurementType,\n            Potencia_Contratada_Maxima: Math.round(maxContracted * 1000) / 1000,\n            Tipo_Cliente: tarifa === '2.0TD' ? 'Domestico' : 'Empresa/Industrial',\n            \n            // Financial data\n            Coste_Potencia_Fija_Actual_Anual: Math.round(costePotenciaFijaActualAnual * 100) / 100,\n            Total_Penalizaciones_Anual: Math.round(totalPenaltyAnnualCurrent * 100) / 100,\n            Coste_Actual_Anual: Math.round(costeActualTotalAnual * 100) / 100,\n            \n            Coste_Potencia_Fija_Sugerida_Anual: Math.round(costePotenciaFijaSugeridaAnual * 100) / 100,\n            Total_Penalizaciones_Sugerido_Anual: Math.round(totalPenaltyAnnualSuggested * 100) / 100,\n            Coste_Total_Sugerido_Anual: Math.round(costeSugeridoTotalAnual * 100) / 100,\n            \n            Ahorro_Anual: Math.round(ahorroAnual * 100) / 100,\n            Ahorro_Mensual: Math.round((ahorroAnual / 12) * 100) / 100,\n        };\n        \n        // Add period details\n        const periodosConExceso = [];\n        const periodosInfrautilizados = [];\n        \n        for (const periodo of ['P1', 'P2', 'P3', 'P4', 'P5', 'P6']) {\n            const isActive = activePeriods.includes(periodo);\n            const contratada = potContratada[periodo] || 0;\n            const maximaGlobal = potMaximaGlobal[periodo] || 0;\n            const sugerida = potSugeridaFinal[periodo] || 0;\n            \n            summaryData[`${periodo}_Activo`] = isActive ? 'SI' : 'NO';\n            summaryData[`${periodo}_Contratada`] = Math.round(contratada * 1000) / 1000;\n            summaryData[`${periodo}_Maxima_Global`] = Math.round(maximaGlobal * 1000) / 1000;\n            summaryData[`${periodo}_Sugerida`] = Math.round(sugerida * 1000) / 1000;\n            \n            if (isActive) {\n                // Check months with penalty\n                const mesesConPenalizacionPeriodo = monthlyResults.filter(\n                    m => m[`${periodo}_Tiene_Penalizacion`] === 'SI'\n                ).length;\n                summaryData[`${periodo}_Meses_Con_Penalizacion`] = mesesConPenalizacionPeriodo;\n                \n                // Sum total penalties for this period\n                const penalizacionPeriodoAnual = monthlyResults.reduce(\n                    (sum, m) => sum + (m[`${periodo}_Penalizacion_Euros`] || 0), 0\n                );\n                summaryData[`${periodo}_Penalizacion_Anual`] = Math.round(penalizacionPeriodoAnual * 100) / 100;\n                \n                const utilizacion = contratada > 0 ? (maximaGlobal / contratada * 100) : 0;\n                summaryData[`${periodo}_Utilizacion_Pct`] = Math.round(utilizacion * 100) / 100;\n                \n                // Determine status\n                if (mesesConPenalizacionPeriodo > 0) {\n                    periodosConExceso.push(periodo);\n                    summaryData[`${periodo}_Estado`] = 'AUMENTAR';\n                } else if (utilizacion < 70 && contratada > 0 && maximaGlobal > 0) {\n                    periodosInfrautilizados.push(periodo);\n                    summaryData[`${periodo}_Estado`] = 'REDUCIR';\n                } else if (maximaGlobal === 0 && contratada > 0) {\n                    summaryData[`${periodo}_Estado`] = 'ELIMINAR';\n                } else {\n                    summaryData[`${periodo}_Estado`] = 'OPTIMO';\n                }\n            } else {\n                summaryData[`${periodo}_Meses_Con_Penalizacion`] = 0;\n                summaryData[`${periodo}_Penalizacion_Anual`] = 0;\n                summaryData[`${periodo}_Utilizacion_Pct`] = 0;\n                summaryData[`${periodo}_Estado`] = 'NO_APLICA';\n            }\n        }\n        \n        // General recommendation\n        if (periodosConExceso.length > 0) {\n            summaryData.Recomendacion_General = `🔴 URGENTE - Penalizaciones en ${periodosConExceso.join(', ')}`;\n        } else if (periodosInfrautilizados.length > 0) {\n            summaryData.Recomendacion_General = `📉 OPTIMIZAR - Infrautilizado en ${periodosInfrautilizados.join(', ')}`;\n        } else {\n            summaryData.Recomendacion_General = \"✅ ÓPTIMO - Potencia bien ajustada\";\n        }\n        \n        // Add monthly breakdown as JSON string\n        summaryData.Detalle_Mensual = JSON.stringify(monthlyResults);\n        \n        results.push(summaryData);\n    }\n    \n    return results;\n}\n\n// ============================================================================\n// MAIN EXECUTION\n// ============================================================================\nconsole.log(\"=\".repeat(50));\nconsole.log(\"BOE 2025 COMPLIANT ANALYSIS\");\nconsole.log(\"=\".repeat(50));\n\nconst inputData = $input.first().json;\n\n// Get prices\nlet precios = inputData.precios_potencia || {};\nif (Object.keys(precios).length === 0) {\n    // Try to extract from individual precio_p1, precio_p2, etc.\n    precios = {\n        P1: inputData.precio_p1 || 0.053858904,\n        P2: inputData.precio_p2 || 0.028086712,\n        P3: inputData.precio_p3 || 0.011678192,\n        P4: inputData.precio_p4 || 0.010086438,\n        P5: inputData.precio_p5 || 0.006378548,\n        P6: inputData.precio_p6 || 0.003716137,\n    };\n}\n\nconsole.log(`Precios:`, precios);\n\n// Get SIPS data\nconst sipsRaw = inputData.sips_data || null;\n\nif (sipsRaw === null) {\n    console.log(\"ERROR: No SIPS data in input\");\n    return [{ success: false, error: 'No SIPS data', analysis_results: [] }];\n}\n\n// Parse SIPS data\nlet apiData;\nif (typeof sipsRaw === 'string') {\n    apiData = JSON.parse(sipsRaw);\n} else {\n    apiData = sipsRaw;\n}\n\nif (!apiData || !apiData.suministros) {\n    console.log(`ERROR: Invalid SIPS data structure`);\n    return [{ success: false, error: 'Invalid SIPS data', analysis_results: [] }];\n}\n\n// Wrap and analyze\nconst wrappedData = { parsedData: apiData };\nconst results = analyzeCupsPower(wrappedData, precios);\n\nconsole.log(\"=\".repeat(50));\nconsole.log(`ANALYSIS COMPLETE: ${results.length} CUPS analyzed`);\nif (results.length > 0) {\n    console.log(`Coste Actual: ${results[0].Coste_Actual_Anual?.toFixed(2)}€`);\n    console.log(`Coste Sugerido: ${results[0].Coste_Total_Sugerido_Anual?.toFixed(2)}€`);\n    console.log(`Ahorro Anual: ${results[0].Ahorro_Anual?.toFixed(2)}€`);\n    console.log(`Penalizaciones Actuales: ${results[0].Total_Penalizaciones_Anual?.toFixed(2)}€`);\n    console.log(`Penalizaciones Sugeridas: ${results[0].Total_Penalizaciones_Sugerido_Anual?.toFixed(2)}€`);\n}\nconsole.log(\"=\".repeat(50));\n\nreturn [{ success: true, cups_analyzed: results.length, analysis_results: results }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        -772
+      ],
+      "id": "9dd5e160-e981-4992-82ee-abf52c06b4b5",
+      "name": "Python Power Analysis"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// COMBINE DATA FOR PYTHON ANALYSIS\n// ============================================\n// Combines: prepared analysis data + SIPS response\n\nconst preparedData = $('Prepare Power Analysis Data').first().json;\nconst sipsResponse = $input.first().json;\n\nconsole.log('Combining data for Python analysis');\nconsole.log('CUPS:', preparedData.cups);\nconsole.log('Tarifa:', preparedData.tarifa);\nconsole.log('SIPS data received:', !!sipsResponse.data);\n\nreturn {\n  json: {\n    // From Prepare Power Analysis Data\n    cups: preparedData.cups,\n    tarifa: preparedData.tarifa,\n    precios_potencia: preparedData.precios_potencia,\n    user_name: preparedData.user_name,\n    user_email: preparedData.user_email,\n    \n    // From SIPS API\n    sips_data: sipsResponse.data || sipsResponse\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -772
+      ],
+      "id": "1a1c5839-a56e-49b0-af2e-23561224a0b3",
+      "name": "Combine Data for Python"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cd9693c7-ebd3-4c5b-aed3-52fc552cadae",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        192,
+        -772
+      ],
+      "id": "0024fb26-2508-43bd-a610-1bc76df2ef8d",
+      "name": "Has PDF?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const claudeResponse = $input.first().json;\n\nconsole.log('Claude Vision API Response:', JSON.stringify(claudeResponse).substring(0, 500));\n\n// Extract the content from Claude's response\nlet extractedData;\n\ntry {\n  // Claude returns content array, get the text from first item\n  const content = claudeResponse.content;\n  \n  if (!content || !Array.isArray(content) || content.length === 0) {\n    throw new Error('No content in Claude response');\n  }\n  \n  // Get the text response\n  let jsonText = content[0].text;\n  \n  // Remove markdown code blocks if present\n  jsonText = jsonText.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  \n  console.log('Cleaned JSON text:', jsonText.substring(0, 300));\n  \n  // Parse the JSON\n  extractedData = JSON.parse(jsonText);\n  \n  console.log('Successfully parsed vision extraction');\n  \n} catch (error) {\n  console.error('Error parsing Claude Vision response:', error);\n  console.error('Full response:', JSON.stringify(claudeResponse, null, 2));\n  \n  throw new Error(`Failed to parse Claude Vision response: ${error.message}`);\n}\n\n// Normalize to match Information Extractor output structure\n// Information Extractor wraps output in { output: {...} }\nconst normalizedOutput = {\n  output: extractedData\n};\n\nconsole.log('Normalized output structure:', Object.keys(normalizedOutput.output));\n\nreturn {\n  json: normalizedOutput\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -1232
+      ],
+      "id": "1d7bb9b6-43a4-4ee9-80aa-087f5359bf87",
+      "name": "Normalize Vision Output1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "power-analysis-crm",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        -772
+      ],
+      "id": "ae1df316-cf95-44dd-bf3b-09fa9c929706",
+      "name": "Analisis de Potencia",
+      "webhookId": "59200adf-d6df-4dd2-b319-5ab57d2e5052"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        -1008
+      ],
+      "id": "4da71f48-fffd-4335-935b-83ea25ecd423",
+      "name": "Anthropic Chat Model1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "IorIZbF3bkuc6oRn",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "CUPS",
+              "description": "CUPS number, starts with ES"
+            },
+            {
+              "name": "tarifa_acceso",
+              "description": "Tarifa de Acceso (2.0TD, 3.0TD, or 6.1TD)"
+            },
+            {
+              "name": "total_price",
+              "type": "number",
+              "description": "Overall final price of this bill"
+            },
+            {
+              "name": "total_energy_price",
+              "type": "number",
+              "description": "Exact price of Energy from the total price"
+            },
+            {
+              "name": "Consumo_P1",
+              "type": "number",
+              "description": "Total amount of energy consumed during period P1"
+            },
+            {
+              "name": "Consumo_P2",
+              "type": "number",
+              "description": "Total amount of energy consumed during period P2"
+            },
+            {
+              "name": "Consumo_P3",
+              "type": "number",
+              "description": "Total amount of energy consumed during period P3"
+            },
+            {
+              "name": "Consumo_P4",
+              "type": "number",
+              "description": "Total amount of energy consumed during period P4 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "Consumo_P5",
+              "type": "number",
+              "description": "Total amount of energy consumed during period P5 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "Consumo_P6",
+              "type": "number",
+              "description": "Total amount of energy consumed during period P6 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "energy_price_P1",
+              "type": "number",
+              "description": "Exact price in €/kWh for Energy P1"
+            },
+            {
+              "name": "energy_price_P2",
+              "type": "number",
+              "description": "Exact price in €/kWh for Energy P2"
+            },
+            {
+              "name": "energy_price_P3",
+              "type": "number",
+              "description": "Exact price in €/kWh for Energy P3"
+            },
+            {
+              "name": "energy_price_P4",
+              "type": "number",
+              "description": "Exact price in €/kWh for Energy P4 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "energy_price_P5",
+              "type": "number",
+              "description": "Exact price in €/kWh for Energy P5 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "energy_price_P6",
+              "type": "number",
+              "description": "Exact price in €/kWh for Energy P6 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "total_power_price",
+              "type": "number",
+              "description": "Power part of the final bill price"
+            },
+            {
+              "name": "power_p1",
+              "type": "number",
+              "description": "Contracted Power for period P1"
+            },
+            {
+              "name": "power_p2",
+              "type": "number",
+              "description": "Contracted Power for period P2"
+            },
+            {
+              "name": "power_p3",
+              "type": "number",
+              "description": "Contracted Power for period P3 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "power_p4",
+              "type": "number",
+              "description": "Contracted Power for period P4 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "power_p5",
+              "type": "number",
+              "description": "Contracted Power for period P5 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "power_p6",
+              "type": "number",
+              "description": "Contracted Power for period P6 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "power_price_p1",
+              "type": "number",
+              "description": "Exact price in €/kW/day for Power P1"
+            },
+            {
+              "name": "power_price_p2",
+              "type": "number",
+              "description": "Exact price in €/kW/day for Power P2"
+            },
+            {
+              "name": "power_price_p3",
+              "type": "number",
+              "description": "Exact price in €/kW/day for Power P3 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "power_price_p4",
+              "type": "number",
+              "description": "Exact price in €/kW/day for Power P4 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "power_price_p5",
+              "type": "number",
+              "description": "Exact price in €/kW/day for Power P5 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "power_price_p6",
+              "type": "number",
+              "description": "Exact price in €/kW/day for Power P6 (only for 3.0TD and 6.1TD)"
+            },
+            {
+              "name": "impuesto_elec",
+              "type": "number",
+              "description": "Final Price of Impuesto Electricidad"
+            },
+            {
+              "name": "alquiller",
+              "type": "number",
+              "description": "Total amount for Alquiler de equipos"
+            },
+            {
+              "name": "IVA",
+              "type": "number",
+              "description": "Final IVA price"
+            },
+            {
+              "name": "dias_facturacion",
+              "description": "we must look for Periodo facturación, and contrast the start and end date. The number os days passed between the to dates should be the output (Example :01/07/2025 to 31/07/2025 = 31)"
+            }
+          ]
+        },
+        "options": {
+          "systemPromptTemplate": "You are an expert extraction algorithm made for Spanish Electricity Bills. Extract all available periods from P1 to P6 when present. For 2.0TD tariffs, extract energy P1-P3 and power P1-P2. For 3.0TD and 6.1TD tariffs, extract all periods from P1 to P6 for both energy and power. If energy_price appears only once, replicate it for all periods. Extract tarifa_acceso carefully as it determines the number of periods."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        -1232
+      ],
+      "id": "f35e41cf-2757-4b03-87e1-6e7004eb1c9b",
+      "name": "Information Extractor"
+    }
+  ],
+  "connections": {
+    "Prepare Power Analysis Data": {
+      "main": [
+        [
+          {
+            "node": "Fetch SIPS Data for Power",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch SIPS Data for Power": {
+      "main": [
+        [
+          {
+            "node": "Combine Data for Python",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Data for Python": {
+      "main": [
+        [
+          {
+            "node": "Python Power Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has PDF?": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Power Analysis Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Vision Output1": {
+      "main": [
+        [
+          {
+            "node": "Prepare Power Analysis Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analisis de Potencia": {
+      "main": [
+        [
+          {
+            "node": "Has PDF?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Normalize Vision Output1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "d9ea544fdadf26c0cb1af2a2170c8ad35272e6ce482d9566666c10e545e2572e"
+  }
+}
