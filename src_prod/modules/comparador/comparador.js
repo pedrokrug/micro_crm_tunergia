@@ -2506,5 +2506,372 @@
         }
       }
 
-      console.log('✓ Comparador initialized with Turbo Tun Mode (v13)');
+      // ============================================
+      // POWER ANALYSIS ONLY MODE
+      // ============================================
+
+      const POWER_ANALYSIS_WEBHOOK_URL = 'https://tunuevaenergia.com/webhook/power-analysis-crm';
+
+      // Power analysis DOM elements
+      const powerAnalysisOnlySection = document.getElementById('power-analysis-only-section');
+      const powerMethodRadios = document.querySelectorAll('input[name="power-input-method"]');
+      const powerBillForm = document.getElementById('power-bill-form');
+      const powerManualForm = document.getElementById('power-manual-form');
+      const powerUploadArea = document.getElementById('powerUploadArea');
+      const powerFileInput = document.getElementById('powerFileInput');
+      const powerSelectedFile = document.getElementById('powerSelectedFile');
+      const powerFileName = document.getElementById('powerFileName');
+      const powerFileSize = document.getElementById('powerFileSize');
+      const powerRemoveFile = document.getElementById('powerRemoveFile');
+      const analyzePowerButton = document.getElementById('analyzePowerButton');
+      const powerCustomPricesToggle = document.getElementById('powerCustomPricesToggle');
+      const powerCustomPricesFields = document.getElementById('powerCustomPricesFields');
+
+      let selectedPowerFile = null;
+
+      // Toggle between bill and manual input methods
+      if (powerMethodRadios.length > 0) {
+        powerMethodRadios.forEach(radio => {
+          radio.addEventListener('change', (e) => {
+            const method = e.target.value;
+            if (method === 'bill') {
+              powerBillForm.style.display = 'block';
+              powerManualForm.style.display = 'none';
+            } else {
+              powerBillForm.style.display = 'none';
+              powerManualForm.style.display = 'block';
+            }
+            validatePowerAnalysisForm();
+          });
+        });
+      }
+
+      // Power file upload handlers
+      if (powerUploadArea && powerFileInput) {
+        powerUploadArea.addEventListener('click', () => powerFileInput.click());
+
+        powerUploadArea.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          powerUploadArea.style.borderColor = '#667eea';
+          powerUploadArea.style.background = 'rgba(102, 126, 234, 0.05)';
+        });
+
+        powerUploadArea.addEventListener('dragleave', () => {
+          powerUploadArea.style.borderColor = '#e2e8f0';
+          powerUploadArea.style.background = 'white';
+        });
+
+        powerUploadArea.addEventListener('drop', (e) => {
+          e.preventDefault();
+          powerUploadArea.style.borderColor = '#e2e8f0';
+          powerUploadArea.style.background = 'white';
+
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            handlePowerFileSelect(files[0]);
+          }
+        });
+
+        powerFileInput.addEventListener('change', (e) => {
+          if (e.target.files.length > 0) {
+            handlePowerFileSelect(e.target.files[0]);
+          }
+        });
+      }
+
+      if (powerRemoveFile) {
+        powerRemoveFile.addEventListener('click', () => {
+          selectedPowerFile = null;
+          powerFileInput.value = '';
+          powerSelectedFile.style.display = 'none';
+          powerUploadArea.style.display = 'flex';
+          validatePowerAnalysisForm();
+        });
+      }
+
+      function handlePowerFileSelect(file) {
+        if (file.type !== 'application/pdf') {
+          showError('Por favor, selecciona un archivo PDF');
+          return;
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+          showError('El archivo es demasiado grande. Máximo 5 MB');
+          return;
+        }
+
+        selectedPowerFile = file;
+        powerFileName.textContent = file.name;
+        powerFileSize.textContent = formatFileSize(file.size);
+        powerSelectedFile.style.display = 'flex';
+        powerUploadArea.style.display = 'none';
+        validatePowerAnalysisForm();
+      }
+
+      // Toggle custom prices
+      if (powerCustomPricesToggle && powerCustomPricesFields) {
+        powerCustomPricesToggle.addEventListener('change', (e) => {
+          powerCustomPricesFields.style.display = e.target.checked ? 'grid' : 'none';
+        });
+      }
+
+      // Manual form inputs validation
+      const powerManualCups = document.getElementById('powerManualCups');
+      const powerManualTariff = document.getElementById('powerManualTariff');
+
+      if (powerManualCups) {
+        powerManualCups.addEventListener('input', validatePowerAnalysisForm);
+      }
+
+      function validatePowerAnalysisForm() {
+        const selectedMethod = document.querySelector('input[name="power-input-method"]:checked')?.value;
+
+        let isValid = false;
+
+        if (selectedMethod === 'bill') {
+          isValid = selectedPowerFile !== null;
+        } else if (selectedMethod === 'manual') {
+          const cups = powerManualCups?.value.trim();
+          isValid = cups && cups.length > 0;
+        }
+
+        if (analyzePowerButton) {
+          analyzePowerButton.disabled = !isValid;
+        }
+      }
+
+      // Analyze Power button handler
+      if (analyzePowerButton) {
+        analyzePowerButton.addEventListener('click', async () => {
+          const selectedMethod = document.querySelector('input[name="power-input-method"]:checked')?.value;
+
+          if (selectedMethod === 'bill') {
+            await analyzePowerWithBill();
+          } else {
+            await analyzePowerManual();
+          }
+        });
+      }
+
+      async function analyzePowerWithBill() {
+        if (!selectedPowerFile) {
+          showError('Por favor, selecciona un archivo');
+          return;
+        }
+
+        try {
+          showLoading('Analizando factura para potencia...');
+
+          // Get user info
+          const userName = document.getElementById('powerBillUserName')?.value || 'Tunet';
+          const userEmail = document.getElementById('powerBillUserEmail')?.value || 'info@tunergia.es';
+          const userPhone = document.getElementById('powerBillUserPhone')?.value || '';
+
+          // Convert file to base64
+          const base64File = await fileToBase64(selectedPowerFile);
+
+          const requestData = {
+            has_bill: true,
+            file_data: base64File,
+            file_name: selectedPowerFile.name,
+            user_name: userName,
+            user_email: userEmail,
+            user_phone: userPhone
+          };
+
+          const response = await fetch(POWER_ANALYSIS_WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error del servidor: ${response.status}`);
+          }
+
+          const result = await response.json();
+          hideLoading();
+          displayPowerAnalysisResults(result);
+        } catch (error) {
+          hideLoading();
+          showError('Error al analizar la factura: ' + error.message);
+          console.error('Power analysis error:', error);
+        }
+      }
+
+      async function analyzePowerManual() {
+        const cups = document.getElementById('powerManualCups')?.value.trim();
+        const tarifa = document.getElementById('powerManualTariff')?.value || '3.0TD';
+        const userName = document.getElementById('powerManualUserName')?.value || 'Tunet';
+        const userEmail = document.getElementById('powerManualUserEmail')?.value || 'info@tunergia.es';
+        const userPhone = document.getElementById('powerManualUserPhone')?.value || '';
+
+        if (!cups) {
+          showError('Por favor, introduce el CUPS');
+          return;
+        }
+
+        try {
+          showLoading('Analizando potencia...');
+
+          const requestData = {
+            has_bill: false,
+            cups: cups,
+            tarifa: tarifa,
+            user_name: userName,
+            user_email: userEmail,
+            user_phone: userPhone
+          };
+
+          // Add custom prices if specified
+          const customPricesEnabled = powerCustomPricesToggle?.checked;
+          if (customPricesEnabled) {
+            const precio_p1 = parseFloat(document.getElementById('powerPriceP1')?.value);
+            const precio_p2 = parseFloat(document.getElementById('powerPriceP2')?.value);
+            const precio_p3 = parseFloat(document.getElementById('powerPriceP3')?.value);
+            const precio_p4 = parseFloat(document.getElementById('powerPriceP4')?.value);
+            const precio_p5 = parseFloat(document.getElementById('powerPriceP5')?.value);
+            const precio_p6 = parseFloat(document.getElementById('powerPriceP6')?.value);
+
+            if (precio_p1) requestData.precio_p1 = precio_p1;
+            if (precio_p2) requestData.precio_p2 = precio_p2;
+            if (precio_p3) requestData.precio_p3 = precio_p3;
+            if (precio_p4) requestData.precio_p4 = precio_p4;
+            if (precio_p5) requestData.precio_p5 = precio_p5;
+            if (precio_p6) requestData.precio_p6 = precio_p6;
+          }
+
+          const response = await fetch(POWER_ANALYSIS_WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error del servidor: ${response.status}`);
+          }
+
+          const result = await response.json();
+          hideLoading();
+          displayPowerAnalysisResults(result);
+        } catch (error) {
+          hideLoading();
+          showError('Error al analizar la potencia: ' + error.message);
+          console.error('Power analysis error:', error);
+        }
+      }
+
+      function displayPowerAnalysisResults(data) {
+        if (!data.success || !data.analysis_results || data.analysis_results.length === 0) {
+          showError('No se pudieron obtener resultados del análisis de potencia');
+          return;
+        }
+
+        const analysis = data.analysis_results[0];
+
+        let html = `
+          <div class="power-analysis-results">
+            <div class="power-result-header">
+              <div class="power-result-title">⚡ Análisis de Potencia</div>
+              <div class="power-result-cups">CUPS: ${analysis.CUPS || 'N/A'}</div>
+            </div>
+
+            <div class="power-summary-cards">
+              <div class="power-summary-card cost">
+                <div class="power-card-label">Coste Actual Anual</div>
+                <div class="power-card-value">${(analysis.Coste_Actual_Anual || 0).toFixed(2)}€</div>
+                <div class="power-card-subvalue">Penalizaciones: ${(analysis.Total_Penalizaciones_Anual || 0).toFixed(2)}€</div>
+              </div>
+
+              <div class="power-summary-card">
+                <div class="power-card-label">Coste Sugerido Anual</div>
+                <div class="power-card-value">${(analysis.Coste_Total_Sugerido_Anual || 0).toFixed(2)}€</div>
+                <div class="power-card-subvalue">Penalizaciones: ${(analysis.Total_Penalizaciones_Sugerido_Anual || 0).toFixed(2)}€</div>
+              </div>
+
+              <div class="power-summary-card savings">
+                <div class="power-card-label">Ahorro Anual</div>
+                <div class="power-card-value">${(analysis.Ahorro_Anual || 0).toFixed(2)}€</div>
+                <div class="power-card-subvalue">Mensual: ${(analysis.Ahorro_Mensual || 0).toFixed(2)}€</div>
+              </div>
+            </div>
+
+            <div class="power-recommendation">
+              <div class="power-recommendation-title">📊 Recomendación</div>
+              <div class="power-recommendation-text">${analysis.Recomendacion_General || 'N/A'}</div>
+            </div>
+
+            <table class="power-periods-table">
+              <thead>
+                <tr>
+                  <th>Periodo</th>
+                  <th>Actual (kW)</th>
+                  <th>Máxima (kW)</th>
+                  <th>Sugerida (kW)</th>
+                  <th>Estado</th>
+                  <th>Penalización Anual</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+
+        for (let i = 1; i <= 6; i++) {
+          const periodo = `P${i}`;
+          const activo = analysis[`${periodo}_Activo`];
+
+          if (activo === 'SI') {
+            const contratada = analysis[`${periodo}_Contratada`] || 0;
+            const maxima = analysis[`${periodo}_Maxima_Global`] || 0;
+            const sugerida = analysis[`${periodo}_Sugerida`] || 0;
+            const estado = analysis[`${periodo}_Estado`] || 'N/A';
+            const penalizacion = analysis[`${periodo}_Penalizacion_Anual`] || 0;
+
+            let estadoBadgeClass = 'optimo';
+            if (estado === 'AUMENTAR') estadoBadgeClass = 'aumentar';
+            else if (estado === 'REDUCIR') estadoBadgeClass = 'reducir';
+
+            html += `
+              <tr>
+                <td><strong>${periodo}</strong></td>
+                <td>${contratada.toFixed(2)}</td>
+                <td>${maxima.toFixed(2)}</td>
+                <td>${sugerida.toFixed(2)}</td>
+                <td><span class="power-status-badge ${estadoBadgeClass}">${estado}</span></td>
+                <td>${penalizacion.toFixed(2)}€</td>
+              </tr>
+            `;
+          }
+        }
+
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+
+        results.innerHTML = html;
+        results.style.display = 'block';
+
+        // Scroll to results
+        results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            // Remove the data URL prefix (e.g., "data:application/pdf;base64,")
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = error => reject(error);
+        });
+      }
+
+      console.log('✓ Comparador initialized with Turbo Tun Mode + Power Analysis (v14)');
     })();

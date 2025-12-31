@@ -1902,3 +1902,277 @@
 #history-results-container.active {
   display: block;
 }
+
+/* ============================================
+   POWER ANALYSIS ONLY SECTION
+   ============================================ */
+
+#power-analysis-only-section {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.power-input-method-selector {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.power-input-form {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.power-user-info {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.power-prices-section {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.power-prices-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.power-prices-note {
+  font-size: 13px;
+  color: #64748b;
+  font-style: italic;
+}
+
+.power-prices-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.power-prices-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.power-prices-toggle label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d3748;
+  cursor: pointer;
+}
+
+.power-prices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* Mode-specific visibility */
+#comparador-tunergia.mode-comparison #power-analysis-only-section {
+  display: none;
+}
+
+#comparador-tunergia.mode-power-only #upload-section {
+  display: none;
+}
+
+#comparador-tunergia.mode-power-only #power-analysis-only-section {
+  display: block;
+}
+
+#comparador-tunergia.mode-both #power-analysis-only-section {
+  display: none;
+}
+
+/* Power Analysis Results Styles */
+.power-analysis-results {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  margin-top: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.power-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.power-result-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.power-result-cups {
+  font-size: 14px;
+  font-weight: 600;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.power-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.power-summary-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 24px;
+  color: white;
+}
+
+.power-summary-card.savings {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.power-summary-card.cost {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+}
+
+.power-card-label {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.power-card-value {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.power-card-subvalue {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.power-periods-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+}
+
+.power-periods-table th,
+.power-periods-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.power-periods-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.power-periods-table td {
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.power-status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.power-status-badge.aumentar {
+  background: #fee;
+  color: #c33;
+}
+
+.power-status-badge.reducir {
+  background: #ffeaa7;
+  color: #d68910;
+}
+
+.power-status-badge.optimo {
+  background: #d4edda;
+  color: #155724;
+}
+
+.power-recommendation {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+  color: white;
+}
+
+.power-recommendation-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.power-recommendation-text {
+  font-size: 14px;
+  line-height: 1.6;
+  opacity: 0.95;
+}
+
