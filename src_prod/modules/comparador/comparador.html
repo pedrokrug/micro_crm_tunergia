@@ -13,7 +13,6 @@
         <p class="page-subtitle">Analiza facturas de clientes y encuentra oportunidades de ahorro</p>
       </div>
 
-
       <div class="user-info-bar" id="userInfo">
         <span>👤</span>
         <span id="userInfoText">Cargando usuario...</span>
@@ -69,105 +68,191 @@
       </div>
 
       <div id="upload-section">
-        
-        <div class="horizontal-sections">
-          <div class="config-section">
-            <div class="section-title">Tipo de comparación:</div>
-            <div class="radio-group">
-              <div class="radio-option">
-                <input type="radio" id="product-all" name="product-type" value="all" checked="">
-                <label for="product-all" class="radio-label">
-                  <div class="radio-label-title">Todos los productos</div>
-                  <div class="radio-label-desc">Compara con todas las ofertas</div>
-                </label>
-              </div>
-              <div class="radio-option">
-                <input type="radio" id="product-24h" name="product-type" value="24h">
-                <label for="product-24h" class="radio-label">
-                  <div class="radio-label-title">Productos 24h</div>
-                  <div class="radio-label-desc">Precio único todo el día</div>
-                </label>
-              </div>
-            </div>
-          </div>
 
-          <div class="config-section">
-            <div class="section-title">📈 Método de Comparación:</div>
-            <div class="radio-group">
-              <div class="radio-option">
-                <input type="radio" id="method-factura" name="comparison-method" value="factura" checked="">
-                <label for="method-factura" class="radio-label">
-                  <div class="radio-label-title">📄 Consumo en Factura</div>
-                  <div class="radio-label-desc">Usa el consumo de la factura</div>
-                </label>
-              </div>
-              <div class="radio-option">
-                <input type="radio" id="method-anual" name="comparison-method" value="anual">
-                <label for="method-anual" class="radio-label">
-                  <div class="radio-label-title">📅 Consumo Anual</div>
-                  <div class="radio-label-desc">Usa datos anuales de SIPS</div>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
+        <!-- Main Action Grid: Upload + Action Buttons -->
+        <div class="main-action-grid">
 
-        
-        <div class="company-selector" id="companySelector">
-          <div class="section-title">Comercializadoras Disponibles:</div>
-          <div class="company-dropdown">
-            <button class="company-dropdown-button" id="companyDropdownButton" type="button">
-              <span id="companySelectionText">Seleccionar comercializadoras...</span>
-              <span class="dropdown-arrow">▼</span>
-            </button>
-            <div class="company-dropdown-menu" id="companyDropdownMenu">
-              <div class="company-loading">Cargando comercializadoras...</div>
-            </div>
-          </div>
-          <div class="company-error" id="companyError">
-            Debes seleccionar al menos 3 comercializadoras
-          </div>
-        </div>
+          <!-- Left Column: Upload Section -->
+          <div class="upload-column">
+            <div class="config-section">
+              <div class="section-title">
+                <span class="step-number">1</span>
+                📄 Subir Factura
+              </div>
 
-        
-        
-        <div class="power-analysis-section" id="powerAnalysisSection">
-          <div class="power-analysis-header" id="powerAnalysisHeader">
-            <input type="checkbox" id="power-analysis-checkbox" class="power-analysis-checkbox">
-            <label for="power-analysis-checkbox" class="power-switch-pill" id="powerSwitchLabel">
-              <div class="power-switch-knob"></div>
-            </label>
-            <div class="power-analysis-title-wrapper">
-              <div class="power-analysis-title">⚡ Análisis de Potencia</div>
-              <div class="power-analysis-subtitle">Optimiza la potencia contratada con datos de la factura</div>
-              <div class="power-analysis-disabled-note" id="powerAnalysisDisabledNote" style="display: none;">
-                ⚠️ No disponible para tarifas 2.0TD residenciales
+              <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Arrastra la factura aquí</div>
+                <div class="upload-subtext">PDF o imagen (máx. 5 MB)</div>
+              </div>
+
+              <input type="file" id="fileInput" class="file-input" accept=".pdf,image/*">
+
+              <div class="selected-file" id="selectedFile">
+                <div class="file-icon">📄</div>
+                <div class="file-info">
+                  <div class="file-name" id="fileName"></div>
+                  <div class="file-size" id="fileSize"></div>
+                </div>
+                <button class="remove-file" id="removeFile">✕</button>
+              </div>
+
+              <!-- Bill Data Summary (shown when file is uploaded and analyzed) -->
+              <div class="bill-data-summary" id="billDataSummary" style="display: none;">
+                <div class="bill-data-grid">
+                  <div class="bill-data-item">
+                    <span class="bill-data-label">CUPS</span>
+                    <span class="bill-data-value" id="billCups">—</span>
+                  </div>
+                  <div class="bill-data-item">
+                    <span class="bill-data-label">Tarifa</span>
+                    <span class="bill-data-value bill-data-highlight" id="billTarifa">—</span>
+                  </div>
+                  <div class="bill-data-item">
+                    <span class="bill-data-label">Titular</span>
+                    <span class="bill-data-value" id="billTitular">—</span>
+                  </div>
+                  <div class="bill-data-item">
+                    <span class="bill-data-label">NIF</span>
+                    <span class="bill-data-value" id="billNif">—</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        
-        <div class="upload-area" id="uploadArea">
-          <div class="upload-icon">📄</div>
-          <div class="upload-text">Arrastra la factura del cliente aquí o haz clic para seleccionar</div>
-          <div class="upload-subtext">Solo archivos PDF (máx. 5 MB)</div>
-        </div>
+          <!-- Right Column: Action Buttons -->
+          <div class="actions-column">
+            <div class="section-title">
+              <span class="step-number">2</span>
+              Selecciona una Acción
+            </div>
 
-        <input type="file" id="fileInput" class="file-input" accept=".pdf">
+            <div class="action-buttons-grid">
+              <!-- Comparar Tarifa Button -->
+              <button class="big-action-button tarifa-button" id="compararTarifaBtn" disabled>
+                <div class="action-button-icon">
+                  <span>📊</span>
+                </div>
+                <div class="action-button-content">
+                  <h3 class="action-button-title">📊 Comparar Tarifa</h3>
+                  <p class="action-button-desc">Encuentra el mejor producto para este cliente</p>
+                </div>
+                <div class="action-button-footer">
+                  <span class="action-button-hint" id="tarifaHint">Sube una factura primero</span>
+                  <span class="action-button-arrow">→</span>
+                </div>
+              </button>
 
-        <div class="selected-file" id="selectedFile">
-          <div class="file-icon">📄</div>
-          <div class="file-info">
-            <div class="file-name" id="fileName"></div>
-            <div class="file-size" id="fileSize"></div>
+              <!-- Analizar Potencia Button -->
+              <button class="big-action-button potencia-button" id="analizarPotenciaBtn" disabled>
+                <div class="action-button-icon">
+                  <span>⚡</span>
+                </div>
+                <div class="action-button-content">
+                  <h3 class="action-button-title">⚡ Analizar Potencia</h3>
+                  <p class="action-button-desc">Optimiza la potencia contratada y reduce costes fijos</p>
+                </div>
+                <div class="action-button-footer">
+                  <span class="action-button-hint" id="potenciaHint">Sube una factura primero</span>
+                  <span class="action-button-arrow">→</span>
+                </div>
+              </button>
+            </div>
           </div>
-          <button class="remove-file" id="removeFile">✕</button>
         </div>
 
-        <button class="analyze-button" id="analyzeButton" disabled="">
-          🔍 Analizar Factura
-        </button>
+        <!-- Info Cards Row -->
+        <div class="info-cards-row">
+          <div class="info-card-small">
+            <h3 class="info-card-title-small">📊 Sobre Comparar Tarifa</h3>
+            <p class="info-card-desc">Compara automáticamente con los productos disponibles.</p>
+            <ul class="info-card-list">
+              <li><span class="check-icon">✓</span> Extrae datos automáticamente con IA</li>
+              <li><span class="check-icon">✓</span> Calcula ahorro mensual y anual</li>
+              <li><span class="check-icon">✓</span> Genera PDF de comparativa</li>
+            </ul>
+          </div>
+
+          <div class="info-card-small">
+            <h3 class="info-card-title-small">⚡ Sobre Analizar Potencia</h3>
+            <p class="info-card-desc">Analiza si el cliente tiene la potencia óptima contratada.</p>
+            <ul class="info-card-list">
+              <li><span class="check-icon">✓</span> Detecta sobredimensionamiento</li>
+              <li><span class="check-icon">✓</span> Recomienda potencia óptima</li>
+              <li><span class="check-icon">✓</span> Estima ahorro en término fijo</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Hidden Configuration Options (for advanced settings - collapsible) -->
+        <details class="advanced-options" id="advancedOptions">
+          <summary class="advanced-options-toggle">
+            <span>⚙️ Opciones avanzadas</span>
+            <span class="toggle-arrow">▼</span>
+          </summary>
+
+          <div class="advanced-options-content">
+            <div class="horizontal-sections">
+              <div class="config-section">
+                <div class="section-title">Tipo de comparación:</div>
+                <div class="radio-group">
+                  <div class="radio-option">
+                    <input type="radio" id="product-all" name="product-type" value="all" checked="">
+                    <label for="product-all" class="radio-label">
+                      <div class="radio-label-title">Todos los productos</div>
+                      <div class="radio-label-desc">Compara con todas las ofertas</div>
+                    </label>
+                  </div>
+                  <div class="radio-option">
+                    <input type="radio" id="product-24h" name="product-type" value="24h">
+                    <label for="product-24h" class="radio-label">
+                      <div class="radio-label-title">Productos 24h</div>
+                      <div class="radio-label-desc">Precio único todo el día</div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="config-section">
+                <div class="section-title">📈 Método de Comparación:</div>
+                <div class="radio-group">
+                  <div class="radio-option">
+                    <input type="radio" id="method-factura" name="comparison-method" value="factura" checked="">
+                    <label for="method-factura" class="radio-label">
+                      <div class="radio-label-title">📄 Consumo en Factura</div>
+                      <div class="radio-label-desc">Usa el consumo de la factura</div>
+                    </label>
+                  </div>
+                  <div class="radio-option">
+                    <input type="radio" id="method-anual" name="comparison-method" value="anual">
+                    <label for="method-anual" class="radio-label">
+                      <div class="radio-label-title">📅 Consumo Anual</div>
+                      <div class="radio-label-desc">Usa datos anuales de SIPS</div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="company-selector" id="companySelector">
+              <div class="section-title">Comercializadoras Disponibles:</div>
+              <div class="company-dropdown">
+                <button class="company-dropdown-button" id="companyDropdownButton" type="button">
+                  <span id="companySelectionText">Seleccionar comercializadoras...</span>
+                  <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="company-dropdown-menu" id="companyDropdownMenu">
+                  <div class="company-loading">Cargando comercializadoras...</div>
+                </div>
+              </div>
+              <div class="company-error" id="companyError">
+                Debes seleccionar al menos 3 comercializadoras
+              </div>
+            </div>
+          </div>
+        </details>
+
       </div>
 
       <!-- Power Analysis Only Section -->

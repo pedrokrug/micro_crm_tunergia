@@ -54,6 +54,19 @@
       const powerAnalysisCheckbox = document.getElementById('power-analysis-checkbox');
       const powerAnalysisSection = document.getElementById('powerAnalysisSection');
       const powerAnalysisDisabledNote = document.getElementById('powerAnalysisDisabledNote');
+
+      // New action buttons
+      const compararTarifaBtn = document.getElementById('compararTarifaBtn');
+      const analizarPotenciaBtn = document.getElementById('analizarPotenciaBtn');
+      const tarifaHint = document.getElementById('tarifaHint');
+      const potenciaHint = document.getElementById('potenciaHint');
+
+      // Bill data summary elements
+      const billDataSummary = document.getElementById('billDataSummary');
+      const billCups = document.getElementById('billCups');
+      const billTarifa = document.getElementById('billTarifa');
+      const billTitular = document.getElementById('billTitular');
+      const billNif = document.getElementById('billNif');
       
       // History elements (made optional since sidebar was removed)
       const historySidebar = document.getElementById('historySidebar');
@@ -1112,10 +1125,30 @@
         selectedFile = null;
         fileInput.value = '';
         selectedFileDiv.classList.remove('active');
-        analyzeButton.disabled = true;
+        if (analyzeButton) analyzeButton.disabled = true;
+        enableActionButtons(false);
+        // Hide bill data summary
+        if (billDataSummary) billDataSummary.style.display = 'none';
       });
 
-      analyzeButton.addEventListener('click', analyzeInvoice);
+      if (analyzeButton) analyzeButton.addEventListener('click', analyzeInvoice);
+
+      // New action button event listeners
+      if (compararTarifaBtn) {
+        compararTarifaBtn.addEventListener('click', () => {
+          // Enable power analysis for tariff comparison
+          powerAnalysisEnabled = false;
+          analyzeInvoice();
+        });
+      }
+
+      if (analizarPotenciaBtn) {
+        analizarPotenciaBtn.addEventListener('click', () => {
+          // Enable power analysis for power-only analysis
+          powerAnalysisEnabled = true;
+          analyzeInvoice();
+        });
+      }
 
       const productTypeRadios = document.getElementsByName('product-type');
       productTypeRadios.forEach(radio => {
@@ -1134,8 +1167,10 @@
       initializeUser();
 
       function handleFileSelect(file) {
-        if (file.type !== 'application/pdf') {
-          showError('Por favor, selecciona un archivo PDF válido.');
+        // Accept both PDF and images
+        const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+          showError('Por favor, selecciona un archivo PDF o imagen válido.');
           return;
         }
 
@@ -1148,15 +1183,34 @@
         fileName.textContent = file.name;
         fileSize.textContent = formatFileSize(file.size);
         selectedFileDiv.classList.add('active');
-        
+
         const productType = getSelectedProductType();
         if (productType === 'all' && selectedCompanies.length < 3) {
-          analyzeButton.disabled = true;
+          if (analyzeButton) analyzeButton.disabled = true;
         } else {
-          analyzeButton.disabled = false;
+          if (analyzeButton) analyzeButton.disabled = false;
         }
-        
+
+        // Enable new action buttons
+        enableActionButtons(true);
+
         hideError();
+      }
+
+      // Function to enable/disable action buttons
+      function enableActionButtons(enabled) {
+        if (compararTarifaBtn) {
+          compararTarifaBtn.disabled = !enabled;
+          if (tarifaHint) {
+            tarifaHint.textContent = enabled ? 'Iniciar comparación' : 'Sube una factura primero';
+          }
+        }
+        if (analizarPotenciaBtn) {
+          analizarPotenciaBtn.disabled = !enabled;
+          if (potenciaHint) {
+            potenciaHint.textContent = enabled ? 'Iniciar análisis' : 'Sube una factura primero';
+          }
+        }
       }
 
       function formatFileSize(bytes) {
