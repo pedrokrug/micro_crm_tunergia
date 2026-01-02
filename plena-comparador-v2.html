@@ -1,0 +1,2212 @@
+<!-- Plena Energia Comparador - Embeddable Component -->
+<!-- Include these CDNs in the parent page if not already loaded -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  #plena-comparador-root, #plena-comparador-root * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+  #plena-comparador-root { min-height: 100vh; width: 100%; }
+  #plena-comparador-root .spinner { animation: plena-spin 1s linear infinite; }
+  @keyframes plena-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  #plena-comparador-root select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px;
+    padding-right: 44px !important;
+  }
+  #plena-comparador-root .drop-zone-active {
+    animation: plena-pulse 1s ease-in-out infinite;
+  }
+  @keyframes plena-pulse {
+    0%, 100% { border-color: rgba(239, 52, 3, 0.5); }
+    50% { border-color: rgba(239, 52, 3, 1); }
+  }
+  #plena-comparador-root .comparison-card:hover {
+    transform: translateY(-2px);
+  }
+</style>
+
+<div id="plena-comparador-root"></div>
+
+<script type="text/babel">
+  const { useState, useEffect, useRef } = React;
+
+  // ========================================================================
+  // CONFIGURATION
+  // ========================================================================
+  const WEBHOOK_ANALIZAR_FACTURA = 'https://tunuevaenergia.com/webhook/analisis-factura-nemon';
+  const WEBHOOK_COMPARAR_TARIFA = 'https://tunuevaenergia.com/webhook/comparar-tarifa';
+  const WEBHOOK_ANALIZAR_POTENCIA = 'https://tunuevaenergia.com/webhook/analizar-potencia';
+  const WEBHOOK_HISTORIAL = 'https://tunuevaenergia.com/webhook/historial-comparaciones';
+  const WEBHOOK_CREAR_CONTRATO = 'https://tunuevaenergia.com/webhook/crear-contrato-crm';
+  const WEBHOOK_PRODUCTOS = 'https://tunuevaenergia.com/webhook/productos-disponibles';
+
+  const CHANNEL_NAME = 'CRM_COMERCIAL';
+  const SOURCE = 'Plena_Energia';
+
+  // ========================================================================
+  // ODOO RPC HELPERS - Fetch user info from Odoo session
+  // ========================================================================
+  async function odooRpcCall(model, method, args = [], kwargs = {}) {
+    const response = await fetch('/web/dataset/call_kw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'call',
+        params: { model, method, args, kwargs },
+        id: Date.now()
+      })
+    });
+    return response.json();
+  }
+
+  async function fetchOdooUserInfo() {
+    try {
+      // 1. Get session info to get user ID
+      const sessionRes = await fetch('/web/session/get_session_info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', method: 'call', params: {}, id: 1 })
+      });
+      const session = await sessionRes.json();
+
+      if (!session.result || !session.result.uid) {
+        throw new Error('No user found');
+      }
+
+      const uid = session.result.uid;
+
+      // 2. Get partner_id from user
+      const user = await odooRpcCall('res.users', 'read', [[uid]], { fields: ['partner_id'] });
+      if (!user.result || !user.result[0] || !user.result[0].partner_id) {
+        throw new Error('No user found');
+      }
+      const partnerId = user.result[0].partner_id[0];
+
+      // 3. Get partner details (name, email, function/job position)
+      const partner = await odooRpcCall('res.partner', 'read', [[partnerId]], {
+        fields: ['name', 'email', 'function']
+      });
+
+      if (!partner.result || !partner.result[0]) {
+        throw new Error('No user found');
+      }
+
+      const { name, email, function: jobPosition } = partner.result[0];
+      return { name, email, jobPosition };
+    } catch (error) {
+      console.error('Error fetching Odoo user info:', error);
+      throw new Error('No user found');
+    }
+  }
+
+    // Loading messages
+    const LOADING_MESSAGES_TARIFA = [
+      { text: 'Analizando factura...', icon: '📄', duration: 3000 },
+      { text: 'Extrayendo datos de consumo...', icon: '⚡', duration: 3000 },
+      { text: 'Consultando productos Plena...', icon: '🔍', duration: 3000 },
+      { text: 'Calculando ahorro...', icon: '💰', duration: 3000 },
+      { text: 'Generando comparativa...', icon: '📊', duration: 10000 },
+    ];
+
+    const LOADING_MESSAGES_POTENCIA = [
+      { text: 'Analizando factura...', icon: '📄', duration: 3000 },
+      { text: 'Extrayendo curva de carga...', icon: '📈', duration: 3000 },
+      { text: 'Calculando potencia óptima...', icon: '⚙️', duration: 4000 },
+      { text: 'Generando recomendación...', icon: '💡', duration: 10000 },
+    ];
+
+    // ========================================================================
+    // API HELPERS
+    // ========================================================================
+    
+    async function analyzeBill(base64Data, fileType) {
+      console.log('Analyzing bill...');
+      try {
+        const response = await fetch(WEBHOOK_ANALIZAR_FACTURA, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            factura_base64: base64Data,
+            factura_type: fileType
+          })
+        });
+        
+        if (!response.ok) throw new Error('Error analizando factura');
+        
+        const data = await response.json();
+        let result;
+        if (Array.isArray(data)) {
+          result = data[0]?.json || data[0] || {};
+        } else {
+          result = data.json || data;
+        }
+        
+        if (result.tarifa_acceso && !result.tarifa) {
+          result.tarifa = result.tarifa_acceso;
+        }
+        
+        console.log('Bill analysis result:', result);
+        return result;
+      } catch (error) {
+        console.error('Bill analysis error:', error);
+        throw error;
+      }
+    }
+
+    async function compareTarifa(billData, agentName) {
+      console.log('Comparing tariffs with data:', billData);
+      try {
+        const response = await fetch(WEBHOOK_COMPARAR_TARIFA, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cups: billData.cups,
+            tarifa: billData.tarifa || billData.tarifa_acceso,
+            titular: billData.titular,
+            nif: billData.nif,
+            direccion: billData.direccion_suministro || billData.direccion_fiscal,
+            consumo_anual: billData.consumo_anual,
+            potencia_p1: billData.potencia_p1,
+            potencia_p2: billData.potencia_p2,
+            factura_base64: billData.file_base64,
+            factura_type: billData.file_type,
+            agent_name: agentName,
+            channel_name: CHANNEL_NAME
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Error comparando tarifas');
+        }
+        
+        const data = await response.json();
+        // Handle n8n response wrapper
+        let result = Array.isArray(data) ? (data[0]?.json || data[0]) : (data.json || data);
+        console.log('Comparison result:', result);
+        return result;
+      } catch (error) {
+        console.error('Comparison error:', error);
+        throw error;
+      }
+    }
+
+    async function analyzePotencia(billData, agentName) {
+      console.log('Analyzing power with data:', billData);
+      try {
+        const response = await fetch(WEBHOOK_ANALIZAR_POTENCIA, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cups: billData.cups,
+            tarifa: billData.tarifa || billData.tarifa_acceso,
+            titular: billData.titular,
+            nif: billData.nif,
+            potencia_p1: billData.potencia_p1,
+            potencia_p2: billData.potencia_p2,
+            consumo_anual: billData.consumo_anual,
+            factura_base64: billData.file_base64,
+            factura_type: billData.file_type,
+            agent_name: agentName,
+            channel_name: CHANNEL_NAME
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Error analizando potencia');
+        }
+        
+        const data = await response.json();
+        let result = Array.isArray(data) ? (data[0]?.json || data[0]) : (data.json || data);
+        console.log('Power analysis result:', result);
+        return result;
+      } catch (error) {
+        console.error('Power analysis error:', error);
+        throw error;
+      }
+    }
+
+    async function createContract(formData) {
+      console.log('Creating contract with data:', formData);
+      try {
+        const response = await fetch(WEBHOOK_CREAR_CONTRATO, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...formData,
+            source: SOURCE
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Error creando contrato');
+        }
+
+        const data = await response.json();
+        let result = Array.isArray(data) ? (data[0]?.json || data[0]) : (data.json || data);
+        console.log('Contract creation result:', result);
+        return result;
+      } catch (error) {
+        console.error('Contract creation error:', error);
+        throw error;
+      }
+    }
+
+    async function fetchProducts(energyType, tarifa) {
+      console.log('Fetching products for:', energyType, tarifa);
+      try {
+        const response = await fetch(WEBHOOK_PRODUCTOS, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            energy_type: energyType,
+            tarifa_acceso: tarifa
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Error fetching products');
+        }
+
+        const data = await response.json();
+        let result = [];
+
+        // Handle various n8n response formats
+        if (Array.isArray(data)) {
+          if (data.length > 0 && data[0].json) {
+            result = data.map(r => r.json);
+          } else {
+            result = data;
+          }
+        } else if (typeof data === 'object' && data !== null) {
+          if (data.products) {
+            result = data.products;
+          } else if (data.result) {
+            result = data.result;
+          } else if (data.data) {
+            result = Array.isArray(data.data) ? data.data : [data.data];
+          } else if (data.json) {
+            result = Array.isArray(data.json) ? data.json : [data.json];
+          } else if (data.producto_id) {
+            result = [data];
+          } else {
+            const values = Object.values(data);
+            if (values.length > 0 && typeof values[0] === 'object' && values[0].producto_id) {
+              result = values;
+            }
+          }
+        }
+
+        return result;
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
+    }
+
+    const LOADING_MESSAGES_CONTRATO = [
+      { text: 'Validando datos del cliente...', icon: '📋', duration: 2000 },
+      { text: 'Verificando documentos...', icon: '🔍', duration: 2000 },
+      { text: 'Creando contrato en NEMON...', icon: '📝', duration: 3000 },
+      { text: 'Finalizando...', icon: '✅', duration: 10000 },
+    ];
+
+    // ========================================================================
+    // UTILITY COMPONENTS
+    // ========================================================================
+    
+    const formatEuro = (val) => {
+      const num = parseFloat(val);
+      if (isNaN(num)) return '—';
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(num);
+    };
+
+    const formatDate = (val) => {
+      if (!val) return '—';
+      try { return new Date(val).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); } 
+      catch { return val; }
+    };
+
+    function Spinner({ size = 'md' }) {
+      const sizeClass = size === 'sm' ? 'w-4 h-4' : size === 'lg' ? 'w-12 h-12' : 'w-8 h-8';
+      return (
+        <div className={`${sizeClass} border-2 border-[#EF3403] border-t-transparent rounded-full spinner`}></div>
+      );
+    }
+
+    function LoadingOverlay({ messages }) {
+      const [currentIndex, setCurrentIndex] = useState(0);
+      
+      useEffect(() => {
+        if (currentIndex >= messages.length - 1) return;
+        const timer = setTimeout(() => {
+          setCurrentIndex(prev => Math.min(prev + 1, messages.length - 1));
+        }, messages[currentIndex].duration);
+        return () => clearTimeout(timer);
+      }, [currentIndex, messages]);
+
+      const current = messages[currentIndex];
+      
+      return (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100]">
+          <div className="bg-[#1a1a2e] border border-[#481589]/50 rounded-2xl p-8 max-w-md w-full mx-4 text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-[#EF3403]/20 to-[#481589]/20 flex items-center justify-center">
+              <span className="text-4xl">{current.icon}</span>
+            </div>
+            <Spinner size="lg" />
+            <p className="text-white font-medium text-lg mt-6 mb-2">{current.text}</p>
+            <p className="text-gray-500 text-sm">Por favor, no cierres esta ventana</p>
+            <div className="flex justify-center gap-2 mt-6">
+              {messages.map((_, idx) => (
+                <div key={idx} className={`w-2 h-2 rounded-full transition-all ${idx <= currentIndex ? 'bg-[#EF3403]' : 'bg-gray-600'}`} />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================================================
+    // CONTRACT CREATION FROM COMPARISON
+    // ========================================================================
+    function CreateContractFromComparison({ prefillData, agentName, onClose, onSuccess }) {
+      const [step, setStep] = useState(1);
+      const [loading, setLoading] = useState(false);
+      const [loadingProducts, setLoadingProducts] = useState(false);
+      const [error, setError] = useState(null);
+      const [success, setSuccess] = useState(null);
+      const [products, setProducts] = useState([]);
+      const fileInputRefs = useRef({});
+
+      const [formData, setFormData] = useState({
+        // Pre-filled from comparison
+        cups: prefillData.cups || '',
+        tarifa_acceso: prefillData.tarifa || prefillData.tarifa_acceso || '2.0TD',
+        titular: prefillData.titular || prefillData.full_name || '',
+        nif: prefillData.nif || '',
+        producto_id: '',
+        producto_nombre: '',
+        // Addresses - may be pre-filled
+        direccion_fiscal: prefillData.direccion_fiscal || prefillData.direccion || '',
+        cp_fiscal: prefillData.cp_fiscal || '',
+        poblacion_fiscal: prefillData.poblacion_fiscal || '',
+        provincia_fiscal: prefillData.provincia_fiscal || '',
+        direccion_suministro: prefillData.direccion_suministro || prefillData.direccion || '',
+        cp_suministro: prefillData.cp_suministro || '',
+        poblacion_suministro: prefillData.poblacion_suministro || '',
+        provincia_suministro: prefillData.provincia_suministro || '',
+        // User must fill
+        clientType: 'home',
+        energyType: 'electricity',
+        email: '',
+        movil: '',
+        telefono: '',
+        iban: '',
+        cambioTitular: false,
+        cambioPotencia: false,
+        // Documents
+        dni_anverso: '',
+        dni_anverso_type: '',
+        dni_reverso: '',
+        dni_reverso_type: '',
+        cif_escritura: '',
+        cif_escritura_type: '',
+        // Agent info
+        agent_name: agentName,
+        channel_name: CHANNEL_NAME
+      });
+
+      // Fetch products when entering step 3
+      const loadProducts = async () => {
+        setLoadingProducts(true);
+        setError(null);
+        try {
+          const result = await fetchProducts(formData.energyType, formData.tarifa_acceso);
+          setProducts(result);
+          // Auto-select first product if none selected
+          if (result.length > 0 && !formData.producto_id) {
+            const first = result[0];
+            setFormData(prev => ({
+              ...prev,
+              producto_id: String(first.producto_id),
+              producto_nombre: first.producto_nombre || first.productSearchName || ''
+            }));
+          }
+        } catch (err) {
+          setError('Error cargando productos: ' + err.message);
+        }
+        setLoadingProducts(false);
+      };
+
+      useEffect(() => {
+        if (step === 3) {
+          loadProducts();
+        }
+      }, [step]);
+
+      const updateField = (field, value) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+      };
+
+      const handleFileChange = (field, typeField, e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = reader.result.split(',')[1];
+          setFormData(prev => ({
+            ...prev,
+            [field]: base64,
+            [typeField]: file.type
+          }));
+        };
+        reader.readAsDataURL(file);
+      };
+
+      const copyFiscalToSuministro = () => {
+        setFormData(prev => ({
+          ...prev,
+          direccion_suministro: prev.direccion_fiscal,
+          cp_suministro: prev.cp_fiscal,
+          poblacion_suministro: prev.poblacion_fiscal,
+          provincia_suministro: prev.provincia_fiscal
+        }));
+      };
+
+      const handleSubmit = async () => {
+        setLoading(true);
+        setError(null);
+
+        if (!formData.producto_id) {
+          setError('Error: No se ha seleccionado un producto');
+          setLoading(false);
+          return;
+        }
+
+        try {
+          const result = await createContract(formData);
+          setSuccess(result);
+          if (onSuccess) onSuccess(result);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const canProceed = () => {
+        switch(step) {
+          case 1:
+            return formData.cups && formData.titular && formData.nif && formData.tarifa_acceso;
+          case 2:
+            return formData.direccion_fiscal && formData.cp_fiscal &&
+                   formData.poblacion_fiscal && formData.direccion_suministro &&
+                   formData.cp_suministro && formData.poblacion_suministro;
+          case 3:
+            return formData.email && formData.movil && formData.iban;
+          case 4:
+            return formData.dni_anverso && formData.dni_reverso &&
+                   (formData.clientType !== 'business' || formData.cif_escritura);
+          default:
+            return true;
+        }
+      };
+
+      // Success screen
+      if (success) {
+        return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+            <div className="bg-[#1a1a2e] border border-emerald-500/30 rounded-2xl w-full max-w-md p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Contrato Creado</h2>
+              <p className="text-gray-400 mb-4">ID NEMON: <span className="font-mono text-emerald-400">{success.nemon_id || success.id}</span></p>
+              <p className="text-gray-500 text-sm mb-6">CUPS: {formData.cups}</p>
+              <button onClick={onClose} className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium transition-colors">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // Loading overlay
+      if (loading) {
+        return <LoadingOverlay messages={LOADING_MESSAGES_CONTRATO} />;
+      }
+
+      return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]" onClick={onClose}>
+          <div className="bg-[#1a1a2e] border border-[#481589]/30 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#EF3403] to-[#481589] px-6 py-4 flex items-center justify-between flex-shrink-0 rounded-t-2xl">
+              <div>
+                <h2 className="text-xl font-bold text-white">Crear Contrato</h2>
+                <p className="text-white/70 text-sm">Paso {step} de 4{formData.producto_nombre ? ` - ${formData.producto_nombre}` : ''}</p>
+              </div>
+              <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">
+                <span className="text-white text-xl">x</span>
+              </button>
+            </div>
+
+            {/* Progress bar */}
+            <div className="h-1 bg-[#0f0f1a] flex-shrink-0">
+              <div className="h-full bg-gradient-to-r from-[#EF3403] to-[#481589] transition-all duration-300" style={{width: `${step * 25}%`}}></div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 min-h-0">
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
+                  <p className="text-red-400">{error}</p>
+                </div>
+              )}
+
+              {/* Step 1: Verify pre-filled data */}
+              {step === 1 && (
+                <div className="space-y-6">
+                  <h3 className="text-white font-semibold flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[#EF3403] flex items-center justify-center text-sm">1</span>
+                    Verificar Datos del Suministro
+                  </h3>
+
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-4">
+                    <p className="text-emerald-400 text-sm flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Datos pre-rellenados desde la comparativa
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-400 text-sm mb-2">Tipo de Cliente</label>
+                    <select value={formData.clientType} onChange={e => updateField('clientType', e.target.value)}
+                      className="w-full bg-[#0f0f1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#EF3403]/50">
+                      <option value="home">Particular</option>
+                      <option value="business">Empresa</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label className="block text-gray-400 text-sm mb-2">CUPS *</label>
+                      <input type="text" value={formData.cups} onChange={e => updateField('cups', e.target.value.toUpperCase().replace(/\s/g, ''))}
+                        className="w-full bg-[#0f0f1a] border border-white/10 rounded-xl px-4 py-3 text-white font-mono text-sm focus:outline-none focus:border-[#EF3403]/50" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-gray-400 text-sm mb-2">Tarifa</label>
+                      <input type="text" value={formData.tarifa_acceso} readOnly
+                        className="w-full bg-[#0f0f1a] border border-white/10 rounded-xl px-4 py-3 text-[#EF3403] font-medium cursor-not-allowed" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-gray-400 text-sm mb-2">{formData.clientType === 'business' ? 'Razon Social *' : 'Titular *'}</label>
+                      <input type="text" value={formData.titular} onChange={e => updateField('titular', e.target.value)}
+                        className="w-full bg-[#0f0f1a] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#EF3403]/50" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-gray-400 text-sm mb-2">{formData.clientType === 'business' ? 'CIF *' : 'NIF/NIE *'}</label>
+                      <input type="text" value={formData.nif} onChange={e => updateField('nif', e.target.value.toUpperCase())}
+                        className="w-full bg-[#0f0f1a] border border-white/10 rounded-xl px-4 py-3 text-white font-mono focus:outline-none focus:border-[#EF3403]/50" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 2: Addresses */}
+              {step === 2 && (
+                <div className="space-y-6">
+                  <h3 className="text-white font-semibold flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[#EF3403] flex items-center justify-center text-sm">2</span>
+                    Direcciones
+                  </h3>
+
+                  <div className="bg-[#0f0f1a] rounded-xl p-4">
+                    <h4 className="text-gray-300 font-medium mb-4">Direccion Fiscal</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <input type="text" value={formData.direccion_fiscal} onChange={e => updateField('direccion_fiscal', e.target.value)}
+                          placeholder="Calle, numero, piso..." className="w-full bg-[#1a1a2e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                      </div>
+                      <input type="text" value={formData.cp_fiscal} onChange={e => updateField('cp_fiscal', e.target.value)}
+                        placeholder="Codigo Postal" className="bg-[#1a1a2e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                      <input type="text" value={formData.poblacion_fiscal} onChange={e => updateField('poblacion_fiscal', e.target.value)}
+                        placeholder="Poblacion" className="bg-[#1a1a2e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                      <input type="text" value={formData.provincia_fiscal} onChange={e => updateField('provincia_fiscal', e.target.value)}
+                        placeholder="Provincia" className="col-span-2 bg-[#1a1a2e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                    </div>
+                  </div>
+
+                  <div className="bg-[#0f0f1a] rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-gray-300 font-medium">Direccion Suministro</h4>
+                      <button onClick={copyFiscalToSuministro} className="text-xs text-[#EF3403] hover:text-[#ff5533] transition-colors flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        Copiar de fiscal
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2">
+                        <input type="text" value={formData.direccion_suministro} onChange={e => updateField('direccion_suministro', e.target.value)}
+                          placeholder="Calle, numero, piso..." className="w-full bg-[#1a1a2e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                      </div>
+                      <input type="text" value={formData.cp_suministro} onChange={e => updateField('cp_suministro', e.target.value)}
+                        placeholder="Codigo Postal" className="bg-[#1a1a2e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                      <input type="text" value={formData.poblacion_suministro} onChange={e => updateField('poblacion_suministro', e.target.value)}
+                        placeholder="Poblacion" className="bg-[#1a1a2e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                      <input type="text" value={formData.provincia_suministro} onChange={e => updateField('provincia_suministro', e.target.value)}
+                        placeholder="Provincia" className="col-span-2 bg-[#1a1a2e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 3: Product Selection, Contact & Payment */}
+              {step === 3 && (
+                <div className="space-y-6">
+                  <h3 className="text-white font-semibold flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[#EF3403] flex items-center justify-center text-sm">3</span>
+                    Producto, Contacto y Pago
+                  </h3>
+
+                  {/* Product Selection */}
+                  <div className="bg-[#0f0f1a] rounded-xl p-4">
+                    <h4 className="text-gray-300 font-medium mb-4 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-[#EF3403]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                      Seleccionar Producto *
+                    </h4>
+                    {loadingProducts ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Spinner size="md" />
+                        <span className="text-gray-400 ml-3">Cargando productos disponibles...</span>
+                      </div>
+                    ) : products.length === 0 ? (
+                      <div className="text-center py-6">
+                        <p className="text-gray-500">No hay productos disponibles para la tarifa {formData.tarifa_acceso}</p>
+                        <button onClick={loadProducts} className="mt-2 text-[#EF3403] hover:text-[#ff5533] text-sm">Reintentar</button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {products.map((product) => (
+                          <label key={product.producto_id} className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all border ${formData.producto_id === String(product.producto_id) ? 'border-[#EF3403] bg-[#EF3403]/10' : 'border-transparent hover:bg-[#1a1a2e]'}`}>
+                            <input
+                              type="radio"
+                              name="product"
+                              checked={formData.producto_id === String(product.producto_id)}
+                              onChange={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  producto_id: String(product.producto_id),
+                                  producto_nombre: product.producto_nombre || product.productSearchName || ''
+                                }));
+                              }}
+                              className="w-4 h-4 text-[#EF3403] focus:ring-[#EF3403]"
+                            />
+                            <div className="flex-1">
+                              <p className="text-white font-medium">{product.producto_nombre || product.productSearchName}</p>
+                              <p className="text-gray-500 text-xs">ID: {product.producto_id}</p>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label className="block text-gray-400 text-sm mb-2">Email *</label>
+                      <input type="email" value={formData.email} onChange={e => updateField('email', e.target.value)}
+                        placeholder="cliente@email.com" className="w-full bg-[#0f0f1a] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 text-sm mb-2">Movil *</label>
+                      <input type="tel" value={formData.movil} onChange={e => updateField('movil', e.target.value)}
+                        placeholder="612345678" className="w-full bg-[#0f0f1a] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                    </div>
+                    <div>
+                      <label className="block text-gray-400 text-sm mb-2">Telefono fijo</label>
+                      <input type="tel" value={formData.telefono} onChange={e => updateField('telefono', e.target.value)}
+                        placeholder="912345678" className="w-full bg-[#0f0f1a] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-gray-400 text-sm mb-2">IBAN *</label>
+                      <input type="text" value={formData.iban} onChange={e => updateField('iban', e.target.value.toUpperCase().replace(/\s/g, ''))}
+                        placeholder="ES1234567890123456789012" className="w-full bg-[#0f0f1a] border border-white/10 rounded-xl px-4 py-3 text-white font-mono placeholder-gray-600 focus:outline-none focus:border-[#EF3403]/50" />
+                    </div>
+                  </div>
+
+                  {/* Tramitacion options */}
+                  <div className="bg-[#0f0f1a] rounded-xl p-4">
+                    <h4 className="text-gray-300 font-medium mb-4">Opciones de Tramitacion</h4>
+                    <div className="space-y-3">
+                      <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-[#1a1a2e] transition-colors">
+                        <input type="checkbox" checked={formData.cambioTitular} onChange={e => updateField('cambioTitular', e.target.checked)}
+                          className="w-5 h-5 rounded bg-[#1a1a2e] border-white/20 text-[#EF3403] focus:ring-[#EF3403]" />
+                        <div>
+                          <span className="text-gray-300">Cambio de titular</span>
+                          <p className="text-gray-500 text-xs">El suministro esta a nombre de otra persona</p>
+                        </div>
+                      </label>
+                      <label className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-[#1a1a2e] transition-colors">
+                        <input type="checkbox" checked={formData.cambioPotencia} onChange={e => updateField('cambioPotencia', e.target.checked)}
+                          className="w-5 h-5 rounded bg-[#1a1a2e] border-white/20 text-[#EF3403] focus:ring-[#EF3403]" />
+                        <div>
+                          <span className="text-gray-300">Cambio de potencia</span>
+                          <p className="text-gray-500 text-xs">Quiero modificar la potencia contratada</p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 4: Documents */}
+              {step === 4 && (
+                <div className="space-y-6">
+                  <h3 className="text-white font-semibold flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[#EF3403] flex items-center justify-center text-sm">4</span>
+                    Documentacion
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="bg-[#0f0f1a] rounded-xl p-4">
+                      <label className="block text-gray-300 font-medium mb-3">DNI/NIE - Anverso (cara frontal) *</label>
+                      <input type="file" accept="image/*,.pdf" onChange={e => handleFileChange('dni_anverso', 'dni_anverso_type', e)} className="hidden" id="dni_anverso_comp" />
+                      <label htmlFor="dni_anverso_comp" className={`flex items-center justify-center gap-3 border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all ${formData.dni_anverso ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/20 hover:border-[#EF3403]/50 hover:bg-[#EF3403]/5'}`}>
+                        {formData.dni_anverso ? (
+                          <>
+                            <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span className="text-emerald-400 font-medium">Archivo cargado</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span className="text-gray-500">Haz clic para subir imagen o PDF</span>
+                          </>
+                        )}
+                      </label>
+                    </div>
+
+                    <div className="bg-[#0f0f1a] rounded-xl p-4">
+                      <label className="block text-gray-300 font-medium mb-3">DNI/NIE - Reverso (cara trasera) *</label>
+                      <input type="file" accept="image/*,.pdf" onChange={e => handleFileChange('dni_reverso', 'dni_reverso_type', e)} className="hidden" id="dni_reverso_comp" />
+                      <label htmlFor="dni_reverso_comp" className={`flex items-center justify-center gap-3 border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all ${formData.dni_reverso ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/20 hover:border-[#EF3403]/50 hover:bg-[#EF3403]/5'}`}>
+                        {formData.dni_reverso ? (
+                          <>
+                            <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <span className="text-emerald-400 font-medium">Archivo cargado</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            <span className="text-gray-500">Haz clic para subir imagen o PDF</span>
+                          </>
+                        )}
+                      </label>
+                    </div>
+
+                    {formData.clientType === 'business' && (
+                      <div className="bg-[#0f0f1a] rounded-xl p-4">
+                        <label className="block text-gray-300 font-medium mb-3">CIF / Escritura de constitucion *</label>
+                        <input type="file" accept="image/*,.pdf" onChange={e => handleFileChange('cif_escritura', 'cif_escritura_type', e)} className="hidden" id="cif_escritura_comp" />
+                        <label htmlFor="cif_escritura_comp" className={`flex items-center justify-center gap-3 border-2 border-dashed rounded-xl p-6 cursor-pointer transition-all ${formData.cif_escritura ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/20 hover:border-[#EF3403]/50 hover:bg-[#EF3403]/5'}`}>
+                          {formData.cif_escritura ? (
+                            <>
+                              <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                              <span className="text-emerald-400 font-medium">Archivo cargado</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                              <span className="text-gray-500">Haz clic para subir imagen o PDF</span>
+                            </>
+                          )}
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Summary */}
+                  <div className="bg-[#0f0f1a] rounded-xl p-4">
+                    <h4 className="text-gray-300 font-medium mb-4 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-[#481589]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                      Resumen del Contrato
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div className="bg-[#1a1a2e] rounded-lg p-3">
+                        <p className="text-gray-500 text-xs mb-1">CUPS</p>
+                        <p className="text-white font-mono text-xs">{formData.cups.slice(0,12)}...{formData.cups.slice(-4)}</p>
+                      </div>
+                      <div className="bg-[#1a1a2e] rounded-lg p-3">
+                        <p className="text-gray-500 text-xs mb-1">Tarifa</p>
+                        <p className="text-[#EF3403]">{formData.tarifa_acceso}</p>
+                      </div>
+                      <div className="bg-[#1a1a2e] rounded-lg p-3">
+                        <p className="text-gray-500 text-xs mb-1">Titular</p>
+                        <p className="text-white truncate">{formData.titular}</p>
+                      </div>
+                      <div className="bg-[#1a1a2e] rounded-lg p-3">
+                        <p className="text-gray-500 text-xs mb-1">Producto</p>
+                        <p className="text-[#EF3403] font-medium truncate">{formData.producto_nombre}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="border-t border-white/10 px-6 py-4 flex items-center justify-between bg-[#0f0f1a] flex-shrink-0 rounded-b-2xl">
+              <button onClick={() => step > 1 ? setStep(step - 1) : onClose()} className="px-4 py-2.5 text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                {step > 1 ? (
+                  <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>Anterior</>
+                ) : 'Cancelar'}
+              </button>
+
+              {step < 4 ? (
+                <button onClick={() => setStep(step + 1)} disabled={!canProceed()}
+                  className={`px-6 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2 ${canProceed() ? 'bg-[#EF3403] hover:bg-[#d62f03] text-white shadow-lg shadow-[#EF3403]/20' : 'bg-gray-700 text-gray-500 cursor-not-allowed'}`}>
+                  Siguiente
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                </button>
+              ) : (
+                <button onClick={handleSubmit} disabled={!canProceed()}
+                  className={`px-6 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2 ${canProceed() ? 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-700 text-gray-500 cursor-not-allowed'}`}>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  Crear Contrato
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================================================
+    // COMPARISON RESULT MODAL
+    // ========================================================================
+    function ComparisonResultModal({ result, type, onClose, onCreateContract }) {
+      if (!result) return null;
+
+      const isTarifa = type === 'tarifa';
+
+      // Get offers from API response - the API returns top_3_offers array
+      const offers = result.top_3_offers || result.plena_products || [];
+
+      // Calculate savings for each offer compared to current bill
+      const currentTotal = parseFloat(result.factura_total_euros) || 0;
+
+      return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
+          <div className="bg-[#1a1a2e] border border-[#481589]/30 rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            {/* Header - fixed height */}
+            <div className="flex-shrink-0 bg-gradient-to-r from-[#EF3403] to-[#481589] px-6 py-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white">
+                  {isTarifa ? '📊 Comparativa de Tarifas' : '⚡ Análisis de Potencia'}
+                </h2>
+                <p className="text-white/70 text-sm">ID: {result.comparison_id || result.analysis_id}</p>
+              </div>
+              <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">
+                <span className="text-white text-xl">×</span>
+              </button>
+            </div>
+
+            {/* Scrollable content area */}
+            <div className="flex-1 p-6 overflow-y-auto">
+              {isTarifa ? (
+                <>
+                  {/* Current Bill Summary - using actual API fields */}
+                  <div className="bg-[#0f0f1a] rounded-xl p-4 mb-6">
+                    <h3 className="text-gray-400 text-sm font-medium mb-3">📄 Factura Actual</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-gray-500 text-xs">CUPS</p>
+                        <p className="text-white font-mono text-sm">{result.cups?.slice(0, 12) || result.current_bill?.cups?.slice(0, 12)}...</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 text-xs">Tarifa</p>
+                        <p className="text-[#EF3403] font-medium">{result.tarifa_acceso || result.current_bill?.tarifa || result.current_bill?.tarifa_acceso}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 text-xs">Titular</p>
+                        <p className="text-white text-sm truncate">{result.full_name || result.current_bill?.titular}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 text-xs">NIF</p>
+                        <p className="text-white font-mono text-sm">{result.nif || '—'}</p>
+                      </div>
+                    </div>
+
+                    {/* Additional current bill info */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-white/10">
+                      <div>
+                        <p className="text-gray-500 text-xs">Comercializadora Actual</p>
+                        <p className="text-amber-400 text-sm">{result.comercializadora_actual || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 text-xs">Consumo Total</p>
+                        <p className="text-white font-mono">{result.consumo_total_kwh || '—'} kWh</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 text-xs">Potencia Total</p>
+                        <p className="text-white font-mono">{result.potencia_total_kw || '—'} kW</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-500 text-xs">Factura Actual</p>
+                        <p className="text-white font-bold">{formatEuro(result.factura_total_euros)}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary Banner - shows savings or cost increase */}
+                  {result.mejor_oferta_total > 0 && (
+                    <div className={`bg-gradient-to-r ${result.has_savings
+                      ? 'from-emerald-500/20 to-emerald-500/10 border-emerald-500/30'
+                      : 'from-red-500/20 to-amber-500/10 border-amber-500/30'} border rounded-xl p-4 mb-6`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-full ${result.has_savings ? 'bg-emerald-500/20' : 'bg-amber-500/20'} flex items-center justify-center`}>
+                            <span className="text-2xl">{result.has_savings ? '💰' : '📊'}</span>
+                          </div>
+                          <div>
+                            <p className={`${result.has_savings ? 'text-emerald-400' : 'text-amber-400'} text-sm`}>
+                              {result.has_savings ? 'Mejor oferta disponible' : 'Mejor oferta Plena Energía'}
+                            </p>
+                            <p className="text-white font-bold text-xl">{formatEuro(result.mejor_oferta_total)}/mes</p>
+                            <p className="text-gray-500 text-xs">vs {formatEuro(result.factura_total_euros)}/mes actual</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {result.has_savings ? (
+                            <>
+                              <p className="text-emerald-400 font-bold text-2xl">{formatEuro(result.ahorro_anual)}</p>
+                              <p className="text-emerald-400/70 text-sm">ahorro anual estimado</p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-amber-400 font-bold text-2xl">+{formatEuro(Math.abs(result.ahorro_anual))}</p>
+                              <p className="text-amber-400/70 text-sm">coste adicional anual</p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {!result.has_savings && (
+                        <p className="text-gray-400 text-sm mt-3 pt-3 border-t border-white/10">
+                          ⚠️ Actualmente el cliente tiene una tarifa muy competitiva. Plena Energía puede no ofrecer ahorro en este caso.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Plena Products Comparison */}
+                  <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#EF3403]"></span>
+                    Ofertas Plena Energía Disponibles ({offers.length})
+                  </h3>
+
+                  {offers.length === 0 ? (
+                    <div className="bg-[#0f0f1a] rounded-xl p-8 text-center">
+                      <p className="text-gray-400">No se encontraron ofertas disponibles para esta tarifa.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {offers.map((offer, idx) => {
+                        // Use the total from API (includes taxes: subtotal + impuesto_elec + alquiller + iva)
+                        const offerTotal = parseFloat(offer.total) || parseFloat(offer.subtotal) || 0;
+                        // Use pre-calculated savings from API
+                        const savingsMonthly = parseFloat(offer.monthly_savings) || parseFloat(offer.savings) || 0;
+                        const savingsAnnual = parseFloat(offer.annual_savings) || (savingsMonthly * 12);
+                        const hasSavings = savingsMonthly > 0;
+
+                        return (
+                          <div key={idx} className={`bg-gradient-to-r ${hasSavings ? 'from-[#481589]/20 to-emerald-500/10 border-emerald-500/30' : 'from-[#481589]/20 to-[#EF3403]/10 border-[#481589]/30'} border rounded-xl p-4 comparison-card transition-all`}>
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  {idx === 0 && hasSavings && (
+                                    <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs font-medium rounded">
+                                      ⭐ Mejor opción
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-white font-medium">{offer.product || offer.producto}</p>
+                                <p className="text-gray-500 text-sm">{offer.company || 'Plena Energía'}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-white font-bold text-xl">{formatEuro(offerTotal)}/mes</p>
+                                {hasSavings ? (
+                                  <p className="text-emerald-400 font-medium">Ahorras {formatEuro(savingsMonthly)}/mes</p>
+                                ) : (
+                                  <p className="text-red-400 text-sm">+{formatEuro(Math.abs(savingsMonthly))}/mes vs actual</p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Cost breakdown - now showing full breakdown */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 text-xs">
+                              <div className="bg-[#0f0f1a] rounded-lg p-2">
+                                <p className="text-gray-500">Energía Total</p>
+                                <p className="text-white font-mono">{formatEuro(offer.total_energy_cost)}</p>
+                              </div>
+                              <div className="bg-[#0f0f1a] rounded-lg p-2">
+                                <p className="text-gray-500">Potencia Total</p>
+                                <p className="text-white font-mono">{formatEuro(offer.total_power_cost)}</p>
+                              </div>
+                              <div className="bg-[#0f0f1a] rounded-lg p-2">
+                                <p className="text-gray-500">Impuestos</p>
+                                <p className="text-white font-mono">{formatEuro((offer.impuesto_elec || 0) + (offer.iva || 0))}</p>
+                              </div>
+                              <div className="bg-[#0f0f1a] rounded-lg p-2">
+                                <p className="text-gray-500">Alquiler</p>
+                                <p className="text-white font-mono">{formatEuro(offer.alquiller)}</p>
+                              </div>
+                            </div>
+
+                            {/* Energy period breakdown (collapsible details) */}
+                            <details className="mb-3">
+                              <summary className="text-gray-500 text-xs cursor-pointer hover:text-gray-400">Ver desglose por período</summary>
+                              <div className="grid grid-cols-3 gap-2 mt-2 text-xs">
+                                <div className="bg-[#0f0f1a] rounded-lg p-2">
+                                  <p className="text-gray-500">P1 (Punta)</p>
+                                  <p className="text-white font-mono">{formatEuro(offer.energy_cost_p1)}</p>
+                                </div>
+                                <div className="bg-[#0f0f1a] rounded-lg p-2">
+                                  <p className="text-gray-500">P2 (Llano)</p>
+                                  <p className="text-white font-mono">{formatEuro(offer.energy_cost_p2)}</p>
+                                </div>
+                                <div className="bg-[#0f0f1a] rounded-lg p-2">
+                                  <p className="text-gray-500">P3 (Valle)</p>
+                                  <p className="text-white font-mono">{formatEuro(offer.energy_cost_p3)}</p>
+                                </div>
+                              </div>
+                            </details>
+
+                            <div className="flex items-center justify-between">
+                              {hasSavings ? (
+                                <div className="bg-emerald-500/20 rounded-lg px-3 py-1.5">
+                                  <span className="text-emerald-400 font-medium">{formatEuro(savingsAnnual)} ahorro/año</span>
+                                </div>
+                              ) : (
+                                <div className="bg-red-500/20 rounded-lg px-3 py-1.5">
+                                  <span className="text-red-400 font-medium">+{formatEuro(Math.abs(savingsAnnual))}/año vs actual</span>
+                                </div>
+                              )}
+                              <button
+                                onClick={() => onCreateContract({
+                                  ...offer,
+                                  producto: offer.product || offer.producto,
+                                  precio_estimado: offerTotal,
+                                  ahorro_mensual: savingsMonthly,
+                                  ahorro_anual: savingsAnnual,
+                                  // Pass along bill data for contract creation
+                                  cups: result.cups,
+                                  tarifa: result.tarifa_acceso,
+                                  titular: result.full_name,
+                                  nif: result.nif
+                                })}
+                                className="px-4 py-2 bg-[#EF3403] hover:bg-[#d62f03] text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Crear Contrato
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Power Analysis - Handle new n8n response structure */}
+                  {(() => {
+                    // Extract analysis data from response
+                    const analysisData = result.analysis_results?.[0] || result;
+                    const hasSavings = (parseFloat(analysisData.Ahorro_Anual) || 0) > 0;
+
+                    // Determine active periods based on tariff
+                    const tarifa = analysisData.Tarifa || '2.0TD';
+                    const activePeriods = tarifa === '2.0TD' ? ['P1', 'P2'] : ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'];
+
+                    // Parse monthly details if available
+                    let monthlyDetails = [];
+                    try {
+                      if (analysisData.Detalle_Mensual) {
+                        monthlyDetails = JSON.parse(analysisData.Detalle_Mensual);
+                      }
+                    } catch (e) {
+                      console.log('Error parsing monthly details:', e);
+                    }
+
+                    return (
+                      <>
+                        {/* Header Info */}
+                        <div className="bg-[#0f0f1a] rounded-xl p-4 mb-6">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                              <p className="text-gray-500 text-xs">CUPS</p>
+                              <p className="text-white font-mono text-sm">{(analysisData.CUPS || result.cups)?.slice(0, 12)}...</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500 text-xs">Tarifa</p>
+                              <p className="text-[#EF3403] font-medium">{tarifa}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500 text-xs">Tipo Cliente</p>
+                              <p className="text-white text-sm">{analysisData.Tipo_Cliente || '—'}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500 text-xs">Período Análisis</p>
+                              <p className="text-white text-sm">{analysisData.Periodo_Analisis || '—'}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Recommendation Banner */}
+                        <div className={`bg-gradient-to-r ${hasSavings
+                          ? 'from-emerald-500/20 to-emerald-500/10 border-emerald-500/30'
+                          : 'from-amber-500/20 to-amber-500/10 border-amber-500/30'} border rounded-xl p-4 mb-6`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-full ${hasSavings ? 'bg-emerald-500/20' : 'bg-amber-500/20'} flex items-center justify-center`}>
+                                <span className="text-2xl">{hasSavings ? '💰' : '✅'}</span>
+                              </div>
+                              <div>
+                                <p className={`${hasSavings ? 'text-emerald-400' : 'text-amber-400'} text-sm font-medium`}>
+                                  {analysisData.Recomendacion_General || 'Análisis completado'}
+                                </p>
+                                {analysisData.Total_Penalizaciones_Anual > 0 && (
+                                  <p className="text-red-400 text-xs mt-1">
+                                    ⚠️ Penalizaciones actuales: {formatEuro(analysisData.Total_Penalizaciones_Anual)}/año
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              {hasSavings ? (
+                                <>
+                                  <p className="text-emerald-400 font-bold text-2xl">{formatEuro(analysisData.Ahorro_Anual)}</p>
+                                  <p className="text-emerald-400/70 text-sm">ahorro potencial/año</p>
+                                </>
+                              ) : (
+                                <>
+                                  <p className="text-amber-400 font-bold text-xl">Potencia óptima</p>
+                                  <p className="text-amber-400/70 text-sm">sin cambios necesarios</p>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Cost Comparison */}
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                          <div className="bg-[#0f0f1a] rounded-xl p-4">
+                            <p className="text-gray-500 text-xs mb-1">Coste Actual Anual</p>
+                            <p className="text-white font-bold text-xl">{formatEuro(analysisData.Coste_Actual_Anual)}</p>
+                            {analysisData.Total_Penalizaciones_Anual > 0 && (
+                              <p className="text-red-400 text-xs mt-1">
+                                Incluye {formatEuro(analysisData.Total_Penalizaciones_Anual)} en penalizaciones
+                              </p>
+                            )}
+                          </div>
+                          <div className="bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-500/20 rounded-xl p-4">
+                            <p className="text-gray-500 text-xs mb-1">Coste Optimizado Anual</p>
+                            <p className="text-emerald-400 font-bold text-xl">{formatEuro(analysisData.Coste_Sugerido_Anual)}</p>
+                            {analysisData.Total_Penalizaciones_Sugerido_Anual > 0 ? (
+                              <p className="text-amber-400 text-xs mt-1">
+                                Incluye {formatEuro(analysisData.Total_Penalizaciones_Sugerido_Anual)} en penalizaciones
+                              </p>
+                            ) : (
+                              <p className="text-emerald-400/70 text-xs mt-1">Sin penalizaciones</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Power Periods Breakdown */}
+                        <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#481589]"></span>
+                          Análisis por Período de Potencia
+                        </h3>
+                        <div className="space-y-3 mb-6">
+                          {activePeriods.map((periodo) => {
+                            const isActive = analysisData[`${periodo}_Activo`] === 'SI';
+                            if (!isActive) return null;
+
+                            const contratada = parseFloat(analysisData[`${periodo}_Contratada`]) || 0;
+                            const maxima = parseFloat(analysisData[`${periodo}_Maxima_Global`]) || 0;
+                            const sugerida = parseFloat(analysisData[`${periodo}_Sugerida`]) || 0;
+                            const utilizacion = parseFloat(analysisData[`${periodo}_Utilizacion_Pct`]) || 0;
+                            const estado = analysisData[`${periodo}_Estado`] || 'OPTIMO';
+                            const penalizacion = parseFloat(analysisData[`${periodo}_Penalizacion_Anual`]) || 0;
+                            const mesesPenalizacion = parseInt(analysisData[`${periodo}_Meses_Con_Penalizacion`]) || 0;
+
+                            const cambio = sugerida - contratada;
+                            const cambioTexto = cambio > 0 ? `+${cambio.toFixed(2)}` : cambio.toFixed(2);
+
+                            // Status colors
+                            const statusColors = {
+                              'OPTIMO': 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+                              'AUMENTAR': 'bg-red-500/20 text-red-400 border-red-500/30',
+                              'REDUCIR': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+                              'ELIMINAR': 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                            };
+                            const statusIcons = {
+                              'OPTIMO': '✓',
+                              'AUMENTAR': '↑',
+                              'REDUCIR': '↓',
+                              'ELIMINAR': '✕'
+                            };
+
+                            const periodLabels = {
+                              'P1': 'Punta', 'P2': 'Llano', 'P3': 'Valle',
+                              'P4': 'P4', 'P5': 'P5', 'P6': 'P6'
+                            };
+
+                            return (
+                              <div key={periodo} className="bg-[#0f0f1a] border border-white/5 rounded-xl p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-white font-bold text-lg">{periodo}</span>
+                                    <span className="text-gray-500 text-sm">({periodLabels[periodo]})</span>
+                                    <span className={`px-2 py-0.5 rounded text-xs font-medium border ${statusColors[estado]}`}>
+                                      {statusIcons[estado]} {estado}
+                                    </span>
+                                  </div>
+                                  {penalizacion > 0 && (
+                                    <span className="text-red-400 text-sm font-medium">
+                                      ⚠️ {formatEuro(penalizacion)}/año ({mesesPenalizacion} meses)
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                  <div>
+                                    <p className="text-gray-500 text-xs">Contratada</p>
+                                    <p className="text-white font-mono">{contratada.toFixed(2)} kW</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-500 text-xs">Máxima Registrada</p>
+                                    <p className="text-white font-mono">{maxima.toFixed(2)} kW</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-500 text-xs">Sugerida</p>
+                                    <p className={`font-mono font-bold ${cambio !== 0 ? (cambio > 0 ? 'text-red-400' : 'text-emerald-400') : 'text-white'}`}>
+                                      {sugerida.toFixed(2)} kW
+                                      {cambio !== 0 && <span className="text-xs ml-1">({cambioTexto})</span>}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-gray-500 text-xs">Utilización</p>
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                                        <div
+                                          className={`h-full rounded-full ${utilizacion > 100 ? 'bg-red-500' : utilizacion > 80 ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                          style={{ width: `${Math.min(utilizacion, 100)}%` }}
+                                        />
+                                      </div>
+                                      <span className={`font-mono text-xs ${utilizacion > 100 ? 'text-red-400' : 'text-white'}`}>
+                                        {utilizacion.toFixed(0)}%
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Monthly Details (collapsible) */}
+                        {monthlyDetails.length > 0 && (
+                          <details className="mb-4">
+                            <summary className="text-gray-400 text-sm cursor-pointer hover:text-white mb-3">
+                              📊 Ver detalle mensual ({monthlyDetails.length} meses)
+                            </summary>
+                            <div className="bg-[#0f0f1a] rounded-xl p-4 max-h-64 overflow-y-auto">
+                              <table className="w-full text-xs">
+                                <thead>
+                                  <tr className="text-gray-500 border-b border-white/10">
+                                    <th className="text-left py-2">Mes</th>
+                                    {activePeriods.map(p => (
+                                      <th key={p} className="text-right py-2">{p} Max</th>
+                                    ))}
+                                    <th className="text-right py-2">Penalización</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {monthlyDetails.map((month, idx) => (
+                                    <tr key={idx} className={`border-b border-white/5 ${month.Mes_Con_Penalizacion === 'SI' ? 'bg-red-500/10' : ''}`}>
+                                      <td className="py-2 text-white">{month.Mes}</td>
+                                      {activePeriods.map(p => (
+                                        <td key={p} className="text-right py-2 font-mono text-gray-400">
+                                          {(parseFloat(month[`${p}_Maxima`]) || 0).toFixed(2)}
+                                        </td>
+                                      ))}
+                                      <td className="text-right py-2 font-mono text-red-400">
+                                        {month.Coste_Mes_Penalizacion > 0 ? formatEuro(month.Coste_Mes_Penalizacion) : '—'}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </details>
+                        )}
+
+                        {/* Download CSV button */}
+                        {result.csv_base64 && (
+                          <div className="flex justify-end">
+                            <button
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = `data:text/csv;base64,${result.csv_base64}`;
+                                link.download = result.filename || 'analisis_potencia.csv';
+                                link.click();
+                              }}
+                              className="px-4 py-2 bg-[#481589]/30 hover:bg-[#481589]/50 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              Descargar CSV
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+
+            {/* Footer - fixed at bottom */}
+            <div className="flex-shrink-0 border-t border-white/10 px-6 py-4 flex items-center justify-between bg-[#0f0f1a]">
+              <button onClick={onClose} className="px-4 py-2.5 text-gray-400 hover:text-white transition-colors">
+                Cerrar
+              </button>
+              <div className="flex gap-3">
+                <button className="px-4 py-2.5 bg-[#481589]/30 hover:bg-[#481589]/50 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Descargar PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================================================
+    // HISTORY ITEM
+    // ========================================================================
+    function HistoryItem({ item, onClick }) {
+      const isTarifa = item.type === 'tarifa';
+      
+      return (
+        <div 
+          onClick={onClick}
+          className="bg-[#1a1a2e] border border-white/5 rounded-xl p-4 hover:border-[#481589]/30 cursor-pointer transition-all comparison-card"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isTarifa ? 'bg-[#EF3403]/20' : 'bg-[#481589]/20'}`}>
+                <span className="text-lg">{isTarifa ? '📊' : '⚡'}</span>
+              </div>
+              <div>
+                <p className="text-white font-medium">{isTarifa ? 'Comparativa de Tarifa' : 'Análisis de Potencia'}</p>
+                <p className="text-gray-500 text-sm">{item.cups?.slice(0, 15)}... • {item.tarifa}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              {item.ahorro_anual && (
+                <p className="text-emerald-400 font-bold">{formatEuro(item.ahorro_anual)}/año</p>
+              )}
+              <p className="text-gray-500 text-xs">{formatDate(item.fecha)}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+              item.status === 'completado' ? 'bg-emerald-500/20 text-emerald-400' :
+              item.status === 'contratado' ? 'bg-blue-500/20 text-blue-400' :
+              'bg-amber-500/20 text-amber-400'
+            }`}>
+              {item.status === 'completado' ? '✓ Completado' : 
+               item.status === 'contratado' ? '📝 Contratado' : '⏳ Pendiente'}
+            </span>
+            <span className="text-gray-600 text-xs">•</span>
+            <span className="text-gray-500 text-xs">{item.id}</span>
+          </div>
+        </div>
+      );
+    }
+
+    // ========================================================================
+    // MAIN APP
+    // ========================================================================
+    function ComparadorApp() {
+      const [activeTab, setActiveTab] = useState('compare'); // 'compare' or 'history'
+      const [billFile, setBillFile] = useState(null);
+      const [billData, setBillData] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [loadingType, setLoadingType] = useState(null);
+      const [error, setError] = useState(null);
+      const [dragActive, setDragActive] = useState(false);
+      const [result, setResult] = useState(null);
+      const [resultType, setResultType] = useState(null);
+      const [history, setHistory] = useState([]);
+      const [loadingHistory, setLoadingHistory] = useState(true);
+      const [selectedHistoryItem, setSelectedHistoryItem] = useState(null);
+      const fileInputRef = useRef(null);
+
+      // Contract creation state
+      const [showContractForm, setShowContractForm] = useState(false);
+      const [contractPrefillData, setContractPrefillData] = useState(null);
+
+      // Odoo user info state
+      const [agentName, setAgentName] = useState(null);
+      const [userError, setUserError] = useState(null);
+      const [loadingUser, setLoadingUser] = useState(true);
+
+      // Load Odoo user info on mount
+      useEffect(() => {
+        const loadUserInfo = async () => {
+          try {
+            const userInfo = await fetchOdooUserInfo();
+            setAgentName(userInfo.jobPosition || userInfo.name);
+            setUserError(null);
+          } catch (err) {
+            setUserError(err.message);
+            setAgentName(null);
+          } finally {
+            setLoadingUser(false);
+          }
+        };
+        loadUserInfo();
+      }, []);
+
+      // Load history on mount (after user is loaded)
+      useEffect(() => {
+        if (agentName) {
+          loadHistory();
+        }
+      }, [agentName]);
+
+      const loadHistory = async () => {
+        if (!agentName) return;
+        setLoadingHistory(true);
+        try {
+          const response = await fetch(WEBHOOK_HISTORIAL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              agent_name: agentName,
+              channel_name: CHANNEL_NAME,
+              limit: 50
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error('Error fetching history');
+          }
+
+          const data = await response.json();
+          // Handle n8n response wrapper
+          let result = Array.isArray(data) ? (data[0]?.json || data[0]) : (data.json || data);
+
+          // Map API response to expected format
+          const historyItems = (result.data || []).map(item => ({
+            id: item.id,
+            type: item.tipo_analisis === 'TARIFA' ? 'tarifa' : 'potencia',
+            cups: item.cups,
+            tarifa: item.tarifa,
+            titular: item.titular,
+            ahorro_anual: parseFloat(item.ahorro_anual) || 0,
+            fecha: item.created_at,
+            status: 'completado',
+            // Store full data for detail view
+            fullData: item
+          }));
+
+          setHistory(historyItems);
+          console.log('History loaded:', historyItems);
+        } catch (error) {
+          console.error('Error loading history:', error);
+          setHistory([]);
+        }
+        setLoadingHistory(false);
+      };
+
+      // Handle bill upload
+      const handleBillUpload = async (file) => {
+        if (!file) return;
+        
+        setBillFile(file);
+        setLoading(true);
+        setLoadingType('analyze');
+        setError(null);
+        
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const base64 = reader.result.split(',')[1];
+          try {
+            const extractedData = await analyzeBill(base64, file.type);
+            setBillData({
+              ...extractedData,
+              file_base64: base64,
+              file_type: file.type
+            });
+          } catch (err) {
+            setError('Error al analizar la factura: ' + err.message);
+            setBillFile(null);
+          }
+          setLoading(false);
+          setLoadingType(null);
+        };
+        reader.readAsDataURL(file);
+      };
+
+      // Drag and drop handlers
+      const handleDrag = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') setDragActive(true);
+        else if (e.type === 'dragleave') setDragActive(false);
+      };
+
+      const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleBillUpload(e.dataTransfer.files[0]);
+        }
+      };
+
+      // Compare tariff
+      const handleCompararTarifa = async () => {
+        if (!billData || !agentName) return;
+        setLoading(true);
+        setLoadingType('tarifa');
+        try {
+          const comparison = await compareTarifa(billData, agentName);
+          setResult(comparison);
+          setResultType('tarifa');
+          // Refresh history
+          loadHistory();
+        } catch (err) {
+          setError('Error al comparar tarifas: ' + err.message);
+        }
+        setLoading(false);
+        setLoadingType(null);
+      };
+
+      // Analyze power
+      const handleAnalizarPotencia = async () => {
+        if (!billData || !agentName) return;
+        setLoading(true);
+        setLoadingType('potencia');
+        try {
+          const analysis = await analyzePotencia(billData, agentName);
+          setResult(analysis);
+          setResultType('potencia');
+          // Refresh history
+          loadHistory();
+        } catch (err) {
+          setError('Error al analizar potencia: ' + err.message);
+        }
+        setLoading(false);
+        setLoadingType(null);
+      };
+
+      // Reset form
+      const resetForm = () => {
+        setBillFile(null);
+        setBillData(null);
+        setError(null);
+      };
+
+      // Handle create contract from comparison
+      const handleCreateContract = (product) => {
+        console.log('Opening contract form with product:', product);
+        // Merge bill data with product data for pre-filling
+        const prefillData = {
+          ...billData,
+          ...product,
+          producto_id: product.producto_id || product.product_id || '',
+          producto_nombre: product.producto || product.product || product.producto_nombre || ''
+        };
+        setContractPrefillData(prefillData);
+        setShowContractForm(true);
+      };
+
+      // Show error screen if no user found
+      if (userError) {
+        return (
+          <div className="min-h-screen bg-[#0a0a14] text-white flex items-center justify-center">
+            <div className="bg-[#1a1a2e] border border-red-500/30 rounded-2xl p-8 max-w-md text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Error de Autenticación</h2>
+              <p className="text-red-400 mb-4">{userError}</p>
+              <p className="text-gray-500 text-sm">Por favor, inicia sesión en Odoo para acceder al comparador.</p>
+            </div>
+          </div>
+        );
+      }
+
+      // Show loading screen while fetching user info
+      if (loadingUser) {
+        return (
+          <div className="min-h-screen bg-[#0a0a14] text-white flex items-center justify-center">
+            <div className="text-center">
+              <Spinner size="lg" />
+              <p className="text-gray-400 mt-4">Cargando usuario...</p>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-[#0a0a14] text-white">
+          <div className="fixed inset-0 bg-gradient-to-br from-[#481589]/20 via-transparent to-[#EF3403]/10 pointer-events-none"></div>
+
+          {/* Header */}
+          <header className="relative border-b border-white/10 bg-[#0f0f1a]/80 backdrop-blur-xl">
+            <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#EF3403] to-[#481589] flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">P</span>
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-[#EF3403] to-[#481589] bg-clip-text text-transparent">Plena Energía</h1>
+                  <p className="text-xs text-gray-500">Comparador de Tarifas</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                {/* Navigation to main portal */}
+                <a
+                  href="https://portal.plena-energia.com"
+                  className="px-4 py-2 bg-[#1a1a2e] hover:bg-[#252538] border border-white/10 rounded-lg text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  Home
+                </a>
+
+                {/* Navigation to AI Chat */}
+                <a
+                  href="https://portal.plena-energia.com/ayudante-energetico"
+                  className="px-4 py-2 bg-gradient-to-r from-[#481589] to-[#2d0f54] hover:from-[#5a1ca6] hover:to-[#3d1470] border border-[#481589]/50 rounded-lg text-sm text-white transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  AI Chat
+                </a>
+
+                <div className="flex items-center gap-3 bg-[#1a1a2e] rounded-full px-4 py-2 border border-[#481589]/30">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#EF3403] to-[#481589] flex items-center justify-center">
+                    <span className="text-white text-sm font-medium">{agentName ? agentName.charAt(0).toUpperCase() : '?'}</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{agentName || 'Cargando...'}</p>
+                    <p className="text-xs text-gray-500">Comercial</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <main className="relative max-w-7xl mx-auto px-6 py-8">
+            {/* Tab Navigation */}
+            <div className="flex gap-2 mb-8">
+              <button
+                onClick={() => setActiveTab('compare')}
+                className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                  activeTab === 'compare' 
+                    ? 'bg-gradient-to-r from-[#EF3403] to-[#481589] text-white shadow-lg' 
+                    : 'bg-[#1a1a2e] text-gray-400 hover:text-white border border-white/10'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                Nueva Comparación
+              </button>
+              <button
+                onClick={() => setActiveTab('history')}
+                className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                  activeTab === 'history' 
+                    ? 'bg-gradient-to-r from-[#EF3403] to-[#481589] text-white shadow-lg' 
+                    : 'bg-[#1a1a2e] text-gray-400 hover:text-white border border-white/10'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Historial ({history.length})
+              </button>
+            </div>
+
+            {/* Compare Tab */}
+            {activeTab === 'compare' && (
+              <div className="space-y-6">
+                {/* Main Action Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  
+                  {/* Upload Section - Left Column */}
+                  <div className="bg-[#1a1a2e] border border-white/5 rounded-2xl p-6">
+                    <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-lg bg-[#EF3403]/20 flex items-center justify-center">
+                        <svg className="w-5 h-5 text-[#EF3403]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        </svg>
+                      </span>
+                      1. Subir Factura
+                    </h2>
+
+                    {error && (
+                      <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-4">
+                        <p className="text-red-400 text-sm">{error}</p>
+                      </div>
+                    )}
+
+                    {!billData ? (
+                      <div
+                        onDragEnter={handleDrag}
+                        onDragLeave={handleDrag}
+                        onDragOver={handleDrag}
+                        onDrop={handleDrop}
+                        className={`border-2 border-dashed rounded-xl p-6 text-center transition-all cursor-pointer ${
+                          dragActive ? 'border-[#EF3403] bg-[#EF3403]/10 drop-zone-active' : 'border-white/20 hover:border-[#EF3403]/50'
+                        }`}
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*,.pdf"
+                          onChange={(e) => handleBillUpload(e.target.files[0])}
+                          className="hidden"
+                        />
+                        
+                        {loading && loadingType === 'analyze' ? (
+                          <div className="py-4">
+                            <Spinner size="lg" />
+                            <p className="text-gray-400 mt-4 text-sm">Analizando factura...</p>
+                          </div>
+                        ) : (
+                          <>
+                            <svg className="w-12 h-12 mx-auto text-gray-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p className="text-white font-medium mb-1 text-sm">Arrastra la factura aquí</p>
+                            <p className="text-gray-500 text-xs">PDF o imagen</p>
+                          </>
+                        )}
+                    </div>
+                  ) : (
+                    <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-emerald-400 font-medium text-sm">Factura cargada</span>
+                        <button onClick={resetForm} className="ml-auto text-gray-500 hover:text-white">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                      <p className="text-white text-xs font-mono truncate">{billData.cups || '—'}</p>
+                      <p className="text-gray-400 text-xs truncate">{billData.titular || '—'}</p>
+                    </div>
+                  )}
+                  </div>
+
+                  {/* ACTION BUTTONS - Center Column (Main Focus) */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-lg bg-[#481589]/20 flex items-center justify-center">
+                        <span className="text-lg">2</span>
+                      </span>
+                      Selecciona una Acción
+                    </h2>
+
+                    {/* Two Big Action Buttons */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      
+                      {/* COMPARAR TARIFA - Big Button */}
+                      <button
+                        onClick={() => {
+                          console.log('Comparar Tarifa clicked, billData:', billData);
+                          handleCompararTarifa();
+                        }}
+                        disabled={!billData || loading}
+                        className={`group relative rounded-2xl p-6 font-semibold transition-all duration-300 text-left h-full min-h-[200px] flex flex-col justify-between ${
+                          !billData 
+                            ? 'bg-[#1a1a2e] border-2 border-dashed border-white/20 cursor-not-allowed opacity-60' 
+                            : 'bg-gradient-to-br from-[#EF3403] to-[#d62f03] hover:from-[#ff4510] hover:to-[#EF3403] shadow-xl shadow-[#EF3403]/30 hover:shadow-2xl hover:shadow-[#EF3403]/40 hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
+                        } disabled:opacity-50`}
+                      >
+                        <div>
+                          <div className={`w-16 h-16 rounded-xl flex items-center justify-center mb-4 ${!billData ? 'bg-white/10' : 'bg-white/20'} group-hover:scale-110 transition-transform`}>
+                            <svg className={`w-8 h-8 ${!billData ? 'text-gray-500' : 'text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                          </div>
+                          <h3 className={`text-xl font-bold mb-2 ${!billData ? 'text-gray-400' : 'text-white'}`}>
+                            📊 Comparar Tarifa
+                          </h3>
+                          <p className={`text-sm ${!billData ? 'text-gray-500' : 'text-white/80'}`}>
+                            Encuentra el mejor producto de Plena Energía para este cliente
+                          </p>
+                        </div>
+                        <div className={`flex items-center gap-2 mt-4 ${!billData ? 'text-gray-500' : 'text-white/70 group-hover:text-white'}`}>
+                          <span className="text-sm">{!billData ? 'Sube una factura primero' : 'Iniciar comparación'}</span>
+                          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </div>
+                      </button>
+
+                      {/* ANALIZAR POTENCIA - Big Button */}
+                      <button
+                        onClick={() => {
+                          console.log('Analizar Potencia clicked, billData:', billData);
+                          handleAnalizarPotencia();
+                        }}
+                        disabled={!billData || loading}
+                        className={`group relative rounded-2xl p-6 font-semibold transition-all duration-300 text-left h-full min-h-[200px] flex flex-col justify-between ${
+                          !billData 
+                            ? 'bg-[#1a1a2e] border-2 border-dashed border-white/20 cursor-not-allowed opacity-60' 
+                            : 'bg-gradient-to-br from-[#481589] to-[#2d0f54] hover:from-[#5a1ba8] hover:to-[#481589] shadow-xl shadow-[#481589]/30 hover:shadow-2xl hover:shadow-[#481589]/40 hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
+                        } disabled:opacity-50`}
+                      >
+                        <div>
+                          <div className={`w-16 h-16 rounded-xl flex items-center justify-center mb-4 ${!billData ? 'bg-white/10' : 'bg-white/20'} group-hover:scale-110 transition-transform`}>
+                            <svg className={`w-8 h-8 ${!billData ? 'text-gray-500' : 'text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                          </div>
+                          <h3 className={`text-xl font-bold mb-2 ${!billData ? 'text-gray-400' : 'text-white'}`}>
+                            ⚡ Analizar Potencia
+                          </h3>
+                          <p className={`text-sm ${!billData ? 'text-gray-500' : 'text-white/80'}`}>
+                            Optimiza la potencia contratada y reduce costes fijos
+                          </p>
+                        </div>
+                        <div className={`flex items-center gap-2 mt-4 ${!billData ? 'text-gray-500' : 'text-white/70 group-hover:text-white'}`}>
+                          <span className="text-sm">{!billData ? 'Sube una factura primero' : 'Iniciar análisis'}</span>
+                          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                          </svg>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Bill Data Summary (when uploaded) */}
+                    {billData && (
+                      <div className="bg-[#1a1a2e] border border-white/5 rounded-xl p-4 mt-4">
+                        <h4 className="text-sm font-medium text-gray-400 mb-3">Datos de la factura</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                          <div className="bg-[#0f0f1a] rounded-lg p-3">
+                            <p className="text-gray-500 text-xs mb-1">CUPS</p>
+                            <p className="text-white font-mono text-xs truncate">{billData.cups || '—'}</p>
+                          </div>
+                          <div className="bg-[#0f0f1a] rounded-lg p-3">
+                            <p className="text-gray-500 text-xs mb-1">Tarifa</p>
+                            <p className="text-[#EF3403] font-medium">{billData.tarifa || billData.tarifa_acceso || '—'}</p>
+                          </div>
+                          <div className="bg-[#0f0f1a] rounded-lg p-3">
+                            <p className="text-gray-500 text-xs mb-1">Titular</p>
+                            <p className="text-white text-xs truncate">{billData.titular || '—'}</p>
+                          </div>
+                          <div className="bg-[#0f0f1a] rounded-lg p-3">
+                            <p className="text-gray-500 text-xs mb-1">NIF</p>
+                            <p className="text-white font-mono text-xs">{billData.nif || '—'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Info Cards Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <div className="bg-[#1a1a2e] border border-white/5 rounded-2xl p-5">
+                    <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
+                      <span className="text-lg">📊</span>
+                      Sobre Comparar Tarifa
+                    </h3>
+                    <p className="text-gray-400 text-sm mb-3">
+                      Compara automáticamente con los productos de Plena Energía disponibles.
+                    </p>
+                    <ul className="space-y-1 text-xs text-gray-500">
+                      <li className="flex items-center gap-2">
+                        <span className="text-emerald-400">✓</span>
+                        Extrae datos automáticamente con IA
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-emerald-400">✓</span>
+                        Calcula ahorro mensual y anual
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-emerald-400">✓</span>
+                        Crea contrato con un clic
+                      </li>
+                    </ul>
+                  </div>
+                  
+                  <div className="bg-[#1a1a2e] border border-white/5 rounded-2xl p-5">
+                    <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
+                      <span className="text-lg">⚡</span>
+                      Sobre Analizar Potencia
+                    </h3>
+                    <p className="text-gray-400 text-sm mb-3">
+                      Analiza si el cliente tiene la potencia óptima contratada.
+                    </p>
+                    <ul className="space-y-1 text-xs text-gray-500">
+                      <li className="flex items-center gap-2">
+                        <span className="text-emerald-400">✓</span>
+                        Detecta sobredimensionamiento
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-emerald-400">✓</span>
+                        Recomienda potencia óptima
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-emerald-400">✓</span>
+                        Estima ahorro en término fijo
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* History Tab */}
+            {activeTab === 'history' && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-white">Historial de Comparaciones</h2>
+                  <button 
+                    onClick={loadHistory}
+                    className="px-4 py-2 bg-[#1a1a2e] hover:bg-[#252538] border border-white/10 rounded-lg text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Actualizar
+                  </button>
+                </div>
+
+                {loadingHistory ? (
+                  <div className="flex justify-center p-12">
+                    <Spinner />
+                  </div>
+                ) : history.length === 0 ? (
+                  <div className="bg-[#1a1a2e] border border-white/5 rounded-2xl p-12 text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#481589]/20 flex items-center justify-center">
+                      <svg className="w-8 h-8 text-[#481589]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-gray-500">No hay comparaciones anteriores</p>
+                    <button
+                      onClick={() => setActiveTab('compare')}
+                      className="mt-4 px-4 py-2 bg-[#EF3403] hover:bg-[#d62f03] text-white rounded-lg text-sm font-medium"
+                    >
+                      Crear primera comparación
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {history.map((item, idx) => (
+                      <HistoryItem
+                        key={item.id || idx}
+                        item={item}
+                        onClick={() => {
+                          // Show detail modal with stored data
+                          if (item.fullData) {
+                            const fd = item.fullData;
+
+                            // Parse ofertas_json for tarifa comparisons
+                            let topOffers = [];
+                            if (fd.ofertas_json) {
+                              try {
+                                topOffers = JSON.parse(fd.ofertas_json);
+                              } catch (e) {
+                                console.error('Error parsing ofertas_json:', e);
+                              }
+                            }
+
+                            // Reconstruct power analysis results from stored fields
+                            let analysisResults = [];
+                            if (fd.tipo_analisis === 'POTENCIA') {
+                              // Parse detalle_mensual_json
+                              let detalleMensual = '[]';
+                              if (fd.detalle_mensual_json) {
+                                try {
+                                  detalleMensual = fd.detalle_mensual_json;
+                                } catch (e) {}
+                              }
+
+                              analysisResults = [{
+                                CUPS: fd.cups,
+                                Tarifa: fd.tarifa,
+                                Tipo_Cliente: fd.tipo_cliente,
+                                Periodo_Analisis: fd.periodo_analisis,
+                                Coste_Actual_Anual: fd.coste_actual_anual,
+                                Coste_Sugerido_Anual: fd.coste_sugerido_anual,
+                                Total_Penalizaciones_Anual: fd.total_penalizaciones_actual,
+                                Total_Penalizaciones_Sugerido_Anual: fd.total_penalizaciones_sugerido,
+                                Ahorro_Anual: fd.ahorro_anual,
+                                Recomendacion_General: fd.recomendacion_general,
+                                P1_Activo: fd.p1_activo ? 'SI' : 'NO',
+                                P1_Contratada: fd.p1_contratada,
+                                P1_Maxima_Global: fd.p1_maxima,
+                                P1_Sugerida: fd.p1_sugerida,
+                                P1_Utilizacion_Pct: fd.p1_utilizacion_pct,
+                                P1_Estado: fd.p1_estado,
+                                P1_Penalizacion_Anual: fd.p1_penalizacion_anual,
+                                P2_Activo: fd.p2_activo ? 'SI' : 'NO',
+                                P2_Contratada: fd.p2_contratada,
+                                P2_Maxima_Global: fd.p2_maxima,
+                                P2_Sugerida: fd.p2_sugerida,
+                                P2_Utilizacion_Pct: fd.p2_utilizacion_pct,
+                                P2_Estado: fd.p2_estado,
+                                P2_Penalizacion_Anual: fd.p2_penalizacion_anual,
+                                P3_Activo: fd.p3_activo ? 'SI' : 'NO',
+                                P3_Contratada: fd.p3_contratada,
+                                P3_Maxima_Global: fd.p3_maxima,
+                                P3_Sugerida: fd.p3_sugerida,
+                                P3_Utilizacion_Pct: fd.p3_utilizacion_pct,
+                                P3_Estado: fd.p3_estado,
+                                P3_Penalizacion_Anual: fd.p3_penalizacion_anual,
+                                P4_Activo: fd.p4_activo ? 'SI' : 'NO',
+                                P4_Contratada: fd.p4_contratada,
+                                P4_Maxima_Global: fd.p4_maxima,
+                                P4_Sugerida: fd.p4_sugerida,
+                                P4_Utilizacion_Pct: fd.p4_utilizacion_pct,
+                                P4_Estado: fd.p4_estado,
+                                P4_Penalizacion_Anual: fd.p4_penalizacion_anual,
+                                P5_Activo: fd.p5_activo ? 'SI' : 'NO',
+                                P5_Contratada: fd.p5_contratada,
+                                P5_Maxima_Global: fd.p5_maxima,
+                                P5_Sugerida: fd.p5_sugerida,
+                                P5_Utilizacion_Pct: fd.p5_utilizacion_pct,
+                                P5_Estado: fd.p5_estado,
+                                P5_Penalizacion_Anual: fd.p5_penalizacion_anual,
+                                P6_Activo: fd.p6_activo ? 'SI' : 'NO',
+                                P6_Contratada: fd.p6_contratada,
+                                P6_Maxima_Global: fd.p6_maxima,
+                                P6_Sugerida: fd.p6_sugerida,
+                                P6_Utilizacion_Pct: fd.p6_utilizacion_pct,
+                                P6_Estado: fd.p6_estado,
+                                P6_Penalizacion_Anual: fd.p6_penalizacion_anual,
+                                Detalle_Mensual: detalleMensual
+                              }];
+                            }
+
+                            // Reconstruct result format for modal
+                            const modalData = {
+                              ...fd,
+                              comparison_id: item.id,
+                              analysis_id: item.id,
+                              cups: fd.cups,
+                              tarifa_acceso: fd.tarifa,
+                              full_name: fd.titular,
+                              nif: fd.nif,
+                              comercializadora_actual: fd.comercializadora_actual,
+                              consumo_total_kwh: fd.consumo_total_kwh,
+                              potencia_total_kw: (fd.potencia_p1_kw || 0) + (fd.potencia_p2_kw || 0),
+                              factura_total_euros: fd.factura_total_euros,
+                              mejor_oferta_total: fd.mejor_oferta_total,
+                              ahorro_mensual: fd.ahorro_mensual,
+                              ahorro_anual: fd.ahorro_anual,
+                              has_savings: parseFloat(fd.ahorro_anual) > 0,
+                              top_3_offers: topOffers,
+                              analysis_results: analysisResults
+                            };
+                            setSelectedHistoryItem(modalData);
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
+
+          {/* Loading Overlay */}
+          {loading && loadingType && loadingType !== 'analyze' && (
+            <LoadingOverlay messages={loadingType === 'tarifa' ? LOADING_MESSAGES_TARIFA : LOADING_MESSAGES_POTENCIA} />
+          )}
+
+          {/* Result Modal */}
+          {result && (
+            <ComparisonResultModal
+              result={result}
+              type={resultType}
+              onClose={() => { setResult(null); setResultType(null); }}
+              onCreateContract={handleCreateContract}
+            />
+          )}
+
+          {/* History Detail Modal */}
+          {selectedHistoryItem && (
+            <ComparisonResultModal
+              result={selectedHistoryItem}
+              type={selectedHistoryItem.tipo_analisis === 'POTENCIA' ? 'potencia' : 'tarifa'}
+              onClose={() => setSelectedHistoryItem(null)}
+              onCreateContract={handleCreateContract}
+            />
+          )}
+
+          {/* Contract Creation Form */}
+          {showContractForm && contractPrefillData && (
+            <CreateContractFromComparison
+              prefillData={contractPrefillData}
+              agentName={agentName}
+              onClose={() => {
+                setShowContractForm(false);
+                setContractPrefillData(null);
+              }}
+              onSuccess={(result) => {
+                console.log('Contract created successfully:', result);
+                loadHistory(); // Refresh history after contract creation
+              }}
+            />
+          )}
+        </div>
+      );
+    }
+
+  const root = ReactDOM.createRoot(document.getElementById('plena-comparador-root'));
+  root.render(<ComparadorApp />);
+</script>
